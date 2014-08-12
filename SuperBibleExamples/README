@@ -18,5 +18,8 @@ Compiler must support C++0x.  For the gcc compiler use the -std=gnu++0x option.
 Must use preprocessor definition: GL_GLEXT_PROTOTYPES
 
 Updates:
+2014-08-12
+Successfully compiled on MacOSX 10.8.4 using eclipse.  Turns out this version of OSX only supports OpenGL 3.2.  Project is 4.3.  Might need to switch.
+
 2014-08-11
 Working to get project compiling on MacOS 10.8 using eclipse IDE.
