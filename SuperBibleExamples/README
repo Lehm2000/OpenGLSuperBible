@@ -1,0 +1,22 @@
+OpenGLSuperBible
+Author: Jeffrey Adams
+
+Perpose: 
+This is a project to practice the tutorials found in the OpenGL Super Bible
+
+Dependencies:
+glfw 3.0.4
+glew 1.10.0
+
+Notes:
+Compiler must support C++0x.  For the gcc compiler use the -std=gnu++0x option.
+/usr/local/include/GLFW
+/usr/local/lib/
+/usr/include/GL
+/usr/lib/
+
+Must use preprocessor definition: GL_GLEXT_PROTOTYPES
+
+Updates:
+2014-08-11
+Working to get project compiling on MacOS 10.8 using eclipse IDE.
