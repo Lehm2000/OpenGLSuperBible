@@ -1,4 +1,5 @@
 
+#include <cstdio>
 
 #include "GraphicsEngine.h"
 #include "ImageUtilities.h"
@@ -67,19 +68,28 @@ bool GraphicsEngine::Init()
 		//return false;
 		exit(EXIT_FAILURE);
 
+
+
 	//vars for window dimensions... temporary
 	int winWidth = 640;
 	int winHeight = 480;
 
+	//	Added so that OSX would use OpenGL 3.2 instead of the default 2.1
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(winWidth, winHeight,"Simple example", NULL,NULL);
+	window = glfwCreateWindow(winWidth, winHeight,"OpenGL Super Bible", NULL,NULL);
 	if(!window)
 	{
 		glfwTerminate();
 		return false;
 		//exit(EXIT_FAILURE);
 	}
-	
+
+
+
 	//create initial projection matrix TODO: remove hardcoded numbers.
 	proj_matrix = vmath::perspective(50.0f, (float)winWidth/(float)winHeight, 0.1f, 1000.0f);
 	
@@ -98,8 +108,13 @@ bool GraphicsEngine::Init()
 		printf("Error: %s\n", glewGetErrorString(err));
 	}
 
+	//get some OpenGL info
+	printf( "GL_VENDOR: %s\n",glGetString(GL_VENDOR));
+	printf( "GL_RENDERER: %s\n",glGetString(GL_RENDERER));
+	printf( "GL_VERSION: %s\n",glGetString(GL_VERSION));
+	printf( "GL_SHADING_LANGUAGE_VERSION: %s\n\n",glGetString(GL_SHADING_LANGUAGE_VERSION));
+
 	glfwSetKeyCallback(window, key_callback);
-	//void (*foo)(GLFWwindow*,int,int);
 	
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	
@@ -108,8 +123,7 @@ bool GraphicsEngine::Init()
 	InitBuffers();
 	InitTextures();
 	
-	//glGenVertexArrays(1, &vertex_array_object);
-	//glBindVertexArray(vertex_array_object);
+	//Set some options
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
