@@ -15,7 +15,7 @@
 ShaderManager::ShaderManager()
 {
 	//Define the relative path to the shader directory. 
-	shaderPath = "../../OpenGLSuperBible/shaders/";
+	shaderPath = ".\\shaders\\";
 }
 
 /**

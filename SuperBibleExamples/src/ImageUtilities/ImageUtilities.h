@@ -1,7 +1,8 @@
 #ifndef IMAGEUTILITIES_H
 #define IMAGEUTILITIES_H
 
-#include "GEImage.h"  //TODO ImageUtilites should not include GEImage.  Create a new generic image class
+#include "../GEImage.h"  //TODO ImageUtilites should not include GEImage.  Create a new generic image class
+
 
 //bitmap compression constants
 #define BI_RGB 0

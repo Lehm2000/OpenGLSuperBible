@@ -10,7 +10,7 @@
 #include <cstring>
 
 #include "ImageUtilities.h"
-#include "GEImage.h"
+#include "..\GEImage.h"
 
 
 GEImage LoadBitmap(const char* filename)

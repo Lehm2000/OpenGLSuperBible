@@ -10,7 +10,7 @@
 #include <GLFW/glfw3.h>
 
 #include "glext.h"
-#include "ImageUtilities.h"
+#include "ImageUtilities\ImageUtilities.h"
 
 class TextureManager
 {

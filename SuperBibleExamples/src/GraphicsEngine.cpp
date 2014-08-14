@@ -2,7 +2,7 @@
 #include <cstdio>
 
 #include "GraphicsEngine.h"
-#include "ImageUtilities.h"
+#include "ImageUtilities\ImageUtilities.h"
 
 //Link static variables
 vmath::mat4 GraphicsEngine::proj_matrix;
@@ -75,10 +75,12 @@ bool GraphicsEngine::Init()
 	int winHeight = 480;
 
 	//	Added so that OSX would use OpenGL 3.2 instead of the default 2.1
+	/**
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	*/
 
 	window = glfwCreateWindow(winWidth, winHeight,"OpenGL Super Bible", NULL,NULL);
 	if(!window)
