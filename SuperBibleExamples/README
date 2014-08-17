@@ -10,14 +10,24 @@ glew 1.10.0
 
 Notes:
 Compiler must support C++0x.  For the gcc compiler use the -std=gnu++0x option.
-/usr/local/include/GLFW
-/usr/local/lib/
-/usr/include/GL
-/usr/lib/
+
+Linux/Mac Include Paths:
+	/usr/local/include/GLFW
+	/usr/local/lib/
+	/usr/include/GL
+	/usr/lib/
 
 Must use preprocessor definition: GL_GLEXT_PROTOTYPES
 
 Updates:
+2014-08-17
+Removed references to GEImage from the Image Utilities.  
+Created new class (IUImage) for texture loading in Image Utilities. 
+Improved how textures are loaded.  Made paths relative
+
+2014-08-14
+Have gone back to compiling on Windows as OpenGL support on the Mac is a bit iffy.
+
 2014-08-12
 Successfully compiled on MacOSX 10.8.4 using eclipse.  Turns out this version of OSX only supports OpenGL 3.2.  Project is 4.3.  Might need to switch.
 

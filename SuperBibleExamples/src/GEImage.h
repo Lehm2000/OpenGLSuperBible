@@ -24,13 +24,13 @@ public:
 	//constructors
 	GEImage();
 	GEImage(const unsigned int height,const unsigned int width,const unsigned char bitDepth,const unsigned int dataSize,const float* data);
-	GEImage(const GEImage& sourceImage);
+	GEImage(const GEImage& sourceImage);  // copy constructor
 
 	//destructor
 	~GEImage();
 
 	//operators
-	GEImage& operator=( GEImage sourceImage );	//assignment operator
+	GEImage& operator=( GEImage sourceImage );	// assignment operator
 
 	//setters
 	void setHeight(const unsigned int height);

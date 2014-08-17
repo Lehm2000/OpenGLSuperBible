@@ -2,6 +2,8 @@
 #include <cstdio>
 
 #include "GraphicsEngine.h"
+#include "GEImage.h"
+#include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
 
 //Link static variables
@@ -340,7 +342,10 @@ void GraphicsEngine::InitTextures(void)
 	
 	//	testing loading textures here
 
-	GEImage testImage = LoadBitmap("../../OpenGLSuperBible/textures/test2.bmp");
+	TextureManager texMan;
+
+	//GEImage testImage = LoadBitmap("../../OpenGLSuperBible/textures/test2.bmp");
+	GEImage testImage = texMan.LoadTexture("test2.bmp", GE_TEXTYPE_BMP );
 	//GEImage testImage = LoadBitmap("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\test2.bmp");
 	//GEImage testImage = LoadTarga("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\testAlphaTest.tga");
 

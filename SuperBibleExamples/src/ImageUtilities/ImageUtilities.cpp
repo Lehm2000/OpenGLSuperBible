@@ -10,12 +10,13 @@
 #include <cstring>
 
 #include "ImageUtilities.h"
-#include "..\GEImage.h"
+//#include "..\GEImage.h"
+#include "IUImage.h"
 
 
-GEImage LoadBitmap(const char* filename)
+IUImage LoadBitmap(const char* filename)
 {
-	GEImage returnImage;
+	IUImage returnImage;
 
 	std::ifstream inFile;	//input file stream for reading file.
 	BitmapHeader header;	//place to hold the header info which is common to all bitmap formats.
@@ -79,8 +80,9 @@ GEImage LoadBitmap(const char* filename)
 				returnImage.setNumChannels(dibHeader.bitDepth/8);  //TODO: handle bitmap not having bitdepth of 24 or 32
 				
 				//create space to store the data
-				unsigned int dataSize = dibHeader.height * dibHeader.width * returnImage.getNumChannels() * sizeof(float);
-				float* tempData = (float*)malloc(dataSize);
+				//unsigned int dataSize = dibHeader.height * dibHeader.width * returnImage.getNumChannels() * sizeof(float);
+				unsigned int dataSize = returnImage.getDataSize();
+				unsigned char* tempData = (unsigned char*)malloc(dataSize);
 
 				//calculate padded row size (bitmap require multiples of 4 bytes for row data) using integer math. 
 				//(basically rounds up to next multiple of 4)
@@ -89,7 +91,7 @@ GEImage LoadBitmap(const char* filename)
 				//also need the row size for the destination which is not padded.
 				int unpaddedFileRowSize = returnImage.getWidth() * returnImage.getNumChannels();
 
-				unsigned int i,j,k;
+				unsigned int i, j, k;
 
 				//iterate through all the rows
 				for (i = 0; i < returnImage.getHeight(); i++)
@@ -108,7 +110,7 @@ GEImage LoadBitmap(const char* filename)
 							unsigned int locSource = (i * paddedFileRowSize) + (j * returnImage.getNumChannels()) + k;
 
 							//read and convert data to float from source and place in destination.
-							tempData[locDest] = (float)imageFileData[locSource] / 255.0f;
+							tempData[locDest] = (float)imageFileData[locSource];// / 255.0f;
 						}
 					}
 					
@@ -164,9 +166,9 @@ GEImage LoadBitmap(const char* filename)
 	return returnImage;
 }
 
-GEImage LoadTarga(const char* filename)
+IUImage LoadTarga(const char* filename)
 {
-	GEImage returnImage;
+	IUImage returnImage;
 
 	std::ifstream inFile;		//	input file stream for reading file.
 	TargaHeader header;			//	place to hold the header info which is common to all bitmap formats.
@@ -196,7 +198,7 @@ GEImage LoadTarga(const char* filename)
 
 		//	calculate some values
 		unsigned char numChannels = header.bitDepth / 8;
-		unsigned int imageDataSize = header.width * header.height * ( numChannels );	//	how many bytes should the image take.
+		//unsigned int imageDataSize = header.width * header.height * ( numChannels );	//	how many bytes should the image take.
 
 		if (header.idLen)  //if idLen is not 0
 		{
@@ -220,10 +222,10 @@ GEImage LoadTarga(const char* filename)
 		if (header.imageType == TGA_UNCOMPRESSED_RGB)	//	Uncompressed 
 		{
 			//	allocate memory to hold the image data
-			imageData = (unsigned char*)malloc( imageDataSize );
+			imageData = (unsigned char*)malloc( returnImage.getDataSize() );
 
 			//read the data
-			inFile.read((char*)imageData, imageDataSize);
+			inFile.read( (char*)imageData, returnImage.getDataSize() );
 
 		}
 		else if (header.imageType == TGA_RLE_RGB)	//	Runlength encoded RGB images.
@@ -235,11 +237,11 @@ GEImage LoadTarga(const char* filename)
 			unsigned char* imagePacketData=nullptr;		//	place to hold the packet data.  Can vary in size.
 
 			//	allocate memory to hold the image data
-			imageData = (unsigned char*)malloc( imageDataSize );
+			imageData = (unsigned char*)malloc( returnImage.getDataSize() );
 
 			
 
-			while (readAmount < imageDataSize)
+			while (readAmount < returnImage.getDataSize() )
 			{
 				//read the header byte.
 				inFile.read((char*) &imagePacketHeader, sizeof(imagePacketHeader));
@@ -296,8 +298,8 @@ GEImage LoadTarga(const char* filename)
 			//TODO: Handle unsupported image types.
 		}
 
-		//allocate the space for the image in float date
-		float* tempData = (float*)malloc(imageDataSize * sizeof(float));
+		//allocate a new buffer for the final image data to go.
+		unsigned char* tempData = (unsigned char*)malloc( returnImage.getDataSize());
 
 		//now convert the data to GEImage format.
 		for (unsigned int i = 0; i < header.width * header.height; i++)	//	iterate through pixels
@@ -308,19 +310,19 @@ GEImage LoadTarga(const char* filename)
 				unsigned int locSource= (i * numChannels )+j;
 				unsigned int locDest = (i * numChannels )+j;
 				
-				//	We must change the order of the channels.  Targa stores it BGRA for some reason.
+				//	We must change the order of the channels.  Targa stores it BGRA for some reason.  Endianess most likely.
 				if (j == 0)
 					locSource+=2;
 				else if (j == 2)
 					locSource-=2;
 
 				//	copy the data to the tempData buffer.
-				tempData[locDest] = (float)imageData[locSource] / 255.0f;
+				tempData[locDest] = imageData[locSource];// / 255.0f;
 			}
 		}
 			
 		//put the loaded and converted image data into the return image.
-		returnImage.setData(imageDataSize * sizeof(float), tempData);
+		returnImage.setData( returnImage.getDataSize() , tempData);
 			
 		//do some cleanup
 		delete[] tempData;

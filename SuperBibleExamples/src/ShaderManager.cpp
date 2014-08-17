@@ -15,7 +15,7 @@
 ShaderManager::ShaderManager()
 {
 	//Define the relative path to the shader directory. 
-	shaderPath = ".\\shaders\\";
+	shaderPath = "./shaders/";
 }
 
 /**
@@ -33,7 +33,7 @@ std::string ShaderManager::LoadShaderSource(const char* filename)
 	std::ifstream inFile;	//input file stream for reading file.
 	GLchar* shaderSource;
 	
-	char fullFilename[256];	//TODO: deal with magic number here.
+	char fullFilename[1024];	//TODO: deal with magic number here.
 	
 	//combine filepath for shaders with supplied filename.
 	strcpy(fullFilename,shaderPath.c_str());

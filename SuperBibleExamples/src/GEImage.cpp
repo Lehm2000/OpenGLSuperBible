@@ -59,7 +59,6 @@ GEImage& GEImage::operator=( GEImage sourceImage )
 {
 	//we passed the sourceImage as a copy which called the copy constructor
 
-
 	//now swap the copied members from the copied GEImage
 	std::swap(height, sourceImage.height);
 	std::swap(width, sourceImage.width);
