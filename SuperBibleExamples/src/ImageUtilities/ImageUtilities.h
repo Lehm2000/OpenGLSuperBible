@@ -1,7 +1,6 @@
 #ifndef IMAGEUTILITIES_H
 #define IMAGEUTILITIES_H
 
-//#include "../GEImage.h"  //TODO ImageUtilites should not include GEImage.  Create a new generic image class
 #include "IUImage.h"
 
 //bitmap compression constants
@@ -78,8 +77,14 @@ struct TargaHeader
 
 //Image functions
 
-IUImage LoadBitmap(const char* filename);
-IUImage LoadTarga(const char* filename);
+class ImageUtilities
+{
+private:
+public:
+	IUImage LoadBitmap(const char* filename);
+	IUImage LoadTarga(const char* filename);
+
+};
 
 
 #endif /*IMAGEUTILITIES_H */

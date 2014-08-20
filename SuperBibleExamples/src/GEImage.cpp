@@ -93,22 +93,22 @@ void GEImage::setData(const unsigned int dataSize, const float* data)
 }
 
 //getters
-unsigned int GEImage::getHeight()
+unsigned int GEImage::getHeight() const
 {
 	return this->height;
 }
 
-unsigned int GEImage::getWidth()
+unsigned int GEImage::getWidth() const
 {
 	return this->width;
 }
 
-unsigned char GEImage::getNumChannels()
+unsigned char GEImage::getNumChannels() const
 {
 	return this->numChannels;
 }
 
-unsigned int GEImage::getData(float* returnData)
+unsigned int GEImage::getData(float* returnData) const
 {
 	//first delete any data that might be in there.  Otherwise it might be a leak.
 	if (returnData != nullptr)

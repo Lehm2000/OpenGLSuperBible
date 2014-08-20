@@ -26,6 +26,8 @@ GEImage TextureManager::LoadTexture( const char* filename, const char texType )
 	IUImage loadedTexture;
 	GEImage finalTexture;
 
+	ImageUtilities imageUtilities;
+
 	if ( filename != nullptr && texType != 0 )
 	{
 
@@ -38,7 +40,7 @@ GEImage TextureManager::LoadTexture( const char* filename, const char texType )
 		switch (texType)
 		{
 		case GE_TEXTYPE_BMP:
-			loadedTexture = LoadBitmap( fullFilename );
+			loadedTexture = imageUtilities.LoadBitmap( fullFilename );
 			break;
 		case GE_TEXTYPE_TARGA:
 			break;
@@ -47,47 +49,54 @@ GEImage TextureManager::LoadTexture( const char* filename, const char texType )
 		}
 
 		//check if we successfully loaded an image
-		if ( loadedTexture.getDataSize() > 0 )  //Good test?
+		if ( loadedTexture.getDataSize() > 0 )  //Sufficient test?
 		{
 			//convert it to GEImage format.
-			finalTexture.setWidth( loadedTexture.getWidth() );
-			finalTexture.setHeight( loadedTexture.getHeight() );
-			finalTexture.setNumChannels( loadedTexture.getNumChannels() );
-
-			// allocate a buffer for the converted data
-			float* finalTextureDataBuffer = nullptr;
-			unsigned int finalTextureDataBufferSize = loadedTexture.getWidth() * loadedTexture.getHeight() * loadedTexture.getNumChannels() * sizeof(float);
-			finalTextureDataBuffer = (float*)malloc( finalTextureDataBufferSize );
-
-			// allocate a buffer for the loaded data
-			unsigned char* loadedTextureDataBuffer = nullptr;
-			loadedTextureDataBuffer = (unsigned char*)malloc( loadedTexture.getDataSize() );
-
-			// copy the loaded data into the buffer.
-			loadedTexture.getData( loadedTextureDataBuffer );
-
-			unsigned int temp1 = loadedTexture.getWidth() * loadedTexture.getHeight() * loadedTexture.getNumChannels() * sizeof(float);
-			unsigned int temp2 = loadedTexture.getDataSize();
-
-			for (int i = 0; i < loadedTexture.getWidth() * loadedTexture.getHeight() * loadedTexture.getNumChannels() ; i++)
-			{
-				//printf("%d ",i);
-				finalTextureDataBuffer[i] = loadedTextureDataBuffer[i] / 255.0f;
-			}
-
-			finalTexture.setData( finalTextureDataBufferSize, finalTextureDataBuffer );
-
-			//do some cleanup
-			delete[] finalTextureDataBuffer;
-			finalTextureDataBuffer = nullptr;
-
-			delete[] loadedTextureDataBuffer;
-			loadedTextureDataBuffer = nullptr;
+			finalTexture = ConvertTexture(&loadedTexture);
+			
 		}
 
 		
 	}
 
 	return finalTexture;
+}
+
+GEImage TextureManager::ConvertTexture(const IUImage* sourceTexture)
+{
+	GEImage outputTexture;
+
+	outputTexture.setWidth( sourceTexture->getWidth() );
+	outputTexture.setHeight( sourceTexture->getHeight() );
+	outputTexture.setNumChannels( sourceTexture->getNumChannels() );
+
+	// allocate a buffer for the converted data
+	float* outputTextureDataBuffer = nullptr;
+	unsigned int outputTextureDataBufferSize = sourceTexture->getWidth() * sourceTexture->getHeight() * sourceTexture->getNumChannels() * sizeof(float);
+	outputTextureDataBuffer = (float*)malloc( outputTextureDataBufferSize );
+
+	// allocate a buffer for the loaded data
+	unsigned char* loadedTextureDataBuffer = nullptr;
+	loadedTextureDataBuffer = (unsigned char*)malloc( sourceTexture->getDataSize() );
+
+	// copy the loaded data into the buffer.
+	sourceTexture->getData( loadedTextureDataBuffer );
+
+	for (unsigned int i = 0; i < sourceTexture->getWidth() * sourceTexture->getHeight() * sourceTexture->getNumChannels() ; i++)
+	{
+		//printf("%d ",i);
+		outputTextureDataBuffer[i] = loadedTextureDataBuffer[i] / 255.0f;
+	}
+
+	outputTexture.setData( outputTextureDataBufferSize, outputTextureDataBuffer );
+
+	//do some cleanup
+	delete[] outputTextureDataBuffer;
+	outputTextureDataBuffer = nullptr;
+
+	delete[] loadedTextureDataBuffer;
+	loadedTextureDataBuffer = nullptr;
+
+	return outputTexture;
 }
 

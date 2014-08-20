@@ -39,18 +39,18 @@ public:
 	void setData(const unsigned int dataSize, const unsigned char* data);
 
 	//getters
-	unsigned int getHeight();
-	unsigned int getWidth();
-	unsigned char getNumChannels();
+	unsigned int getHeight() const;
+	unsigned int getWidth() const;
+	unsigned char getNumChannels() const;
 	/**
 		Purpose: Returns the size of the data and fills the data in the parameter pointer.
 		@param returnData - pointer to a copy of the data is filled in.
 		@return size in bytes of image data
 	*/
-	void getData(unsigned char* returnData);
+	void getData(unsigned char* returnData) const;
 
 	//functions
-	unsigned int getDataSize();
+	unsigned int getDataSize() const;
 };
 
 

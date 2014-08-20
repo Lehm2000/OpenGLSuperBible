@@ -30,6 +30,7 @@ public:
 
 	//Functions
 	GEImage LoadTexture(const char* filename, const char texType);
+	GEImage ConvertTexture(const IUImage* sourceTexture);
 	
 };
 

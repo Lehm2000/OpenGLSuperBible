@@ -2,8 +2,9 @@
 #define GEIMAGE_H
 
 /**
-	GEImage
-	Purpose: Definition of GEImage Class.  This class used to hold image data.
+	GEImage Class
+	GEImage.cpp
+	Purpose: Defines GEImage class which is used for holding image data for the engine.
 			
 	@author Jeff Adams
 */
@@ -42,18 +43,18 @@ public:
 		@param data - pointer to the image data that will be copied to the private member data.
 		@return void
 	*/
-	void setData(const unsigned int dataSize, const float* data);
+	void setData(const unsigned int dataSize, const float* data);  //TODO: should the dataSize be removed?... or could we use it to validating the datasize instead of setting it?
 
 	//getters
-	unsigned int getHeight();
-	unsigned int getWidth();
-	unsigned char getNumChannels();
+	unsigned int getHeight() const;
+	unsigned int getWidth() const;
+	unsigned char getNumChannels() const;
 	/**
 		Purpose: Returns the size of the data and fills the data in the parameter pointer.
 		@param returnData - pointer to a copy of the data is filled in.
 		@return size in bytes of image data
 	*/
-	unsigned int getData(float* returnData);
+	unsigned int getData(float* returnData) const;
 };
 
 #endif /* GEIMAGE_H */

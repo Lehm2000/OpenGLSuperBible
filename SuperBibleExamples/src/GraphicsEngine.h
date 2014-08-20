@@ -1,6 +1,14 @@
 #ifndef GRAPHICSENGINE_H
 #define GRAPHICSENGINE_H
 
+/**
+	GraphicsEngine Class
+	GraphicsEngine.cpp
+	Purpose: Graphics engine for testing OpenGL.
+			
+	@author Jeff Adams
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -38,9 +46,8 @@ private:
 	GLuint rendering_program;
 	GLuint vertex_array_object;
 	
-	
-
 	ShaderManager shaderMan;	//for shader operations
+
 public:
 
 	//constructors
@@ -48,19 +55,71 @@ public:
 
 	static vmath::mat4 proj_matrix;	//for the global projection matrix
 
-	//functions... need to organize
-	void Render(double currentTime);
-	bool Init();
-	void LoadExtensions(void);
+	//functions...
+	
+	/**
+		Cleans up resources allocated by the Graphics Engine
+
+		@return If successful
+	*/
 	bool CleanUp();
+
+	/**
+		Checks if window should close
+
+		@return If successful
+	*/
 	int CheckWindowClose();
+
+	/**
+		Initialize the Engine
+
+		@return If successfully initialized
+	*/
+	bool Init();
+
+	/**
+		Initialize the Shaders.  Currently only initializes one and returns program.  
+
+		@return the compiled shader program
+	*/
 	GLuint InitShaders(void);
+
+	/**
+		Initialize the geometry buffers  
+	*/
 	void InitBuffers(void);
+
+	/**
+		Initialze/load the textures  
+	*/
 	void InitTextures(void);
+
+	/**
+		Renders the scene. 
+
+		@param currentTime - the time since the program started.
+	*/
+	void Render(double currentTime);
+
+	/**
+		Updates the window size.  
+
+		@param x
+		@param y
+		@param width
+		@param height
+	*/
 	void UpdateWindowSize(int x, int y, int width, int height);
 	
 	//Getters
-	double getCurrentTime();
+
+	/**
+		Time since program started.  
+
+		@return time in seconds since the program started.
+	*/
+	double getCurrentTime() const;
 	
 	
 	

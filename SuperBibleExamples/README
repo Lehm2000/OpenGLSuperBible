@@ -20,6 +20,9 @@ Linux/Mac Include Paths:
 Must use preprocessor definition: GL_GLEXT_PROTOTYPES
 
 Updates:
+2014-08-20
+Converted ImageUtilites into a class.  Made getter methods in all classes const.
+
 2014-08-17
 Removed references to GEImage from the Image Utilities.  
 Created new class (IUImage) for texture loading in Image Utilities. 

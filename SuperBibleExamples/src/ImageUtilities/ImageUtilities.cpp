@@ -14,7 +14,7 @@
 #include "IUImage.h"
 
 
-IUImage LoadBitmap(const char* filename)
+IUImage ImageUtilities::LoadBitmap(const char* filename)
 {
 	IUImage returnImage;
 
@@ -109,8 +109,8 @@ IUImage LoadBitmap(const char* filename)
 							unsigned int locDest = (i * unpaddedFileRowSize) + (j * returnImage.getNumChannels()) + k;
 							unsigned int locSource = (i * paddedFileRowSize) + (j * returnImage.getNumChannels()) + k;
 
-							//read and convert data to float from source and place in destination.
-							tempData[locDest] = (float)imageFileData[locSource];// / 255.0f;
+							//read and place in destination.
+							tempData[locDest] = imageFileData[locSource];
 						}
 					}
 					
@@ -166,7 +166,7 @@ IUImage LoadBitmap(const char* filename)
 	return returnImage;
 }
 
-IUImage LoadTarga(const char* filename)
+IUImage ImageUtilities::LoadTarga(const char* filename)
 {
 	IUImage returnImage;
 
@@ -302,7 +302,7 @@ IUImage LoadTarga(const char* filename)
 		unsigned char* tempData = (unsigned char*)malloc( returnImage.getDataSize());
 
 		//now convert the data to GEImage format.
-		for (unsigned int i = 0; i < header.width * header.height; i++)	//	iterate through pixels
+		for (unsigned int i = 0; i < (unsigned int)header.width * (unsigned int)header.height; i++)	//	iterate through pixels
 		{
 			for (unsigned int j = 0; j < numChannels ; j++)	//	iterate through channels
 			{

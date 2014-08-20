@@ -85,22 +85,22 @@ void IUImage::setData(const unsigned int dataSize, const unsigned char* data)
 }
 
 //getters
-unsigned int IUImage::getHeight()
+unsigned int IUImage::getHeight() const
 {
 	return this->height;
 }
 
-unsigned int IUImage::getWidth()
+unsigned int IUImage::getWidth() const
 {
 	return this->width;
 }
 
-unsigned char IUImage::getNumChannels()
+unsigned char IUImage::getNumChannels() const
 {
 	return this->numChannels;
 }
 
-void IUImage::getData(unsigned char* returnData)
+void IUImage::getData(unsigned char* returnData) const
 {
 	//first delete any data that might be in there.  Otherwise it might be a leak.
 	//if (returnData != nullptr)
@@ -111,7 +111,7 @@ void IUImage::getData(unsigned char* returnData)
 }
 
 //functions
-unsigned int IUImage::getDataSize()
+unsigned int IUImage::getDataSize() const
 {
 	return height * width * numChannels * sizeof(unsigned char);
 }

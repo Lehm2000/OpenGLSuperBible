@@ -42,11 +42,9 @@ void GraphicsEngine::Render(double currentTime)
 		float f = (float)i + (float)currentTime * (float)M_PI * 0.1f;
 		vmath:: mat4 mv_matrix = 
 		vmath::translate(0.0f, 0.0f, -5.0f) * 
-			
-			
-		vmath::rotate((float) currentTime * 45.0f, 0.0f, 1.0f, 0.0f)*
-		vmath::rotate((float) currentTime * 21.0f, 1.0f, 0.0f, 0.0f) *
-		vmath::translate(sinf(2.1f * f) * 2.0f,     cosf(1.7f * f) * 2.0f,    sinf(1.3f * f) * cosf(1.5f * f) * 2.0f);
+			vmath::rotate((float) currentTime * 45.0f, 0.0f, 1.0f, 0.0f)*
+			vmath::rotate((float) currentTime * 21.0f, 1.0f, 0.0f, 0.0f) *
+			vmath::translate(sinf(2.1f * f) * 2.0f,     cosf(1.7f * f) * 2.0f,    sinf(1.3f * f) * cosf(1.5f * f) * 2.0f);
 
 		//set the model-view and projection matrices
 		glUniformMatrix4fv(mv_location, 1, GL_FALSE, mv_matrix);
@@ -65,7 +63,7 @@ bool GraphicsEngine::Init()
 {
 	glfwSetErrorCallback(error_callback);
 
-	//initial OpenGL
+	//initial OpenGL (glfw)
 	if(!glfwInit())
 		//return false;
 		exit(EXIT_FAILURE);
@@ -84,6 +82,7 @@ bool GraphicsEngine::Init()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	*/
 
+	// create the window
 	window = glfwCreateWindow(winWidth, winHeight,"OpenGL Super Bible", NULL,NULL);
 	if(!window)
 	{
@@ -99,8 +98,6 @@ bool GraphicsEngine::Init()
 	
 	glfwMakeContextCurrent(window);
 
-
-
 	//initialize openGL extensions.  Must be done after making context current. Otherwise will error
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
@@ -112,14 +109,14 @@ bool GraphicsEngine::Init()
 		printf("Error: %s\n", glewGetErrorString(err));
 	}
 
-	//get some OpenGL info
+	// print some OpenGL info
 	printf( "GL_VENDOR: %s\n",glGetString(GL_VENDOR));
 	printf( "GL_RENDERER: %s\n",glGetString(GL_RENDERER));
 	printf( "GL_VERSION: %s\n",glGetString(GL_VERSION));
 	printf( "GL_SHADING_LANGUAGE_VERSION: %s\n\n",glGetString(GL_SHADING_LANGUAGE_VERSION));
 
+	// specify some callback functions
 	glfwSetKeyCallback(window, key_callback);
-	
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	
 	//not sure this is the best place for these, but will work for now
@@ -154,7 +151,7 @@ int GraphicsEngine::CheckWindowClose()
 	return glfwWindowShouldClose(window);
 }
 
-double GraphicsEngine::getCurrentTime()
+double GraphicsEngine::getCurrentTime() const
 {
 	return glfwGetTime();
 }
@@ -172,19 +169,19 @@ GLuint GraphicsEngine::InitShaders(void)
 	GLint return_code;
 
 	//Create vertex shader
-	vertex_shader = shaderMan.CompileShaderFromSource("spinningcubes_vert.txt",GL_VERTEX_SHADER);
+	vertex_shader = shaderMan.CompileShaderFromSource("spinningcubes_vert.txt", GL_VERTEX_SHADER );
 	
 	//Create tess control shader
-	tess_control_shader = shaderMan.CompileShaderFromSource("tess_control_shader_source.txt",GL_TESS_CONTROL_SHADER);
+	tess_control_shader = shaderMan.CompileShaderFromSource("tess_control_shader_source.txt", GL_TESS_CONTROL_SHADER);
 
 	//Create tess eval shader
-	tess_eval_shader = shaderMan.CompileShaderFromSource("tess_eval_shader_source.txt",GL_TESS_EVALUATION_SHADER);
+	tess_eval_shader = shaderMan.CompileShaderFromSource("tess_eval_shader_source.txt", GL_TESS_EVALUATION_SHADER);
 
 	//Create geometry shader
-	geometry_shader = shaderMan.CompileShaderFromSource("geometry_shader_source.txt",GL_GEOMETRY_SHADER);
+	geometry_shader = shaderMan.CompileShaderFromSource("geometry_shader_source.txt", GL_GEOMETRY_SHADER);
 
 	//Create fragment shader
-	fragment_shader = shaderMan.CompileShaderFromSource("spinningcubes_frag.txt",GL_FRAGMENT_SHADER);
+	fragment_shader = shaderMan.CompileShaderFromSource("spinningcubes_frag.txt", GL_FRAGMENT_SHADER);
 	
 	//Create program, attach shaders to it, and link it... need to put this code inside the shader manager
 	program = glCreateProgram();
@@ -208,14 +205,14 @@ void GraphicsEngine::InitBuffers(void)
 {
 	GLuint buffer[2];
 
-	//playin with vertex array objects
+	// playin with vertex array objects
 	
 	glGenVertexArrays(1, &vertex_array_object);
 	glBindVertexArray(vertex_array_object);
 
-	//This is the data that we will place into the buffer object
+	// This is the data that we will place into the buffer object
 
-	
+	// make a box
 	static const GLfloat vertex_positions[] =
 	{
 		    -0.25f,  0.25f, -0.25f,
@@ -320,16 +317,16 @@ void GraphicsEngine::InitBuffers(void)
 
 	glGenBuffers(2, buffer);
 	
-	glBindBuffer(GL_ARRAY_BUFFER,buffer[0]);
-	glBufferData(GL_ARRAY_BUFFER,sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,0,NULL);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER,buffer[1]);
-	glBufferData(GL_ARRAY_BUFFER,sizeof(vertex_texcoords), vertex_texcoords, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_texcoords), vertex_texcoords, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE,0,NULL);
+	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(4);
 
 	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE,sizeof(vertex),(void*)offsetof(vertex,r));
@@ -345,7 +342,7 @@ void GraphicsEngine::InitTextures(void)
 	TextureManager texMan;
 
 	//GEImage testImage = LoadBitmap("../../OpenGLSuperBible/textures/test2.bmp");
-	GEImage testImage = texMan.LoadTexture("test2.bmp", GE_TEXTYPE_BMP );
+	GEImage testImage = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP );
 	//GEImage testImage = LoadBitmap("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\test2.bmp");
 	//GEImage testImage = LoadTarga("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\testAlphaTest.tga");
 
@@ -389,6 +386,8 @@ void GraphicsEngine::InitTextures(void)
 
 	//	now bind it to a texture unit
 	glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
+	
+	//	clean up
 	delete [] data;
 
 }
