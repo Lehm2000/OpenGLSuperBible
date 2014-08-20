@@ -43,6 +43,7 @@ void GraphicsEngine::Render(double currentTime)
 	{
 		droplet[i][0] = droplet_x_offset[i];
 		droplet[i][1] = 2.0f - fmodf( (t + float(i) ) * droplet_fall_speed[i], 4.31f);
+		droplet[i][2] = t * droplet_rot_speed[i];
 		droplet[i][3] = 0.0f;
 	}
 
@@ -236,6 +237,7 @@ void GraphicsEngine::InitTextures(void)
 	//	testing loading textures here
 
 	TextureManager texMan;
+	GLenum glError = 0;
 
 	//GEImage testImage = LoadBitmap("../../OpenGLSuperBible/textures/test2.bmp");
 	GEImage testImage1 = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP );
@@ -250,7 +252,7 @@ void GraphicsEngine::InitTextures(void)
 
 	
 	testImage1.getData(data[0]);
-	testImage1.getData(data[1]);
+	testImage2.getData(data[1]);
 
 	GLuint texture;
 
@@ -270,26 +272,49 @@ void GraphicsEngine::InitTextures(void)
 
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D_ARRAY ,texture);
+
+	glError = glGetError();
+	if (glError != GL_NO_ERROR)
+	{
+		printf( "Error binding texture: %d\n", glError );
+	}
+
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 5, GL_RGB32F, 256, 256, 2);
+
+	glError = glGetError();
+	if (glError != GL_NO_ERROR)
+	{
+		printf( "Error generating texture buffer: %d\n", glError );
+	}
 
 	for (int i = 0; i < 2; i++)
 	{
-		glTexSubImage3D(GL_TEXTURE_2D_ARRAY,0,0,0,i,256,256,1, GL_RGB32F, GL_FLOAT,data[i]);
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY,0,0,0,i,256,256,1, GL_RGB, GL_FLOAT,data[i]);
+		
+		glError = glGetError();
+		if (glError != GL_NO_ERROR)
+		{
+			printf( "Error copying texture to buffer: %d\n", glError );
+		}
 	}
 
+	//glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
 	//	create the mipmaps.
-	glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+	//glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
-	GLuint sampler;
-	glGenSamplers(1, &sampler);
+	//GLuint sampler;
+	//glGenSamplers(1, &sampler);
 
 	//	set some sampler options
-	glSamplerParameteri(sampler,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
-	glSamplerParameteri(sampler,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	//glSamplerParameteri(sampler,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+	//glSamplerParameteri(sampler,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
 	//	now bind it to a texture unit
-	glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
+	//glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
 	
 	//	clean up
 	delete [] data[0];

@@ -33,4 +33,5 @@ void main(void)
 	vec2 pos = 0.25 * rot * position[gl_VertexID];
 	
 	gl_Position = vec4(pos.x + droplet[alien_index].x_offset, pos.y + droplet[alien_index].y_offset, 0.5, 1.0);
+	vs_out.alien = alien_index % 2;
 }
