@@ -11,6 +11,8 @@ vmath::mat4 GraphicsEngine::proj_matrix;
 
 GraphicsEngine::GraphicsEngine()
 {
+	 seed = 0x13371337;  //here just for the alien rain example
+
 	//Initialize Graphics upon instantiation.  TODO Might want to make the program make an explicit call.  For now this works
 	if(!Init())
 	{
@@ -23,37 +25,39 @@ GraphicsEngine::GraphicsEngine()
 
 void GraphicsEngine::Render(double currentTime)
 {
-	const GLfloat bkColor[] = { 0.0f, 0.25f, 0.0f, 1.0f };
+	const GLfloat bkColor[] = { 1.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
 	
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
-	
+
+	float t = (float)currentTime;
 
 	glUseProgram(rendering_program);
 
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, rain_buffer); 
+
+	vmath::vec4 * droplet = (vmath::vec4 *) glMapBufferRange(GL_UNIFORM_BUFFER,0,256* sizeof (vmath::vec4), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+	for (int i = 0; i < 256; i++)
+	{
+		droplet[i][0] = droplet_x_offset[i];
+		droplet[i][1] = 2.0f - fmodf( (t + float(i) ) * droplet_fall_speed[i], 4.31f);
+		droplet[i][3] = 0.0f;
+	}
+
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+
+	int alien_index;
+
+	for ( alien_index = 0; alien_index < 256; alien_index++)
+	{
+		glVertexAttribI1i(0, alien_index);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	}
+
 	GLint mv_location = glGetUniformLocation(rendering_program, "mv_matrix");
 	GLint proj_location = glGetUniformLocation(rendering_program, "proj_matrix");
-	
-
-	//Draw 24 cubes...
-	for (int i=0; i < 24; i++)
-	{
-		float f = (float)i + (float)currentTime * (float)M_PI * 0.1f;
-		vmath:: mat4 mv_matrix = 
-		vmath::translate(0.0f, 0.0f, -5.0f) * 
-			vmath::rotate((float) currentTime * 45.0f, 0.0f, 1.0f, 0.0f)*
-			vmath::rotate((float) currentTime * 21.0f, 1.0f, 0.0f, 0.0f) *
-			vmath::translate(sinf(2.1f * f) * 2.0f,     cosf(1.7f * f) * 2.0f,    sinf(1.3f * f) * cosf(1.5f * f) * 2.0f);
-
-		//set the model-view and projection matrices
-		glUniformMatrix4fv(mv_location, 1, GL_FALSE, mv_matrix);
-		glUniformMatrix4fv(proj_location, 1, GL_FALSE, proj_matrix);
-		
-	
-		//Draw 6 faces of 2 triangles of 3 vertices each = 36 vertices
-		glDrawArrays(GL_TRIANGLES,0,36);
-	}
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -169,7 +173,7 @@ GLuint GraphicsEngine::InitShaders(void)
 	GLint return_code;
 
 	//Create vertex shader
-	vertex_shader = shaderMan.CompileShaderFromSource("spinningcubes_vert.txt", GL_VERTEX_SHADER );
+	vertex_shader = shaderMan.CompileShaderFromSource("alien_rain_vert.glsl", GL_VERTEX_SHADER );
 	
 	//Create tess control shader
 	tess_control_shader = shaderMan.CompileShaderFromSource("tess_control_shader_source.txt", GL_TESS_CONTROL_SHADER);
@@ -181,9 +185,10 @@ GLuint GraphicsEngine::InitShaders(void)
 	geometry_shader = shaderMan.CompileShaderFromSource("geometry_shader_source.txt", GL_GEOMETRY_SHADER);
 
 	//Create fragment shader
-	fragment_shader = shaderMan.CompileShaderFromSource("spinningcubes_frag.txt", GL_FRAGMENT_SHADER);
+	fragment_shader = shaderMan.CompileShaderFromSource("alien_rain_frag.glsl", GL_FRAGMENT_SHADER);
 	
 	//Create program, attach shaders to it, and link it... need to put this code inside the shader manager
+	//TODO: Error handling.
 	program = glCreateProgram();
 	glAttachShader(program, vertex_shader);
 	//glAttachShader(program, tess_control_shader);
@@ -212,125 +217,16 @@ void GraphicsEngine::InitBuffers(void)
 
 	// This is the data that we will place into the buffer object
 
-	// make a box
-	static const GLfloat vertex_positions[] =
-	{
-		    -0.25f,  0.25f, -0.25f,
-            -0.25f, -0.25f, -0.25f,
-             0.25f, -0.25f, -0.25f,
+	glGenBuffers(1, &rain_buffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, rain_buffer);
+    glBufferData(GL_UNIFORM_BUFFER, 256 * sizeof(vmath::vec4), NULL, GL_DYNAMIC_DRAW);
 
-             0.25f, -0.25f, -0.25f,
-             0.25f,  0.25f, -0.25f,
-            -0.25f,  0.25f, -0.25f,
-
-             0.25f, -0.25f, -0.25f,
-             0.25f, -0.25f,  0.25f,
-             0.25f,  0.25f, -0.25f,
-
-             0.25f, -0.25f,  0.25f,
-             0.25f,  0.25f,  0.25f,
-             0.25f,  0.25f, -0.25f,
-
-             0.25f, -0.25f,  0.25f,
-            -0.25f, -0.25f,  0.25f,
-             0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f,  0.25f,
-            -0.25f,  0.25f,  0.25f,
-             0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f,  0.25f,
-            -0.25f, -0.25f, -0.25f,
-            -0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f, -0.25f,
-            -0.25f,  0.25f, -0.25f,
-            -0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f,  0.25f,
-             0.25f, -0.25f,  0.25f,
-             0.25f, -0.25f, -0.25f,
-
-             0.25f, -0.25f, -0.25f,
-            -0.25f, -0.25f, -0.25f,
-            -0.25f, -0.25f,  0.25f,
-
-            -0.25f,  0.25f, -0.25f,
-             0.25f,  0.25f, -0.25f,
-             0.25f,  0.25f,  0.25f,
-
-             0.25f,  0.25f,  0.25f,
-            -0.25f,  0.25f,  0.25f,
-            -0.25f,  0.25f, -0.25f
-	};
-
-	static const GLfloat vertex_texcoords[] =
-	{
-		    -0.0f,  1.0f,
-            -0.0f, -0.0f,
-             1.0f, -0.0f,
-
-             1.0f, -0.0f,
-             1.0f,  1.0f,
-            -0.0f,  1.0f,
-
-             1.0f, -0.0f,
-             1.0f, -0.0f,
-             1.0f,  1.0f,
-
-             1.0f, -0.0f,
-             1.0f,  1.0f,
-             1.0f,  1.0f,
-
-             1.0f, -0.0f,
-            -0.0f, -0.0f,
-             1.0f,  1.0f,
-
-            -0.0f, -0.0f,
-            -0.0f,  1.0f,
-             1.0f,  1.0f,
-
-            -0.0f, -0.0f,
-            -0.0f, -0.0f,
-            -0.0f,  0.25f,
-
-            -0.0f, -0.0f,
-            -0.0f,  1.0f,
-            -0.0f,  1.0f,
-
-            -0.0f, -0.0f,
-             1.0f, -0.0f,
-             1.0f, -0.0f,
-
-             1.0f, -0.0f,
-            -0.0f, -0.0f,
-            -0.0f, -0.0f,
-
-            -0.0f,  1.0f,
-             1.0f,  1.0f,
-             1.0f,  1.0f,
-
-             1.0f,  1.0f,
-            -0.0f,  1.0f,
-            -0.0f,  1.0f
-	};
-
-	glGenBuffers(2, buffer);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_texcoords), vertex_texcoords, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(4);
-
-	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE,sizeof(vertex),(void*)offsetof(vertex,r));
-	//glEnableVertexAttribArray(2);
+    for (int i = 0; i < 256; i++)
+    {
+        droplet_x_offset[i] = random_float() * 2.0f - 1.0f;
+        droplet_rot_speed[i] = (random_float() + 0.5f) * ((i & 1) ? -3.0f : 3.0f);
+        droplet_fall_speed[i] = random_float() + 0.2f;
+    }
 
 }
 
@@ -342,22 +238,26 @@ void GraphicsEngine::InitTextures(void)
 	TextureManager texMan;
 
 	//GEImage testImage = LoadBitmap("../../OpenGLSuperBible/textures/test2.bmp");
-	GEImage testImage = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP );
+	GEImage testImage1 = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP );
+	GEImage testImage2 = texMan.LoadTexture( "test2r.bmp", GE_TEXTYPE_BMP );
 	//GEImage testImage = LoadBitmap("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\test2.bmp");
 	//GEImage testImage = LoadTarga("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\testAlphaTest.tga");
 
 	//	get data to pass to glTex.  TODO: see if way to pass data directly to OpenGL without this intermediate step.
-	float* data = (float*)malloc(testImage.getWidth() * testImage.getHeight() * testImage.getNumChannels() * sizeof(float));
+	float* data[2];
+	data[0] = (float*)malloc(testImage1.getWidth() * testImage1.getHeight() * testImage1.getNumChannels() * sizeof(float));
+	data[1] = (float*)malloc(testImage2.getWidth() * testImage2.getHeight() * testImage2.getNumChannels() * sizeof(float));
 
 	
-	testImage.getData(data);
+	testImage1.getData(data[0]);
+	testImage1.getData(data[1]);
 
 	GLuint texture;
 
 	GLenum internalFormat;
 	GLenum imageFormat;
 
-	if (testImage.getNumChannels() == 3)
+	if (testImage1.getNumChannels() == 3)
 	{
 		internalFormat = GL_RGB32F;
 		imageFormat = GL_RGB;
@@ -369,12 +269,16 @@ void GraphicsEngine::InitTextures(void)
 	}
 
 	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D ,texture);
-	glTexStorage2D(GL_TEXTURE_2D, 5, internalFormat, testImage.getWidth(), testImage.getHeight());
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, testImage.getWidth(), testImage.getHeight(), imageFormat, GL_FLOAT,data);
+	glBindTexture(GL_TEXTURE_2D_ARRAY ,texture);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 5, GL_RGB32F, 256, 256, 2);
+
+	for (int i = 0; i < 2; i++)
+	{
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY,0,0,0,i,256,256,1, GL_RGB32F, GL_FLOAT,data[i]);
+	}
 
 	//	create the mipmaps.
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
 	GLuint sampler;
@@ -388,7 +292,8 @@ void GraphicsEngine::InitTextures(void)
 	glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
 	
 	//	clean up
-	delete [] data;
+	delete [] data[0];
+	delete [] data[1];
 
 }
 

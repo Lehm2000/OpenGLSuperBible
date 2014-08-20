@@ -87,7 +87,6 @@ GLuint ShaderManager::CreateShaderFromSource(const GLchar** source, GLenum shade
 */
 GLuint ShaderManager::CompileShaderFromSource(const char* filename, GLenum shaderType )
 {
-
 	//vars
 	GLuint shader;
 	std::string shaderSource;

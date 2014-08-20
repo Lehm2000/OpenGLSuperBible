@@ -48,7 +48,16 @@ private:
 	
 	ShaderManager shaderMan;	//for shader operations
 
+	//some temp variables for the alien rain example
+	GLuint          rain_buffer;
+
+    float           droplet_x_offset[256];
+    float           droplet_rot_speed[256];
+    float           droplet_fall_speed[256];
+
 public:
+
+	
 
 	//constructors
 	GraphicsEngine();
@@ -146,6 +155,22 @@ public:
 		
 	}
 
+	//super bible static rain example below here.
+	unsigned int seed;
+
+	float random_float()
+	{
+		float res;
+		unsigned int tmp;
+
+		seed *= 16807;
+
+		tmp = seed ^ (seed >> 4) ^ (seed << 15);
+
+		*((unsigned int *) &res) = (tmp >> 9) | 0x3F800000;
+
+		return (res - 1.0f);
+	}
 
 };
 

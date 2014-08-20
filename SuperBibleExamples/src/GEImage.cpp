@@ -114,7 +114,7 @@ unsigned int GEImage::getData(float* returnData) const
 	if (returnData != nullptr)
 		delete[] returnData;
 
-	returnData = (float*)malloc(this->dataSize);
+	returnData = (float*)malloc(this->dataSize);  //should already be allocated.
 	memcpy(returnData,this->data,this->dataSize);
 
 	return this->dataSize;
