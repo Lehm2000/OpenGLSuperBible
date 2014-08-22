@@ -25,7 +25,7 @@ GraphicsEngine::GraphicsEngine()
 
 void GraphicsEngine::Render(double currentTime)
 {
-	const GLfloat bkColor[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
 	
 	glClearBufferfv(GL_COLOR, 0, bkColor);

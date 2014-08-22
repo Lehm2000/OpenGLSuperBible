@@ -5,13 +5,11 @@
 
 #include "GraphicsEngine.h"
 
-
 int main(void)
 {
 	
 	GraphicsEngine myGraphics; //make pointer?... this will go inside the game engine eventually.
 
-	
 	while(!myGraphics.CheckWindowClose())
 	{
 
@@ -21,7 +19,6 @@ int main(void)
 
 	}
 
-	
 	exit(EXIT_SUCCESS);
 
 }
