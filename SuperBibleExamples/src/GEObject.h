@@ -16,31 +16,60 @@ class GEObject
 {
 private:
 	// Members
-	std::string id;		//unique id for this object.
-	std::string name;	//non-unique name;
+	std::string id;		// unique id for this object.
+	std::string name;	// non-unique name;
 
-	// TODO replace vmath library
+	// spacial - stuff TODO replace vmath library
 	vmath::vec3 position;
-	vmath::vec3 orientation;
+	vmath::vec3 rotation;
 	vmath::vec3 scale;
+
+	// Spacial Velocities.
+	vmath::vec3 positionVel;
+	vmath::vec3 rotationVel;
+	vmath::vec3 scaleVel;
+
+	// Display
+	bool visible;				// draw it?
+	std::string mesh;			// path to the mesh.
+	std::string material;		// path to the material
 	
 public:
 	// Structors
 	GEObject();
-	GEObject( vmath::vec3 position, vmath::vec3 orientation, vmath::vec3 scale, std::string name = std::string( "" ) );
+	GEObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, std::string name = std::string( "" ) );
 
 	// Setters
 	void setName( const std::string name );
+	
 	void setPosition(const vmath::vec3 position);
-	void setOrientation(const vmath::vec3 orientation);
+	void setRotation(const vmath::vec3 rotation);
 	void setScale(const vmath::vec3 scale);
+	
+	void setPositionVel(const vmath::vec3 positionVel);
+	void setRotationVel(const vmath::vec3 rotationVel);
+	void setScaleVel(const vmath::vec3 scaleVel);
+
+	void setVisible( const bool visible );
+	void setMesh( const std::string mesh );
+	void setMaterial( const std::string material );
+
 
 	// Getters
 	std::string getID() const;
 	std::string getName() const;
+	
 	vmath::vec3 getPosition() const;
-	vmath::vec3 getOrientation() const;
+	vmath::vec3 getRotation() const;
 	vmath::vec3 getScale() const;
+	
+	vmath::vec3 getPositionVel() const;
+	vmath::vec3 getRotationVel() const;
+	vmath::vec3 getScaleVel() const;
+
+	bool isVisible() const;
+	std::string getMesh() const;
+	std::string getMaterial() const;
 
 	// Comparison
 	bool operator==( const GEObject& other ) const;

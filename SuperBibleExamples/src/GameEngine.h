@@ -21,10 +21,10 @@ private:
 	unsigned short viewHeight;
 
 	// Game Objects
-	std::set< GEObject > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.  TODO investigate if map is proper way to hold these... maybe use unordered map instead for speed?
+	std::set< GEObject > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
 
 	// System Objects
-	GraphicsEngine graphics;	// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.
+	GraphicsEngine* graphics;	// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.
 
 public:
 
@@ -36,14 +36,19 @@ public:
 	// Setters
 	void setViewWidth( const unsigned short viewWidth );
 	void setViewHeight( const unsigned short viewHeight );
+	void setViewPort( const unsigned short viewWidth, const unsigned short viewHeight );
 
 	// Getters
 	unsigned short getViewWidth() const;
 	unsigned short getViewHeight() const;
+	double getGameTime() const;
 
 	//Functions
 	bool Initialize();
-	void setViewPort( const unsigned short viewWidth, const unsigned short viewHeight );
+	void Update();
+	void Render();
+	bool isRunning() const;
+	
 };
 
 

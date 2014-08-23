@@ -3,19 +3,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "GraphicsEngine.h"
+#include "GameEngine.h"
 
 int main(void)
 {
+	bool gameRunning = true;
 	
-	GraphicsEngine myGraphics; //make pointer?... this will go inside the game engine eventually.
+	GameEngine gameEngine; //make pointer?... this will go inside the game class eventually
 
-	while(!myGraphics.CheckWindowClose())
+	gameEngine.Initialize();
+
+	//while(!myGraphics.CheckWindowClose())
+	while (gameRunning)
 	{
 
-		//Eventually this will call the game engine which will then call render
+		//Eventually this loop will be in the game class.
 
-		myGraphics.Render( myGraphics.getCurrentTime() );
+		//myGraphics.Render( myGraphics.getCurrentTime() );
+		gameEngine.Update();
+		gameEngine.Render();
+
+		gameRunning = gameEngine.isRunning();
 
 	}
 
