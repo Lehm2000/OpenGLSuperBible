@@ -17,6 +17,12 @@
 #include "GEObject.h"
 #include "vmath.h"
 
+#define CAMTYPE_PERSPECTIVE				1
+#define CAMTYPE_PERSPECTIVE_TARGETED	2
+#define CAMTYPE_ORTHO					3
+#define CAMTYPE_ORTHO_TARGETED			4
+#define CAMTYPE_2D						5
+
 class CameraObject: public GEObject
 {
 private:

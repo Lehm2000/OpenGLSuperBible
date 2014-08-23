@@ -43,6 +43,10 @@ GEObject::GEObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scal
 	this->setMaterial( "" );		// Have a default material?
 }
 
+GEObject::~GEObject()
+{
+}
+
 //setters
 void GEObject::setName( const std::string name )
 {
@@ -192,4 +196,11 @@ void GEObject::GenerateID()
 	_itoa( randNum, tString, 10 );
 	
 	id = std::string( tString );
+}
+
+vmath::mat4 GEObject::GetTransformMatrix()
+{
+	vmath::mat4 transformMatrix;
+
+	return transformMatrix;
 }

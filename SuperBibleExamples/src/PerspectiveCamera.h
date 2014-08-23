@@ -28,7 +28,7 @@ public:
 	// Setters
 	void setFov( const float fov );
 
-	//Getters
+	// Getters
 	float getFov() const;
 };
 

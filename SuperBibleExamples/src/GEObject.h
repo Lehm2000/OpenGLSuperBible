@@ -4,6 +4,7 @@
 /**
 	GEObject (Graphics Engine Object)
 	Purpose:  Base entity class.  Every object in the game should have this class as its root.
+	Author: Jeff Adams
 
 */
 
@@ -38,6 +39,7 @@ public:
 	// Structors
 	GEObject();
 	GEObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, std::string name = std::string( "" ) );
+	virtual ~GEObject();
 
 	// Setters
 	void setName( const std::string name );
@@ -81,6 +83,7 @@ public:
 
 	// Functions
 	void GenerateID();
+	vmath::mat4 GetTransformMatrix();
 
 };
 

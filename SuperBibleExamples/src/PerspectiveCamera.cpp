@@ -24,7 +24,7 @@ void PerspectiveCamera::setFov( const float fov )
 	this->fov = fov;
 }
 
-//Getters
+// Getters
 float PerspectiveCamera::getFov() const
 {
 	return fov;

@@ -48,7 +48,7 @@ struct BITMAPINFOHEADER //Bitmap info for Windows NT & 3.1x or later
 #define TGA_RLE_PALETTE				9
 #define TGA_RLE_RGB					10
 #define TGA_COMPRESSED_BW			11
-#define TGA_COMPRESSED_PALETTE	32
+#define TGA_COMPRESSED_PALETTE		32
 #define TGA_COMPRESSED_PALETTE_QT	33
 
 

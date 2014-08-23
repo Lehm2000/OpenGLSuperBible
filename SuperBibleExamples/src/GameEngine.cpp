@@ -2,25 +2,30 @@
 
 
 #include "GameEngine.h"
+#include "CameraObject.h"
+#include "PerspectiveCamera.h"
 
 // Structors
 GameEngine::GameEngine()
 {
+	gameCam = nullptr;
 	graphics = nullptr;
 }
 
 GameEngine::GameEngine(const GameEngine& source)
 {
+
 }
 
 GameEngine::~GameEngine()
 {
 	// Any shutdown stuff goes here
+	DestroyGameCam();
+
 	if (graphics != nullptr)
 	{
 		delete graphics;
 		graphics = nullptr;
-		
 	}
 }
 
@@ -74,6 +79,38 @@ double GameEngine::getGameTime() const
 
 
 //Functions
+void GameEngine::CreateGameCam( const char camType, vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, float fov, vmath::vec3 targetPosition = vmath::vec3( 0.0f, 0.0f, 0.0f ) )
+{
+	DestroyGameCam();  // Destroy an existing cam.
+
+	switch (camType)
+	{
+	case CAMTYPE_PERSPECTIVE:
+		gameCam = new PerspectiveCamera( position, rotation, scale, fov, false, targetPosition );
+		break;
+	case CAMTYPE_PERSPECTIVE_TARGETED:
+		gameCam = new PerspectiveCamera( position, rotation, scale, fov, true, targetPosition );
+		break;
+	case CAMTYPE_ORTHO:
+		break;
+	case CAMTYPE_ORTHO_TARGETED:
+		break;
+	case CAMTYPE_2D:
+		break;
+	default:
+		break;
+	}
+}
+
+void GameEngine::DestroyGameCam()
+{
+	if (gameCam != nullptr)
+	{
+		delete gameCam;
+		gameCam = nullptr;
+	}
+}
+
 bool GameEngine::Initialize()
 {
 	// Engine Setup Here.

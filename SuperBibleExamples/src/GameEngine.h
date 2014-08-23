@@ -10,6 +10,7 @@
 
 #include "GraphicsEngine.h"
 #include "GEObject.h"
+#include "CameraObject.h"
 
 class GameEngine
 {
@@ -21,6 +22,7 @@ private:
 	unsigned short viewHeight;
 
 	// Game Objects
+	CameraObject* gameCam;					// The game camera.  TODO: Should this be in gameEntities?
 	std::set< GEObject > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
 
 	// System Objects
@@ -44,6 +46,8 @@ public:
 	double getGameTime() const;
 
 	//Functions
+	void CreateGameCam( const char camType, vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, float fov, vmath::vec3 targetPosition = vmath::vec3( 0.0f, 0.0f, 0.0f ) );
+	void DestroyGameCam();
 	bool Initialize();
 	void Update();
 	void Render();
