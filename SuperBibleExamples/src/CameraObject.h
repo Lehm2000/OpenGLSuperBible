@@ -46,6 +46,10 @@ public:
 	// Getters
 	bool isTargeted() const;
 	vmath::vec3 getTargetPosition() const;
+
+	// Functions
+	vmath::mat4 GetViewMatrix();
+	void CalcTargetRotation();
 };
 
 

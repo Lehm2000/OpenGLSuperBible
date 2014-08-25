@@ -79,7 +79,7 @@ double GameEngine::getGameTime() const
 
 
 //Functions
-void GameEngine::CreateGameCam( const char camType, vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, float fov, vmath::vec3 targetPosition = vmath::vec3( 0.0f, 0.0f, 0.0f ) )
+void GameEngine::CreateGameCam( const char camType, vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, float fov, vmath::vec3 targetPosition )
 {
 	DestroyGameCam();  // Destroy an existing cam.
 
