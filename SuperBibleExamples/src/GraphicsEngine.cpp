@@ -1,4 +1,5 @@
 
+
 #include <cstdio>
 
 #include "GraphicsEngine.h"
@@ -21,6 +22,15 @@ GraphicsEngine::GraphicsEngine()
 	}
 
 	
+}
+
+GraphicsEngine::~GraphicsEngine()
+{
+	// clean up all pointers here
+
+	//voa
+
+	//vb
 }
 
 void GraphicsEngine::Render(double currentTime)
@@ -327,5 +337,43 @@ void GraphicsEngine::UpdateWindowSize(int x, int y, int width, int height)
 	float aspect = (float)width/(float)height;
 	proj_matrix = vmath::perspective(50.0f, aspect, 0.1f, 1000.0f);
 	glViewport(x,y,width,height);
+}
+
+bool GraphicsEngine::isMeshBuffered( std::string meshPath)
+{
+	// check if mesh already loaded
+	bool loaded = false;
+
+	if (vaoMap.find( meshPath ) == vaoMap.end() && vbMap.find( meshPath ) == vbMap.end() )
+	{
+		// TODO: what happens if only one is true.
+		loaded = true;
+	}
+}
+
+bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts )
+{
+	// Create GLuint to hold new voa.  Each Mesh gets its own voa.
+	GLuint* newVoa = new GLuint;
+	
+	// Create a new buffer
+	GLuint* newBuffer = new GLuint;
+	
+	glGenVertexArrays( 1, newVoa );
+	glBindVertexArray( *newVoa );
+
+	glGenBuffers( 1, newBuffer );
+	glBindBuffer( GL_ARRAY_BUFFER, *newBuffer );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( GEVertex ) * numVerts, mesh, GL_STATIC_DRAW );
+
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, x ));
+	glEnableVertexAttribArray(0);
+	
+	glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, r ));
+	glEnableVertexAttribArray(1);
+
+	// Next put into the maps.
+
+	// NOTE: DO NOT delete[] newVoa and newBuffer, that cleanup will happen when they are removed from the buffer maps.
 }
 

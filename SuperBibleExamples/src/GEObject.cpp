@@ -2,9 +2,11 @@
 
 #include <random>
 #include <stdlib.h>
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
 #include "GEObject.h"
-#include "vmath.h"
+//#include "vmath.h"
 
 // structors
 GEObject::GEObject()
@@ -12,20 +14,20 @@ GEObject::GEObject()
 	this->GenerateID();
 	this->setName( "" );
 	
-	this->setPosition( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setRotation( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setScale( vmath::vec3( 1.0f, 1.0f, 1.0f ) );
+	this->setPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setScale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
 
-	this->setPositionVel( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setRotationVel( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setScaleVel( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setPositionVel( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setRotationVel( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setScaleVel( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
 	this->setMaterial( "" );		// Have a default material?
 }
 
-GEObject::GEObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, std::string name )
+GEObject::GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std::string name )
 {
 	this->GenerateID();
 	this->setName( name );
@@ -34,9 +36,9 @@ GEObject::GEObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scal
 	this->setRotation( rotation );
 	this->setScale( scale );
 
-	this->setPositionVel( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setRotationVel( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setScaleVel( vmath::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setPositionVel( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setRotationVel( glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	this->setScaleVel( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
@@ -53,32 +55,32 @@ void GEObject::setName( const std::string name )
 	this->name = name;
 }
 
-void GEObject::setPosition( const vmath::vec3 position )
+void GEObject::setPosition( const glm::vec3 position )
 {
 	this->position = position;
 }
 
-void GEObject::setRotation( const vmath::vec3 rotation )
+void GEObject::setRotation( const glm::vec3 rotation )
 {
 	this->rotation = rotation;
 }
 
-void GEObject::setScale(const vmath::vec3 scale)
+void GEObject::setScale(const glm::vec3 scale)
 {
 	this->scale = scale;
 }
 
-void GEObject::setPositionVel(const vmath::vec3 positionVel)
+void GEObject::setPositionVel(const glm::vec3 positionVel)
 {
 	this->positionVel = positionVel;
 }
 
-void GEObject::setRotationVel(const vmath::vec3 rotationVel)
+void GEObject::setRotationVel(const glm::vec3 rotationVel)
 {
 	this->rotationVel = rotationVel;
 }
 
-void GEObject::setScaleVel(const vmath::vec3 scaleVel)
+void GEObject::setScaleVel(const glm::vec3 scaleVel)
 {
 	this->scaleVel = scaleVel;
 }
@@ -109,32 +111,32 @@ std::string GEObject::getName() const
 	return this->name;
 }
 
-vmath::vec3 GEObject::getPosition() const
+glm::vec3 GEObject::getPosition() const
 {
 	return this->position;
 }
 
-vmath::vec3 GEObject::getRotation() const
+glm::vec3 GEObject::getRotation() const
 {
 	return this->rotation;
 }
 
-vmath::vec3 GEObject::getScale() const
+glm::vec3 GEObject::getScale() const
 {
 	return this->scale;
 }
 
-vmath::vec3 GEObject::getPositionVel() const
+glm::vec3 GEObject::getPositionVel() const
 {
 	return this->positionVel;
 }
 
-vmath::vec3 GEObject::getRotationVel() const
+glm::vec3 GEObject::getRotationVel() const
 {
 	return this->rotationVel;
 }
 
-vmath::vec3 GEObject::getScaleVel() const
+glm::vec3 GEObject::getScaleVel() const
 {
 	return this->scaleVel;
 }
@@ -198,9 +200,16 @@ void GEObject::GenerateID()
 	id = std::string( tString );
 }
 
-vmath::mat4 GEObject::GetTransformMatrix()
+std::string GEObject::getClassName()
 {
-	vmath::mat4 transformMatrix;
+	return "GEObject";
+}
+
+glm::mat4 GEObject::GetTransformMatrix()
+{
+	glm::mat4 transformMatrix;
+
+	transformMatrix = glm::translate( glm::mat4(), getPosition() ) * glm::rotate( glm::mat4(), getRotation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) ) * glm::rotate( glm::mat4(), getRotation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
 
 	return transformMatrix;
 }

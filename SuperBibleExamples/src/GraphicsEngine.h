@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string>
+#include <map>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -22,7 +23,7 @@
 
 #include "ShaderManager.h"
 
-//temporary place to define vertex struct
+//temporary place to define vertex structs
 struct vertex
 {
 	// Position
@@ -39,12 +40,39 @@ struct vertex
 
 };
 
+struct GEVertex
+{
+	// Position
+	float x;
+	float y;
+	float z;
+	//float w; // needed?
+
+	// Color
+	float r;
+	float g;
+	float b;
+	float a;
+
+	// Normal
+	float nx;
+	float ny;
+	float nz;
+
+	// Texture  // how do we do more than one texture channel.
+	float u;
+	float v;
+};
+
 class GraphicsEngine
 {
 private:
 	GLFWwindow* window;
 	GLuint rendering_program;
 	GLuint vertex_array_object;
+	
+	std::map< std::string, GLuint* > vaoMap;	// each mesh type will have its own vertex array object, the key will be the mesh class. 
+	std::map< std::string, GLuint* > vbMap;		// one vb for each vao... for now unless it becomes unwieldly
 	
 	ShaderManager shaderMan;	//for shader operations
 
@@ -61,6 +89,7 @@ public:
 
 	//constructors
 	GraphicsEngine();
+	~GraphicsEngine();
 
 	static vmath::mat4 proj_matrix;	//for the global projection matrix
 
@@ -129,6 +158,9 @@ public:
 		@return time in seconds since the program started.
 	*/
 	double getCurrentTime() const;
+
+	bool isMeshBuffered( std::string meshPath);
+	bool BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts );
 	
 	
 	

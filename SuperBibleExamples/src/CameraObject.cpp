@@ -1,5 +1,6 @@
 
-
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
 #include "CameraObject.h"
 
@@ -7,10 +8,10 @@
 CameraObject::CameraObject()
 {
 	this->targeted = false;
-	this->targetPosition = vmath::vec3( 0.0f, 0.0f, 0.0f );
+	this->targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
 }
 
-CameraObject::CameraObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, bool targeted, vmath::vec3 targetPosition )
+CameraObject::CameraObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, bool targeted, glm::vec3 targetPosition )
 	:GEObject( position, rotation, scale )
 {
 	this->setTargeted( targeted );
@@ -31,7 +32,7 @@ void CameraObject::setTargeted( const bool targeted )
 		CalcTargetRotation();
 }
 
-void CameraObject::setTargetPosition( const vmath::vec3 targetPosition )
+void CameraObject::setTargetPosition( const glm::vec3 targetPosition )
 {
 	this->targetPosition = targetPosition;
 
@@ -46,15 +47,30 @@ bool CameraObject::isTargeted() const
 	return targeted;
 }
 
-vmath::vec3 CameraObject::getTargetPosition() const
+glm::vec3 CameraObject::getTargetPosition() const
 {
 	return targetPosition;
 }
 
 // Functions
-vmath::mat4 CameraObject::GetViewMatrix()
+std::string CameraObject::getClassName()
 {
-	vmath::mat4 viewMatrix;
+	return "CameraObject";
+}
+
+glm::mat4 CameraObject::GetViewMatrix()
+{
+	glm::mat4 viewMatrix;
+
+	if (targeted)
+	{
+		viewMatrix = glm::lookAt( getPosition(), getTargetPosition(), glm::vec3( 0.0f, 1.0f, 0.0f ) );  //Currently does not support camera tilt... TODO need to figure up vector.
+	}
+	else
+	{
+		// First guess at this matrix... probably could be more efficient.
+		viewMatrix = glm::inverse( glm::translate( glm::mat4(), getPosition() ) * glm::rotate(glm::mat4(), getRotation()[1], glm::vec3(0,1,0) ) * glm::rotate(glm::mat4(), getRotation()[0], glm::vec3(1,0,0) ) );
+	}
 	
 	return viewMatrix;
 }
@@ -66,10 +82,12 @@ void CameraObject::CalcTargetRotation()
 		// We need to calculate the x and y rotations.  The z rotation is left alone to allow tilt/roll.
 
 		// Grab the existing rotation
-		vmath::vec3 newRot = getRotation();
+		glm::vec3 newRot = getRotation();
 		
 		// Get the delta of the camera and target positions
-		vmath::vec3 deltaVec = getTargetPosition() - getPosition();
+		glm::vec3 deltaVec = getTargetPosition() - getPosition();
+
+		//newRot = glm::atan2(deltaVec);
 		
 		// first x (pitch) rotation
 		if ( deltaVec[1] == 0 && deltaVec[2] == 0 )  // If points are the same.

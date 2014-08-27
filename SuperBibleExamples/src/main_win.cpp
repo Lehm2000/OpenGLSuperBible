@@ -12,15 +12,16 @@ int main(void)
 {
 	bool gameRunning = true;
 
-	CameraObject testCam(vmath::vec3(0.0f,0.0f,0.0f),vmath::vec3(0.0f,0.0f,0.0f),vmath::vec3(1.0f,1.0f,1.0f),true,vmath::vec3(1.0f,1.0f,1.0f));
+	CameraObject testCam(glm::vec3(0.0f,0.0f,0.0f),glm::vec3(0.0f,0.0f,0.0f),glm::vec3(1.0f,1.0f,1.0f),true,glm::vec3(1.0f,1.0f,1.0f));
 
-	vmath::vec3 testRot = testCam.getRotation();
+	glm::vec3 testRot = testCam.getRotation();
 
 	printf("%f %f\n",testRot[0], testRot[1]);
 	
 	GameEngine gameEngine; //make pointer?... this will go inside the game class eventually
 
 	gameEngine.Initialize();
+	gameEngine.CreateGameCam(CAMTYPE_PERSPECTIVE,glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), 45.0f );
 
 	//while(!myGraphics.CheckWindowClose())
 	while (gameRunning)

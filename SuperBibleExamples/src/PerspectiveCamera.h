@@ -11,6 +11,8 @@
 	Initial Version
 */
 
+#include <glm\glm.hpp>
+
 #include "CameraObject.h"
 
 class PerspectiveCamera: public CameraObject
@@ -22,7 +24,7 @@ public:
 
 	// Structors
 	PerspectiveCamera();
-	PerspectiveCamera( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, float fov, bool targeted, vmath::vec3 targetPosition = vmath::vec3( 0.0f, 0.0f, 0.0f ) );
+	PerspectiveCamera( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, float fov, bool targeted, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
 	~PerspectiveCamera();
 
 	// Setters
@@ -30,6 +32,9 @@ public:
 
 	// Getters
 	float getFov() const;
+
+	// Functions
+	virtual std::string getClassName();
 };
 
 #endif /* PERSPECTIVECAMERA_H */

@@ -9,26 +9,28 @@
 */
 
 #include <string>
+#include <glm\glm.hpp>
 
-#include "vmath.h"
+//#include "vmath.h"
+
 
 
 class GEObject
 {
 private:
 	// Members
-	std::string id;		// unique id for this object.
+	std::string id;		// unique id for this object.  Is this necessary?
 	std::string name;	// non-unique name;
 
-	// spacial - stuff TODO replace vmath library
-	vmath::vec3 position;
-	vmath::vec3 rotation;
-	vmath::vec3 scale;
+	// spacial
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
 
 	// Spacial Velocities.
-	vmath::vec3 positionVel;
-	vmath::vec3 rotationVel;
-	vmath::vec3 scaleVel;
+	glm::vec3 positionVel;
+	glm::vec3 rotationVel;
+	glm::vec3 scaleVel;
 
 	// Display
 	bool visible;				// draw it?
@@ -38,19 +40,19 @@ private:
 public:
 	// Structors
 	GEObject();
-	GEObject( vmath::vec3 position, vmath::vec3 rotation, vmath::vec3 scale, std::string name = std::string( "" ) );
+	GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std::string name = std::string( "" ) );
 	virtual ~GEObject();
 
 	// Setters
 	void setName( const std::string name );
 	
-	void setPosition(const vmath::vec3 position);
-	void setRotation(const vmath::vec3 rotation);
-	void setScale(const vmath::vec3 scale);
+	void setPosition(const glm::vec3 position);
+	void setRotation(const glm::vec3 rotation);
+	void setScale(const glm::vec3 scale);
 	
-	void setPositionVel(const vmath::vec3 positionVel);
-	void setRotationVel(const vmath::vec3 rotationVel);
-	void setScaleVel(const vmath::vec3 scaleVel);
+	void setPositionVel(const glm::vec3 positionVel);
+	void setRotationVel(const glm::vec3 rotationVel);
+	void setScaleVel(const glm::vec3 scaleVel);
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );
@@ -61,13 +63,13 @@ public:
 	std::string getID() const;
 	std::string getName() const;
 	
-	vmath::vec3 getPosition() const;
-	vmath::vec3 getRotation() const;
-	vmath::vec3 getScale() const;
+	glm::vec3 getPosition() const;
+	glm::vec3 getRotation() const;
+	glm::vec3 getScale() const;
 	
-	vmath::vec3 getPositionVel() const;
-	vmath::vec3 getRotationVel() const;
-	vmath::vec3 getScaleVel() const;
+	glm::vec3 getPositionVel() const;
+	glm::vec3 getRotationVel() const;
+	glm::vec3 getScaleVel() const;
 
 	bool isVisible() const;
 	std::string getMesh() const;
@@ -83,7 +85,9 @@ public:
 
 	// Functions
 	void GenerateID();
-	vmath::mat4 GetTransformMatrix();
+	virtual std::string getClassName();
+
+	glm::mat4 GetTransformMatrix();
 
 };
 
