@@ -73,6 +73,7 @@ private:
 	
 	std::map< std::string, GLuint* > vaoMap;	// each mesh type will have its own vertex array object, the key will be the mesh class. 
 	std::map< std::string, GLuint* > vbMap;		// one vb for each vao... for now unless it becomes unwieldly
+	std::map< std::string, GLuint* > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
 	
 	ShaderManager shaderMan;	//for shader operations
 
@@ -119,9 +120,9 @@ public:
 	/**
 		Initialize the Shaders.  Currently only initializes one and returns program.  
 
-		@return the compiled shader program
+		@return success
 	*/
-	GLuint InitShaders(void);
+	bool InitShaders(void);
 
 	/**
 		Initialize the geometry buffers  
@@ -134,11 +135,19 @@ public:
 	void InitTextures(void);
 
 	/**
-		Renders the scene. 
+		Renders the scene.  This version is for tutorial code.
 
 		@param currentTime - the time since the program started.
 	*/
-	void Render(double currentTime);
+	void Render(const double currentTime);
+
+	/**
+		Renders the scene. 
+
+		@param currentTime - the time since the program started.
+		@param GameInfo - pointer to the GameEngine which has all the stuff that needs to be rendered.
+	*/
+	void Render(const double currentTime, const GameEngine* GameInfo);
 
 	/**
 		Updates the window size.  

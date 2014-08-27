@@ -47,11 +47,11 @@ public:
 	void setName( const std::string name );
 	
 	void setPosition(const glm::vec3 position);
-	void setRotation(const glm::vec3 rotation);
+	void setRotation(const glm::vec3 rotation);  // in Radians!
 	void setScale(const glm::vec3 scale);
 	
 	void setPositionVel(const glm::vec3 positionVel);
-	void setRotationVel(const glm::vec3 rotationVel);
+	void setRotationVel(const glm::vec3 rotationVel);	// in Radians!
 	void setScaleVel(const glm::vec3 scaleVel);
 
 	void setVisible( const bool visible );

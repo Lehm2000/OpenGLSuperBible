@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "GraphicsEngine.h"
+#include "GameEngine.h"
 #include "GEImage.h"
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
@@ -33,8 +34,10 @@ GraphicsEngine::~GraphicsEngine()
 	//vb
 }
 
-void GraphicsEngine::Render(double currentTime)
+// this version of render is for tutorial code.
+void GraphicsEngine::Render(const double currentTime)
 {
+
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
 	
@@ -69,6 +72,23 @@ void GraphicsEngine::Render(double currentTime)
 
 	GLint mv_location = glGetUniformLocation(rendering_program, "mv_matrix");
 	GLint proj_location = glGetUniformLocation(rendering_program, "proj_matrix");
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+
+// this version of render is for the actual game engine.
+void GraphicsEngine::Render( const double currentTime, const GameEngine* GameInfo )
+{
+	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	const GLfloat one = 1.0f;
+	
+	glClearBufferfv(GL_COLOR, 0, bkColor);
+	glClearBufferfv(GL_DEPTH,0, &one);
+
+	for (unsigned int i = 0; GameInfo-> ???; i++ )
+	{
+	}
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -135,7 +155,7 @@ bool GraphicsEngine::Init()
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	
 	//not sure this is the best place for these, but will work for now
-	rendering_program = InitShaders();
+	InitShaders();
 	InitBuffers();
 	InitTextures();
 	
@@ -171,8 +191,10 @@ double GraphicsEngine::getCurrentTime() const
 	return glfwGetTime();
 }
 
-GLuint GraphicsEngine::InitShaders(void)
+bool GraphicsEngine::InitShaders(void)
 {
+	// Temp tutorial code.
+
 	GLuint vertex_shader;
 	GLuint fragment_shader;
 	GLuint tess_control_shader;
@@ -212,7 +234,47 @@ GLuint GraphicsEngine::InitShaders(void)
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 
-	return program;
+	rendering_program = program;
+
+	//Init the default shaders.
+	GLenum err;
+	GLuint* newProgram = new GLuint;
+	
+	//Create vertex shader
+	vertex_shader = shaderMan.CompileShaderFromSource("default.vert.glsl", GL_VERTEX_SHADER );
+	//Create fragment shader
+	fragment_shader = shaderMan.CompileShaderFromSource("default.frag.glsl", GL_FRAGMENT_SHADER );
+	*newProgram = glCreateProgram();
+
+	glAttachShader(*newProgram, vertex_shader);
+	err = glGetError();
+	if (err != GL_NO_ERROR )
+	{
+		printf("Attach Error: %d", err); 
+	}
+
+	glAttachShader(*newProgram, fragment_shader);
+	err = glGetError();
+	if (err != GL_NO_ERROR )
+	{
+		printf("Attach Error: %d", err); 
+	}
+
+	glLinkProgram(*newProgram);
+	err = glGetError();
+	if (err != GL_NO_ERROR )
+	{
+		printf("Link Error: %d", err); 
+	}
+
+	// Add it to the shader map
+	shaderMap.insert( std::pair< std::string, GLuint* >( "default", newProgram ) );
+
+	// Delete the shaders as the program has them now
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
+
+	return true;
 }
 /**
 	Place to experiment with Buffers
@@ -349,6 +411,8 @@ bool GraphicsEngine::isMeshBuffered( std::string meshPath)
 		// TODO: what happens if only one is true.
 		loaded = true;
 	}
+
+	return loaded;
 }
 
 bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts )
@@ -366,14 +430,25 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVe
 	glBindBuffer( GL_ARRAY_BUFFER, *newBuffer );
 	glBufferData( GL_ARRAY_BUFFER, sizeof( GEVertex ) * numVerts, mesh, GL_STATIC_DRAW );
 
+	// Position
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, x ));
 	glEnableVertexAttribArray(0);
 	
+	// Color
 	glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, r ));
 	glEnableVertexAttribArray(1);
 
-	// Next put into the maps.
+	// Normals
+	// Texture Coords.
+
+	// Next put mesh into the maps.
+	vaoMap.insert( std::pair< std::string, GLuint* >( meshPath, newVoa ) );	// each mesh type will have its own vertex array object, the key will be the mesh class. 
+	vbMap.insert( std::pair< std::string, GLuint* >( meshPath, newBuffer ) );
+
+	// Unbind voa??  Don't for now.
 
 	// NOTE: DO NOT delete[] newVoa and newBuffer, that cleanup will happen when they are removed from the buffer maps.
+
+	return true;
 }
 

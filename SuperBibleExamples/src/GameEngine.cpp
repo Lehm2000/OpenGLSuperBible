@@ -134,7 +134,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // TODO: need to pass the world state to the rendered.
+		graphics->Render( getGameTime() );  // tutorial/test renderer
+		//graphics->Render( getGameTime(), this ); // game renderer
 	// TODO what happens when its nullprt
 }
 
@@ -159,13 +160,15 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject entity)
 		{
 			// if it is not, add it.
 
-			gameEntities.insert( std::pair< std::string,GEObject >( entityName, entity ) );
+			gameEntities.insert( std::pair< std::string, GEObject >( entityName, entity ) );
 
 			// if entity has a mesh specified load it.
 			if ( entity.getMesh().empty() )
 			{
 				LoadMesh( entity.getMesh() );
 			}
+
+			// do the same with the material.
 
 			success = true;
 		}

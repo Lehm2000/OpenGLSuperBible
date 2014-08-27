@@ -23,6 +23,13 @@ int main(void)
 	gameEngine.Initialize();
 	gameEngine.CreateGameCam(CAMTYPE_PERSPECTIVE,glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), 45.0f );
 
+	// Create a test object
+
+	GEObject testObject( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), "test_object");
+	testObject.setMesh( "default" );
+	testObject.setMaterial( "default" );
+	gameEngine.AddEntity( "testObject", testObject );
+
 	//while(!myGraphics.CheckWindowClose())
 	while (gameRunning)
 	{
@@ -32,6 +39,7 @@ int main(void)
 		//myGraphics.Render( myGraphics.getCurrentTime() );
 		gameEngine.Update();
 		gameEngine.Render();
+
 
 		gameRunning = gameEngine.isRunning();
 
