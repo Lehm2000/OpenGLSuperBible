@@ -9,8 +9,8 @@ PerspectiveCamera::PerspectiveCamera()
 	this->setFov( 45.0f );
 }
 
-PerspectiveCamera::PerspectiveCamera( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, float fov, bool targeted, glm::vec3 targetPosition )
-	:CameraObject( position, rotation, scale, targeted, targetPosition)
+PerspectiveCamera::PerspectiveCamera( glm::vec3 position, glm::vec3 rotation, float fov, bool targeted, glm::vec3 targetPosition )
+	:CameraObject( position, rotation, targeted, targetPosition)
 {
 	this->setFov( fov );
 }

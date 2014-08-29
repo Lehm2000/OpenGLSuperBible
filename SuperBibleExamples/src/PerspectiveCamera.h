@@ -24,7 +24,7 @@ public:
 
 	// Structors
 	PerspectiveCamera();
-	PerspectiveCamera( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, float fov, bool targeted, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	PerspectiveCamera( glm::vec3 position, glm::vec3 rotation, float fov, bool targeted, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
 	~PerspectiveCamera();
 
 	// Setters

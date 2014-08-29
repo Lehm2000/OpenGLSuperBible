@@ -1,19 +1,24 @@
 
 
 #include <cstdio>
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
 #include "GraphicsEngine.h"
 #include "GameEngine.h"
 #include "GEImage.h"
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
+#include "PerspectiveCamera.h"
+#include "ViewportInfo.h"
+
 
 //Link static variables
 vmath::mat4 GraphicsEngine::proj_matrix;
 
 GraphicsEngine::GraphicsEngine()
 {
-	 seed = 0x13371337;  //here just for the alien rain example
+	seed = 0x13371337;  //here just for the alien rain example
 
 	//Initialize Graphics upon instantiation.  TODO Might want to make the program make an explicit call.  For now this works
 	if(!Init())
@@ -23,6 +28,20 @@ GraphicsEngine::GraphicsEngine()
 	}
 
 	
+}
+
+GraphicsEngine::GraphicsEngine( const std::map< std::string, GEObject* >* gameEntities )
+{
+	seed = 0x13371337;  //here just for the alien rain example
+
+	this->gameEntities = gameEntities;
+
+	//Initialize Graphics upon instantiation.  TODO Might want to make the program make an explicit call.  For now this works
+	if(!Init())
+	{
+		printf("Error Initializing Graphics");
+		exit(EXIT_FAILURE);
+	}
 }
 
 GraphicsEngine::~GraphicsEngine()
@@ -78,16 +97,47 @@ void GraphicsEngine::Render(const double currentTime)
 }
 
 // this version of render is for the actual game engine.
-void GraphicsEngine::Render( const double currentTime, const GameEngine* GameInfo )
+void GraphicsEngine::Render(const double currentTime, const std::map< std::string, GEObject* >* gameEntities_notused)
 {
+	// get the viewport info out of the game entities
+	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
+	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
+
+	// calculate the view matrix... which is constant for all objects... only need to calc once.
+	std::map< std::string, GEObject* >::const_iterator camIt = (*gameEntities).find("gameCam");
+	CameraObject* gameCam = (CameraObject*)camIt->second;
+	glm::mat4 viewMatrix = glm::perspective( 45.0f, (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
 	
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
-	for (unsigned int i = 0; GameInfo-> ???; i++ )
+	// get view matrix
+
+	// Iterate throught game entities here.
+	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->begin(); it != gameEntities->end(); it++ )
 	{
+		if ( it->second->isVisible() )
+		{
+			glUseProgram( shaderMap["default"] );
+			//glBindVertexArray( vaoMap[ it->second->getMesh() ] );
+			
+			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
+
+			glBindVertexArray( renderMesh.getVOA() );
+
+			GLint worldMatrixLocation = glGetUniformLocation( shaderMap["default"], "world_matrix" );
+			GLint viewMatrixLocation = glGetUniformLocation( shaderMap["default"], "view_matrix" );
+
+			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
+
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+			glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+            
+			glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
+		}
 	}
 
 	glfwSwapBuffers(window);
@@ -103,11 +153,12 @@ bool GraphicsEngine::Init()
 		//return false;
 		exit(EXIT_FAILURE);
 
-
+	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
+	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
 
 	//vars for window dimensions... temporary
-	int winWidth = 640;
-	int winHeight = 480;
+	//int winWidth = 640;
+	//int winHeight = 480;
 
 	//	Added so that OSX would use OpenGL 3.2 instead of the default 2.1
 	/**
@@ -117,8 +168,11 @@ bool GraphicsEngine::Init()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	*/
 
+	// set window hints
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
 	// create the window
-	window = glfwCreateWindow(winWidth, winHeight,"OpenGL Super Bible", NULL,NULL);
+	window = glfwCreateWindow( viewportInfo->getViewportWidth(), viewportInfo->getViewportHeight(), "OpenGL Super Bible", NULL,NULL);
 	if(!window)
 	{
 		glfwTerminate();
@@ -129,7 +183,7 @@ bool GraphicsEngine::Init()
 
 
 	//create initial projection matrix TODO: remove hardcoded numbers.
-	proj_matrix = vmath::perspective(50.0f, (float)winWidth/(float)winHeight, 0.1f, 1000.0f);
+	proj_matrix = vmath::perspective(50.0f, (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f);
 	
 	glfwMakeContextCurrent(window);
 
@@ -238,29 +292,29 @@ bool GraphicsEngine::InitShaders(void)
 
 	//Init the default shaders.
 	GLenum err;
-	GLuint* newProgram = new GLuint;
+	GLuint newProgram;
 	
 	//Create vertex shader
 	vertex_shader = shaderMan.CompileShaderFromSource("default.vert.glsl", GL_VERTEX_SHADER );
 	//Create fragment shader
 	fragment_shader = shaderMan.CompileShaderFromSource("default.frag.glsl", GL_FRAGMENT_SHADER );
-	*newProgram = glCreateProgram();
+	newProgram = glCreateProgram();
 
-	glAttachShader(*newProgram, vertex_shader);
+	glAttachShader(newProgram, vertex_shader);
 	err = glGetError();
 	if (err != GL_NO_ERROR )
 	{
 		printf("Attach Error: %d", err); 
 	}
 
-	glAttachShader(*newProgram, fragment_shader);
+	glAttachShader(newProgram, fragment_shader);
 	err = glGetError();
 	if (err != GL_NO_ERROR )
 	{
 		printf("Attach Error: %d", err); 
 	}
 
-	glLinkProgram(*newProgram);
+	glLinkProgram(newProgram);
 	err = glGetError();
 	if (err != GL_NO_ERROR )
 	{
@@ -268,7 +322,7 @@ bool GraphicsEngine::InitShaders(void)
 	}
 
 	// Add it to the shader map
-	shaderMap.insert( std::pair< std::string, GLuint* >( "default", newProgram ) );
+	shaderMap.insert( std::pair< std::string, GLuint >( "default", newProgram ) );
 
 	// Delete the shaders as the program has them now
 	glDeleteShader(vertex_shader);
@@ -404,12 +458,12 @@ void GraphicsEngine::UpdateWindowSize(int x, int y, int width, int height)
 bool GraphicsEngine::isMeshBuffered( std::string meshPath)
 {
 	// check if mesh already loaded
-	bool loaded = false;
+	bool loaded = true;
 
-	if (vaoMap.find( meshPath ) == vaoMap.end() && vbMap.find( meshPath ) == vbMap.end() )
+	if ( meshMap.find( meshPath ) == meshMap.end() )
 	{
 		// TODO: what happens if only one is true.
-		loaded = true;
+		loaded = false;
 	}
 
 	return loaded;
@@ -418,16 +472,16 @@ bool GraphicsEngine::isMeshBuffered( std::string meshPath)
 bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts )
 {
 	// Create GLuint to hold new voa.  Each Mesh gets its own voa.
-	GLuint* newVoa = new GLuint;
+	GLuint newVoa;
 	
 	// Create a new buffer
-	GLuint* newBuffer = new GLuint;
+	GLuint newBuffer;
 	
-	glGenVertexArrays( 1, newVoa );
-	glBindVertexArray( *newVoa );
+	glGenVertexArrays( 1, &newVoa );
+	glBindVertexArray( newVoa );
 
-	glGenBuffers( 1, newBuffer );
-	glBindBuffer( GL_ARRAY_BUFFER, *newBuffer );
+	glGenBuffers( 1, &newBuffer );
+	glBindBuffer( GL_ARRAY_BUFFER, newBuffer );
 	glBufferData( GL_ARRAY_BUFFER, sizeof( GEVertex ) * numVerts, mesh, GL_STATIC_DRAW );
 
 	// Position
@@ -441,9 +495,14 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVe
 	// Normals
 	// Texture Coords.
 
-	// Next put mesh into the maps.
-	vaoMap.insert( std::pair< std::string, GLuint* >( meshPath, newVoa ) );	// each mesh type will have its own vertex array object, the key will be the mesh class. 
-	vbMap.insert( std::pair< std::string, GLuint* >( meshPath, newBuffer ) );
+	// Next put mesh into the map
+
+	GEMesh newMesh( GL_TRIANGLES, numVerts, newVoa, newBuffer );  // TODO: where does GL_TRIAnGLES come from?
+	meshMap[meshPath] = newMesh;
+
+
+	// vaoMap.insert( std::pair< std::string, GLuint >( meshPath, newVoa ) );	// each mesh type will have its own vertex array object, the key will be the mesh class. 
+	// vbMap.insert( std::pair< std::string, GLuint >( meshPath, newBuffer ) );
 
 	// Unbind voa??  Don't for now.
 

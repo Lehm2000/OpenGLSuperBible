@@ -7,13 +7,15 @@
 // Structors
 CameraObject::CameraObject()
 {
-	this->targeted = false;
-	this->targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f );
+	this->setVisible( false );
+	this->setTargeted( false );
+	this->setTargetPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 }
 
-CameraObject::CameraObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, bool targeted, glm::vec3 targetPosition )
-	:GEObject( position, rotation, scale )
+CameraObject::CameraObject( glm::vec3 position, glm::vec3 rotation, bool targeted, glm::vec3 targetPosition )
+	:GEObject( position, rotation, glm::vec3( 1.0f, 1.0f, 1.0f ) )
 {
+	this->setVisible( false );
 	this->setTargeted( targeted );
 	this->setTargetPosition( targetPosition );
 }

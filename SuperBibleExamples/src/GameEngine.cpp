@@ -4,11 +4,12 @@
 #include "GameEngine.h"
 #include "CameraObject.h"
 #include "PerspectiveCamera.h"
+#include "ViewportInfo.h"
 
 // Structors
 GameEngine::GameEngine()
 {
-	gameCam = nullptr;
+	//gameCam = nullptr;
 	graphics = nullptr;
 }
 
@@ -81,15 +82,15 @@ double GameEngine::getGameTime() const
 //Functions
 void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec3 rotation, float fov, glm::vec3 targetPosition )
 {
-	DestroyGameCam();  // Destroy an existing cam.
+	CameraObject* gameCam = nullptr;
 
 	switch (camType)
 	{
 	case CAMTYPE_PERSPECTIVE:
-		gameCam = new PerspectiveCamera( position, rotation, glm::vec3(1.0f, 1.0f, 1.0f), fov, false, targetPosition );
+		gameCam = new PerspectiveCamera( position, rotation, fov, false, targetPosition );
 		break;
 	case CAMTYPE_PERSPECTIVE_TARGETED:
-		gameCam = new PerspectiveCamera( position, rotation, glm::vec3(1.0f, 1.0f, 1.0f), fov, true, targetPosition );
+		gameCam = new PerspectiveCamera( position, rotation, fov, true, targetPosition );
 		break;
 	case CAMTYPE_ORTHO:
 		break;
@@ -100,15 +101,17 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 	default:
 		break;
 	}
+
+	if( gameCam != nullptr )
+	{
+		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
+		AddEntity( "gameCam", static_cast<GEObject*>(gameCam) );
+	}
 }
 
 void GameEngine::DestroyGameCam()
 {
-	if (gameCam != nullptr)
-	{
-		delete gameCam;
-		gameCam = nullptr;
-	}
+	gameEntities.erase( "gameCam" );
 }
 
 bool GameEngine::Initialize()
@@ -117,7 +120,12 @@ bool GameEngine::Initialize()
 
 	bool success = true;
 
-	graphics = new GraphicsEngine;	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
+	// Setup the viewport options... is this the best place for this?
+
+	GEObject* viewportOptions = new ViewportInfo( 800, 600 );
+	AddEntity( "SYS_Viewport_Options", viewportOptions );  //add the options to the entity list.
+
+	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
 
 	return success;
 }
@@ -134,8 +142,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // tutorial/test renderer
-		//graphics->Render( getGameTime(), this ); // game renderer
+		//graphics->Render( getGameTime() );  // tutorial/test renderer
+			graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullprt
 }
 
@@ -149,7 +157,7 @@ bool GameEngine::isRunning() const
 	return running;
 }
 
-bool GameEngine::AddEntity( const std::string entityName, GEObject entity)
+bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 {
 	bool success = false;
 
@@ -160,12 +168,12 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject entity)
 		{
 			// if it is not, add it.
 
-			gameEntities.insert( std::pair< std::string, GEObject >( entityName, entity ) );
+			gameEntities.insert( std::pair< std::string, GEObject* >( entityName, entity ) );
 
 			// if entity has a mesh specified load it.
-			if ( entity.getMesh().empty() )
+			if ( !entity->getMesh().empty() )
 			{
-				LoadMesh( entity.getMesh() );
+				LoadMesh( entity->getMesh() );
 			}
 
 			// do the same with the material.

@@ -25,8 +25,8 @@ private:
 	unsigned short viewHeight;
 
 	// Game Objects
-	CameraObject* gameCam;					// The game camera.  TODO: Should this be in gameEntities?
-	std::map< std::string, GEObject > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
+	// CameraObject* gameCam;					// The game camera.  TODO: Should this be in gameEntities?
+	std::map< std::string, GEObject* > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
 
 	// System Objects
 	GraphicsEngine* graphics;	// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.
@@ -56,7 +56,7 @@ public:
 	void Render();
 	bool isRunning() const;
 
-	bool AddEntity( const std::string entityName, GEObject entity);
+	bool AddEntity( const std::string entityName, GEObject* entity);
 	void RemoveEntity( const std::string entityName);
 
 	bool LoadMesh( std::string meshPath );

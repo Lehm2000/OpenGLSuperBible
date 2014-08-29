@@ -10,11 +10,11 @@ out VS_OUT
 } vs_out;
 
 uniform mat4 world_matrix;
-uniform mat4 proj_matrix;
+uniform mat4 view_matrix;
 
 void main(void)
 {
-	gl_Position = proj_matrix * world_matrix * position;
+	gl_Position = view_matrix * world_matrix * position;
 	vs_out.color = color;
 	//vs_out.tc = tc;
 }

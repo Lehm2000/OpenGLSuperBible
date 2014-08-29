@@ -40,3 +40,4 @@
 *.idb
 *.pdb
 *.CppClean.log
+*.cd

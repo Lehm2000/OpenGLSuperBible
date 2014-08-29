@@ -22,6 +22,8 @@
 #include "vmath.h"  //vector math header from OpenGL Super Bible.  TODO Probably best to replace this at some point.
 
 #include "ShaderManager.h"
+#include "GEObject.h"
+#include "GEMesh.h"
 
 //temporary place to define vertex structs
 struct vertex
@@ -70,10 +72,13 @@ private:
 	GLFWwindow* window;
 	GLuint rendering_program;
 	GLuint vertex_array_object;
+
+	const std::map< std::string, GEObject* >* gameEntities;  // this is a pointer to the gameEntities... passed from the game engine when it was created.
 	
-	std::map< std::string, GLuint* > vaoMap;	// each mesh type will have its own vertex array object, the key will be the mesh class. 
-	std::map< std::string, GLuint* > vbMap;		// one vb for each vao... for now unless it becomes unwieldly
-	std::map< std::string, GLuint* > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
+	// std::map< std::string, GLuint > vaoMap;	// each mesh type will have its own vertex array object, the key will be the mesh class. 
+	// std::map< std::string, GLuint > vbMap;		// one vb for each vao... for now unless it becomes unwieldly
+	std::map< std::string, GEMesh > meshMap;	// Holds all the mesh information for the Graphics Engine.
+	std::map< std::string, GLuint > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
 	
 	ShaderManager shaderMan;	//for shader operations
 
@@ -90,6 +95,7 @@ public:
 
 	//constructors
 	GraphicsEngine();
+	GraphicsEngine( const std::map< std::string, GEObject* >* gameEntities );  // passes a pointer to the game entities.
 	~GraphicsEngine();
 
 	static vmath::mat4 proj_matrix;	//for the global projection matrix
@@ -145,9 +151,9 @@ public:
 		Renders the scene. 
 
 		@param currentTime - the time since the program started.
-		@param GameInfo - pointer to the GameEngine which has all the stuff that needs to be rendered.
+		@param gameEntities - pointer to the game Engine entities.
 	*/
-	void Render(const double currentTime, const GameEngine* GameInfo);
+	void Render(const double currentTime, const std::map< std::string, GEObject* >* gameEntities);
 
 	/**
 		Updates the window size.  

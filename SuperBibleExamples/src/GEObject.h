@@ -46,13 +46,13 @@ public:
 	// Setters
 	void setName( const std::string name );
 	
-	void setPosition(const glm::vec3 position);
-	void setRotation(const glm::vec3 rotation);  // in Radians!
-	void setScale(const glm::vec3 scale);
+	virtual void setPosition(const glm::vec3 position);
+	virtual void setRotation(const glm::vec3 rotation);  // in Radians!
+	virtual void setScale(const glm::vec3 scale);
 	
-	void setPositionVel(const glm::vec3 positionVel);
-	void setRotationVel(const glm::vec3 rotationVel);	// in Radians!
-	void setScaleVel(const glm::vec3 scaleVel);
+	virtual void setPositionVel(const glm::vec3 positionVel);
+	virtual void setRotationVel(const glm::vec3 rotationVel);	// in Radians!
+	virtual void setScaleVel(const glm::vec3 scaleVel);
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );

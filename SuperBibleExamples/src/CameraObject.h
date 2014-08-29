@@ -38,7 +38,7 @@ private:
 public:
 	// Structors
 	CameraObject();
-	CameraObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, bool targeted, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
+	CameraObject( glm::vec3 position, glm::vec3 rotation, bool targeted, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
 	~CameraObject();
 
 	// Setters
