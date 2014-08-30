@@ -10,11 +10,14 @@
 #include <GLFW/glfw3.h>
 
 #include "glext.h"
+#include "GEShader.h"
 
 class ShaderManager
 {
 private:
-	
+	// Members
+
+	std::string materialPath;
 	std::string shaderPath;
 
 public:
@@ -23,9 +26,12 @@ public:
 	ShaderManager();
 
 	//Functions
+	GEShader LoadMaterial( const std::string matName );
+	
 	std::string LoadShaderSource(const char* filename);
 	GLuint CreateShaderFromSource(const GLchar** source, GLenum shaderType );
 	GLuint CompileShaderFromSource(const char* filename, GLenum shaderType );
+	
 };
 
 #endif /* SHADERMANAGER_H */

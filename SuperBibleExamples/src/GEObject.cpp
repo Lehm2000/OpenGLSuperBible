@@ -209,7 +209,13 @@ glm::mat4 GEObject::GetTransformMatrix()
 {
 	glm::mat4 transformMatrix;
 
-	transformMatrix = glm::translate( glm::mat4(), getPosition() ) * glm::rotate( glm::mat4(), getRotation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) ) * glm::rotate( glm::mat4(), getRotation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
+	transformMatrix = glm::translate( glm::mat4(), getPosition() ) * glm::rotate( glm::mat4(), getRotation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) ) * glm::rotate( glm::mat4(), getRotation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) ) * glm::rotate( glm::mat4(), getRotation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
 
 	return transformMatrix;
+}
+
+void GEObject::Update(const double deltaTime)
+{
+	// Apply velocities
+	this->rotation = this->rotation + ( this->rotationVel * (float)deltaTime );
 }

@@ -24,6 +24,7 @@
 #include "ShaderManager.h"
 #include "GEObject.h"
 #include "GEMesh.h"
+#include "GEShader.h"
 
 //temporary place to define vertex structs
 struct vertex
@@ -78,7 +79,8 @@ private:
 	// std::map< std::string, GLuint > vaoMap;	// each mesh type will have its own vertex array object, the key will be the mesh class. 
 	// std::map< std::string, GLuint > vbMap;		// one vb for each vao... for now unless it becomes unwieldly
 	std::map< std::string, GEMesh > meshMap;	// Holds all the mesh information for the Graphics Engine.
-	std::map< std::string, GLuint > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
+	//std::map< std::string, GLuint > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
+	std::map< std::string, GEShader > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
 	
 	ShaderManager shaderMan;	//for shader operations
 
@@ -174,8 +176,10 @@ public:
 	*/
 	double getCurrentTime() const;
 
-	bool isMeshBuffered( std::string meshPath);
+	bool isMeshBuffered( std::string meshPath );
+	bool isShaderBuffered( std::string shaderPath );
 	bool BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts );
+	bool BufferShader( std::string shaderPath );
 	
 	
 	

@@ -9,7 +9,7 @@
 // Structors
 GameEngine::GameEngine()
 {
-	//gameCam = nullptr;
+	this->lastFrameTime = 0.0;
 	graphics = nullptr;
 }
 
@@ -31,39 +31,11 @@ GameEngine::~GameEngine()
 }
 
 // Setters
-void GameEngine::setViewWidth( const unsigned short viewWidth )
-{
-	if ( viewWidth > 0 )
-		this->viewWidth = viewWidth;
-	// TODO what if not?
-}
 
-void GameEngine::setViewHeight( const unsigned short viewHeight )
-{
-	if ( viewHeight > 0 )
-		this->viewHeight = viewHeight;
-	// TODO what if not?
-}
 
-void GameEngine::setViewPort( const unsigned short viewWidth, const unsigned short viewHeight )
-{
-	if ( viewWidth > 0 && viewHeight > 0 )
-	{
-		setViewWidth( viewWidth );
-		setViewHeight( viewHeight );
-	}
-}
 
 // Getters
-unsigned short GameEngine::getViewWidth() const
-{
-	return this->viewWidth;
-}
 
-unsigned short GameEngine::getViewHeight() const
-{
-	return this->viewHeight;
-}
 
 double GameEngine::getGameTime() const
 {
@@ -122,7 +94,7 @@ bool GameEngine::Initialize()
 
 	// Setup the viewport options... is this the best place for this?
 
-	GEObject* viewportOptions = new ViewportInfo( 800, 600 );
+	GEObject* viewportOptions = new ViewportInfo( 1280, 720 );
 	AddEntity( "SYS_Viewport_Options", viewportOptions );  //add the options to the entity list.
 
 	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
@@ -133,10 +105,18 @@ bool GameEngine::Initialize()
 void GameEngine::Update()
 {
 	//update the game world here.
+	double timeDelta = getGameTime() - lastFrameTime;
 
 	// Do input
 
 	// Update entities
+	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.begin(); it != gameEntities.end(); it++ )
+	{
+		it->second->Update( timeDelta );
+	}
+
+	// Update the last frametime
+	this->lastFrameTime = getGameTime();
 }
 
 void GameEngine::Render()
@@ -177,6 +157,10 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 			}
 
 			// do the same with the material.
+			if ( !entity->getMaterial().empty() )
+			{
+				graphics->BufferShader( entity->getMaterial() );
+			}
 
 			success = true;
 		}

@@ -89,6 +89,11 @@ public:
 
 	glm::mat4 GetTransformMatrix();
 
+	/**
+		@param deltaTime - time (in seconds) passed since last frame.
+	*/
+	virtual void Update(const double deltaTime);
+
 };
 
 

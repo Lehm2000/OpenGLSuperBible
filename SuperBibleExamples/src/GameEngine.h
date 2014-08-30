@@ -20,12 +20,10 @@ class GameEngine
 private:
 	// Members
 	
-	// Viewport information
-	unsigned short viewWidth;
-	unsigned short viewHeight;
+	// Time Information
+	double lastFrameTime;  
 
 	// Game Objects
-	// CameraObject* gameCam;					// The game camera.  TODO: Should this be in gameEntities?
 	std::map< std::string, GEObject* > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
 
 	// System Objects
@@ -39,13 +37,8 @@ public:
 	~GameEngine();	// Destructor.  Also might not be needed because the engine should only be destroyed if the game is exiting.  But for the sake of cleanliness.
 
 	// Setters
-	void setViewWidth( const unsigned short viewWidth );
-	void setViewHeight( const unsigned short viewHeight );
-	void setViewPort( const unsigned short viewWidth, const unsigned short viewHeight );
-
+	
 	// Getters
-	unsigned short getViewWidth() const;
-	unsigned short getViewHeight() const;
 	double getGameTime() const;
 
 	//Functions

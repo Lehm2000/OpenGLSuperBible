@@ -104,9 +104,13 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
 
 	// calculate the view matrix... which is constant for all objects... only need to calc once.
+	glm::mat4 viewMatrix;
 	std::map< std::string, GEObject* >::const_iterator camIt = (*gameEntities).find("gameCam");
 	CameraObject* gameCam = (CameraObject*)camIt->second;
-	glm::mat4 viewMatrix = glm::perspective( 45.0f, (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+	if (gameCam->getClassName() == "PerspectiveCamera" )
+	{
+		viewMatrix = glm::perspective( ((PerspectiveCamera*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+	}
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
@@ -121,15 +125,15 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	{
 		if ( it->second->isVisible() )
 		{
-			glUseProgram( shaderMap["default"] );
+			glUseProgram( shaderMap["default"].getProgram() );
 			//glBindVertexArray( vaoMap[ it->second->getMesh() ] );
 			
 			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
 
 			glBindVertexArray( renderMesh.getVOA() );
 
-			GLint worldMatrixLocation = glGetUniformLocation( shaderMap["default"], "world_matrix" );
-			GLint viewMatrixLocation = glGetUniformLocation( shaderMap["default"], "view_matrix" );
+			GLint worldMatrixLocation = glGetUniformLocation( shaderMap["default"].getProgram(), "world_matrix" );
+			GLint viewMatrixLocation = glGetUniformLocation( shaderMap["default"].getProgram(), "view_matrix" );
 
 			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
 
@@ -274,6 +278,8 @@ bool GraphicsEngine::InitShaders(void)
 	//Create fragment shader
 	fragment_shader = shaderMan.CompileShaderFromSource("alien_rain_frag.glsl", GL_FRAGMENT_SHADER);
 	
+
+	
 	//Create program, attach shaders to it, and link it... need to put this code inside the shader manager
 	//TODO: Error handling.
 	program = glCreateProgram();
@@ -289,44 +295,14 @@ bool GraphicsEngine::InitShaders(void)
 	glDeleteShader(fragment_shader);
 
 	rendering_program = program;
-
-	//Init the default shaders.
-	GLenum err;
-	GLuint newProgram;
 	
-	//Create vertex shader
-	vertex_shader = shaderMan.CompileShaderFromSource("default.vert.glsl", GL_VERTEX_SHADER );
-	//Create fragment shader
-	fragment_shader = shaderMan.CompileShaderFromSource("default.frag.glsl", GL_FRAGMENT_SHADER );
-	newProgram = glCreateProgram();
-
-	glAttachShader(newProgram, vertex_shader);
-	err = glGetError();
-	if (err != GL_NO_ERROR )
-	{
-		printf("Attach Error: %d", err); 
-	}
-
-	glAttachShader(newProgram, fragment_shader);
-	err = glGetError();
-	if (err != GL_NO_ERROR )
-	{
-		printf("Attach Error: %d", err); 
-	}
-
-	glLinkProgram(newProgram);
-	err = glGetError();
-	if (err != GL_NO_ERROR )
-	{
-		printf("Link Error: %d", err); 
-	}
-
-	// Add it to the shader map
-	shaderMap.insert( std::pair< std::string, GLuint >( "default", newProgram ) );
+	
 
 	// Delete the shaders as the program has them now
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
+
+	
 
 	return true;
 }
@@ -458,15 +434,29 @@ void GraphicsEngine::UpdateWindowSize(int x, int y, int width, int height)
 bool GraphicsEngine::isMeshBuffered( std::string meshPath)
 {
 	// check if mesh already loaded
-	bool loaded = true;
+	bool buffered = true;
 
+	// if find == the end... its not in the map
 	if ( meshMap.find( meshPath ) == meshMap.end() )
 	{
-		// TODO: what happens if only one is true.
-		loaded = false;
+		buffered = false;
 	}
 
-	return loaded;
+	return buffered;
+}
+
+bool GraphicsEngine::isShaderBuffered( std::string shaderPath )
+{
+	// check if mesh already loaded
+	bool buffered = true;
+
+	// if find == the end... its not in the map
+	if ( shaderMap.find( shaderPath ) == shaderMap.end() )
+	{
+		buffered = false;
+	}
+
+	return buffered;
 }
 
 bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts )
@@ -500,13 +490,18 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVe
 	GEMesh newMesh( GL_TRIANGLES, numVerts, newVoa, newBuffer );  // TODO: where does GL_TRIAnGLES come from?
 	meshMap[meshPath] = newMesh;
 
-
-	// vaoMap.insert( std::pair< std::string, GLuint >( meshPath, newVoa ) );	// each mesh type will have its own vertex array object, the key will be the mesh class. 
-	// vbMap.insert( std::pair< std::string, GLuint >( meshPath, newBuffer ) );
-
 	// Unbind voa??  Don't for now.
 
-	// NOTE: DO NOT delete[] newVoa and newBuffer, that cleanup will happen when they are removed from the buffer maps.
+	return true;
+}
+
+bool GraphicsEngine::BufferShader( std::string shaderPath )
+{
+	GEShader newShader = shaderMan.LoadMaterial( "default" );
+
+	// Add it to the shader map
+	 
+	shaderMap.insert( std::pair< std::string, GEShader >( "default", newShader ) );
 
 	return true;
 }
