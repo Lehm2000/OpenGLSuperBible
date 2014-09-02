@@ -14,9 +14,9 @@
 #include "IUImage.h"
 
 
-IUImage ImageUtilities::LoadBitmap(const char* filename)
+IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 {
-	IUImage returnImage;
+	IUImage<unsigned char> returnImage;
 
 	std::ifstream inFile;	//input file stream for reading file.
 	BitmapHeader header;	//place to hold the header info which is common to all bitmap formats.
@@ -75,13 +75,13 @@ IUImage ImageUtilities::LoadBitmap(const char* filename)
 			if (dibHeader.compressionType == BI_RGB)  //no compression
 			{
 				//fill in basic info
-				returnImage.setHeight(dibHeader.height);
-				returnImage.setWidth(dibHeader.width);
-				returnImage.setNumChannels(dibHeader.bitDepth/8);  //TODO: handle bitmap not having bitdepth of 24 or 32
+				//returnImage.setHeight(dibHeader.height);
+				//returnImage.setWidth(dibHeader.width);
+				//returnImage.setNumChannels(dibHeader.bitDepth/8);  //TODO: handle bitmap not having bitdepth of 24 or 32
 				
 				//create space to store the data
 				//unsigned int dataSize = dibHeader.height * dibHeader.width * returnImage.getNumChannels() * sizeof(float);
-				unsigned int dataSize = returnImage.getDataSize();
+				unsigned int dataSize = dibHeader.width * dibHeader.height * (dibHeader.bitDepth/8) * sizeof(unsigned char);
 				unsigned char* tempData = (unsigned char*)malloc(dataSize);
 
 				//calculate padded row size (bitmap require multiples of 4 bytes for row data) using integer math. 
@@ -89,25 +89,29 @@ IUImage ImageUtilities::LoadBitmap(const char* filename)
 				int paddedFileRowSize = ((dibHeader.bitDepth * dibHeader.width + 31) / 32) * 4;
 				
 				//also need the row size for the destination which is not padded.
-				int unpaddedFileRowSize = returnImage.getWidth() * returnImage.getNumChannels();
+				int unpaddedFileRowSize = dibHeader.width * (dibHeader.bitDepth/8);
+
+				unsigned int totalImageElements = dibHeader.width * dibHeader.height * (dibHeader.bitDepth/8);
 
 				unsigned int i, j, k;
 
 				//iterate through all the rows
-				for (i = 0; i < returnImage.getHeight(); i++)
+				for (i = 0; i < dibHeader.height; i++)
 				{ 
 					//at what memory location in imageFileData does row begin.
 					unsigned int rowStartLocation = paddedFileRowSize * i; 
 
 					//iterate throught the columns in the rows.
-					for (j = 0; j < returnImage.getWidth(); j++)
+					for (j = 0; j < dibHeader.width; j++)
 					{
 						//iterate through the color channels
-						for (k = 0; k < returnImage.getNumChannels(); k++)
+						for (k = 0; k < dibHeader.bitDepth/8; k++)
 						{
 							//determine locations to read/write
-							unsigned int locDest = (i * unpaddedFileRowSize) + (j * returnImage.getNumChannels()) + k;
-							unsigned int locSource = (i * paddedFileRowSize) + (j * returnImage.getNumChannels()) + k;
+							unsigned int locDest =  (i * unpaddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k ;
+							locDest = ( totalImageElements - locDest ) - 1;	// BMPs are stored upside down, so reverse the destination to put the image back in the proper order.
+							
+							unsigned int locSource = (i * paddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k;
 
 							//read and place in destination.
 							tempData[locDest] = imageFileData[locSource];
@@ -117,7 +121,7 @@ IUImage ImageUtilities::LoadBitmap(const char* filename)
 				}
 
 				//put the loaded and converted image data into the return image.
-				returnImage.setData(dataSize, tempData);
+				returnImage.setData(dibHeader.width, dibHeader.height, dibHeader.bitDepth/8 , tempData);
 
 				//do some cleanup
 				delete[] tempData;
@@ -166,9 +170,9 @@ IUImage ImageUtilities::LoadBitmap(const char* filename)
 	return returnImage;
 }
 
-IUImage ImageUtilities::LoadTarga(const char* filename)
+IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 {
-	IUImage returnImage;
+	IUImage<unsigned char> returnImage;
 
 	std::ifstream inFile;		//	input file stream for reading file.
 	TargaHeader header;			//	place to hold the header info which is common to all bitmap formats.
@@ -198,6 +202,7 @@ IUImage ImageUtilities::LoadTarga(const char* filename)
 
 		//	calculate some values
 		unsigned char numChannels = header.bitDepth / 8;
+		unsigned int dataSize = header.width * header.height * (numChannels) * sizeof(unsigned char);
 		//unsigned int imageDataSize = header.width * header.height * ( numChannels );	//	how many bytes should the image take.
 
 		if (header.idLen)  //if idLen is not 0
@@ -214,18 +219,19 @@ IUImage ImageUtilities::LoadTarga(const char* filename)
 		}
 
 		//	set the basic image info
-		returnImage.setHeight(header.height);
-		returnImage.setWidth(header.width);
-		returnImage.setNumChannels( numChannels );  //TODO: handle bitmap not having bitdepth of 24 or 32
+		// returnImage.setHeight(header.height);
+		// returnImage.setWidth(header.width);
+		// returnImage.setNumChannels( numChannels );  //TODO: handle bitmap not having bitdepth of 24 or 32
 
 		//	read the image data
 		if (header.imageType == TGA_UNCOMPRESSED_RGB)	//	Uncompressed 
 		{
 			//	allocate memory to hold the image data
-			imageData = (unsigned char*)malloc( returnImage.getDataSize() );
+			
+			imageData = (unsigned char*)malloc( dataSize );
 
 			//read the data
-			inFile.read( (char*)imageData, returnImage.getDataSize() );
+			inFile.read( (char*)imageData, dataSize );
 
 		}
 		else if (header.imageType == TGA_RLE_RGB)	//	Runlength encoded RGB images.
@@ -237,11 +243,12 @@ IUImage ImageUtilities::LoadTarga(const char* filename)
 			unsigned char* imagePacketData=nullptr;		//	place to hold the packet data.  Can vary in size.
 
 			//	allocate memory to hold the image data
-			imageData = (unsigned char*)malloc( returnImage.getDataSize() );
+			
+			imageData = (unsigned char*)malloc( dataSize );
 
 			
 
-			while (readAmount < returnImage.getDataSize() )
+			while (readAmount < dataSize )
 			{
 				//read the header byte.
 				inFile.read((char*) &imagePacketHeader, sizeof(imagePacketHeader));
@@ -299,7 +306,7 @@ IUImage ImageUtilities::LoadTarga(const char* filename)
 		}
 
 		//allocate a new buffer for the final image data to go.
-		unsigned char* tempData = (unsigned char*)malloc( returnImage.getDataSize());
+		unsigned char* tempData = (unsigned char*)malloc( dataSize );
 
 		//now convert the data to GEImage format.
 		for (unsigned int i = 0; i < (unsigned int)header.width * (unsigned int)header.height; i++)	//	iterate through pixels
@@ -322,7 +329,7 @@ IUImage ImageUtilities::LoadTarga(const char* filename)
 		}
 			
 		//put the loaded and converted image data into the return image.
-		returnImage.setData( returnImage.getDataSize() , tempData);
+		returnImage.setData( header.width, header.height, numChannels, tempData);
 			
 		//do some cleanup
 		delete[] tempData;

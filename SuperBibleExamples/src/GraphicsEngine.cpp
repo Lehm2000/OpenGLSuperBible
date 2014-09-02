@@ -6,7 +6,6 @@
 
 #include "GraphicsEngine.h"
 #include "GameEngine.h"
-#include "GEImage.h"
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
 #include "PerspectiveCamera.h"
@@ -56,6 +55,7 @@ GraphicsEngine::~GraphicsEngine()
 // this version of render is for tutorial code.
 void GraphicsEngine::Render(const double currentTime)
 {
+	glBindVertexArray(vertex_array_object);
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
@@ -125,15 +125,15 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	{
 		if ( it->second->isVisible() )
 		{
-			glUseProgram( shaderMap["default"].getProgram() );
+			glUseProgram( materialMap["default"].getProgram() );
 			//glBindVertexArray( vaoMap[ it->second->getMesh() ] );
 			
 			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
 
 			glBindVertexArray( renderMesh.getVOA() );
 
-			GLint worldMatrixLocation = glGetUniformLocation( shaderMap["default"].getProgram(), "world_matrix" );
-			GLint viewMatrixLocation = glGetUniformLocation( shaderMap["default"].getProgram(), "view_matrix" );
+			GLint worldMatrixLocation = glGetUniformLocation( materialMap["default"].getProgram(), "world_matrix" );
+			GLint viewMatrixLocation = glGetUniformLocation( materialMap["default"].getProgram(), "view_matrix" );
 
 			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
 
@@ -264,19 +264,19 @@ bool GraphicsEngine::InitShaders(void)
 	GLint return_code;
 
 	//Create vertex shader
-	vertex_shader = shaderMan.CompileShaderFromSource("alien_rain_vert.glsl", GL_VERTEX_SHADER );
+	vertex_shader = materialMan.CompileShaderFromSource("alien_rain_vert.glsl", GL_VERTEX_SHADER );
 	
 	//Create tess control shader
-	tess_control_shader = shaderMan.CompileShaderFromSource("tess_control_shader_source.txt", GL_TESS_CONTROL_SHADER);
+	tess_control_shader = materialMan.CompileShaderFromSource("tess_control_shader_source.txt", GL_TESS_CONTROL_SHADER);
 
 	//Create tess eval shader
-	tess_eval_shader = shaderMan.CompileShaderFromSource("tess_eval_shader_source.txt", GL_TESS_EVALUATION_SHADER);
+	tess_eval_shader = materialMan.CompileShaderFromSource("tess_eval_shader_source.txt", GL_TESS_EVALUATION_SHADER);
 
 	//Create geometry shader
-	geometry_shader = shaderMan.CompileShaderFromSource("geometry_shader_source.txt", GL_GEOMETRY_SHADER);
+	geometry_shader = materialMan.CompileShaderFromSource("geometry_shader_source.txt", GL_GEOMETRY_SHADER);
 
 	//Create fragment shader
-	fragment_shader = shaderMan.CompileShaderFromSource("alien_rain_frag.glsl", GL_FRAGMENT_SHADER);
+	fragment_shader = materialMan.CompileShaderFromSource("alien_rain_frag.glsl", GL_FRAGMENT_SHADER);
 	
 
 	
@@ -340,18 +340,14 @@ void GraphicsEngine::InitTextures(void)
 
 	TextureManager texMan;
 	GLenum glError = 0;
+	unsigned char returnType = 0;
 
-	//GEImage testImage = LoadBitmap("../../OpenGLSuperBible/textures/test2.bmp");
-	GEImage testImage1 = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP );
-	GEImage testImage2 = texMan.LoadTexture( "test2r.bmp", GE_TEXTYPE_BMP );
-	//GEImage testImage = LoadBitmap("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\test2.bmp");
-	//GEImage testImage = LoadTarga("F:\\Projects\\Programming\\OpenGL\\TestProject01\\SuperBibleChapter01\\textures\\testAlphaTest.tga");
-
-	//	get data to pass to glTex.  TODO: see if way to pass data directly to OpenGL without this intermediate step.
-	float* data[2];
-	data[0] = (float*)malloc(testImage1.getWidth() * testImage1.getHeight() * testImage1.getNumChannels() * sizeof(float));
-	data[1] = (float*)malloc(testImage2.getWidth() * testImage2.getHeight() * testImage2.getNumChannels() * sizeof(float));
-
+	IUImage<unsigned char> testImage1 = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP, returnType );
+	IUImage<unsigned char> testImage2 = texMan.LoadTexture( "test2r.bmp", GE_TEXTYPE_BMP, returnType );
+	
+	unsigned char* data[2];
+	data[0] = (unsigned char*)malloc( testImage1.getDataSize() );
+	data[1] = (unsigned char*)malloc( testImage2.getDataSize() );
 	
 	testImage1.getData(data[0]);
 	testImage2.getData(data[1]);
@@ -381,7 +377,8 @@ void GraphicsEngine::InitTextures(void)
 		printf( "Error binding texture: %d\n", glError );
 	}
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 5, GL_RGB32F, 256, 256, 2);
+	//glTexStorage3D(GL_TEXTURE_2D_ARRAY, 4, GL_RGB8, 256, 256, 2);
+	glTexStorage3D( GL_TEXTURE_2D_ARRAY, 5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, 256, 256, 2 );
 
 	glError = glGetError();
 	if (glError != GL_NO_ERROR)
@@ -391,7 +388,7 @@ void GraphicsEngine::InitTextures(void)
 
 	for (int i = 0; i < 2; i++)
 	{
-		glTexSubImage3D(GL_TEXTURE_2D_ARRAY,0,0,0,i,256,256,1, GL_RGB, GL_FLOAT,data[i]);
+		glTexSubImage3D( GL_TEXTURE_2D_ARRAY,0,0,0,i,256,256,1, GL_RGB, GL_UNSIGNED_BYTE, data[i] );
 		
 		glError = glGetError();
 		if (glError != GL_NO_ERROR)
@@ -400,12 +397,11 @@ void GraphicsEngine::InitTextures(void)
 		}
 	}
 
-	//glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
 	//	create the mipmaps.
-	//glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+	glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
 	//GLuint sampler;
@@ -445,13 +441,13 @@ bool GraphicsEngine::isMeshBuffered( std::string meshPath)
 	return buffered;
 }
 
-bool GraphicsEngine::isShaderBuffered( std::string shaderPath )
+bool GraphicsEngine::isMaterialBuffered( std::string materialPath )
 {
 	// check if mesh already loaded
 	bool buffered = true;
 
 	// if find == the end... its not in the map
-	if ( shaderMap.find( shaderPath ) == shaderMap.end() )
+	if ( materialMap.find( materialPath ) == materialMap.end() )
 	{
 		buffered = false;
 	}
@@ -495,13 +491,13 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVe
 	return true;
 }
 
-bool GraphicsEngine::BufferShader( std::string shaderPath )
+bool GraphicsEngine::BufferMaterial( std::string materialPath )
 {
-	GEShader newShader = shaderMan.LoadMaterial( "default" );
+	GEMaterial newShader = materialMan.LoadMaterial( materialPath );
 
 	// Add it to the shader map
 	 
-	shaderMap.insert( std::pair< std::string, GEShader >( "default", newShader ) );
+	materialMap.insert( std::pair< std::string, GEMaterial >( "default", newShader ) );
 
 	return true;
 }

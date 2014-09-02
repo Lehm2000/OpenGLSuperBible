@@ -30,7 +30,7 @@ void main(void)
 	float so = sin (droplet[alien_index].orientation);
 	mat2 rot = mat2 (vec2(co, so), vec2(-so, co));
 	
-	vec2 pos = 0.25 * rot * position[gl_VertexID];
+	vec2 pos = 0.2 * rot * position[gl_VertexID];
 	
 	gl_Position = vec4(pos.x + droplet[alien_index].x_offset, pos.y + droplet[alien_index].y_offset, 0.5, 1.0);
 	vs_out.alien = alien_index % 2;

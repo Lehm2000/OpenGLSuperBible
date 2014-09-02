@@ -53,6 +53,7 @@ public:
 	void RemoveEntity( const std::string entityName);
 
 	bool LoadMesh( std::string meshPath );
+	bool LoadMaterial( std::string materialPath );
 	void FillGEVertex( GEVertex* dest, float x, float y, float z, float r, float g, float b, float a, float nx, float ny, float nz, float u, float v );
 	
 };

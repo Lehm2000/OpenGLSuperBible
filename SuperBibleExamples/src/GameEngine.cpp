@@ -122,9 +122,9 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		//graphics->Render( getGameTime() );  // tutorial/test renderer
-			graphics->Render( getGameTime(), &gameEntities ); // game renderer
-	// TODO what happens when its nullprt
+		graphics->Render( getGameTime() );  // tutorial/test renderer
+		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
+	// TODO what happens when its nullptr
 }
 
 bool GameEngine::isRunning() const
@@ -159,7 +159,7 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 			// do the same with the material.
 			if ( !entity->getMaterial().empty() )
 			{
-				graphics->BufferShader( entity->getMaterial() );
+				LoadMaterial( entity->getMaterial() );
 			}
 
 			success = true;
@@ -228,6 +228,24 @@ bool GameEngine::LoadMesh( std::string meshPath )
 	}
 
 	return true;  // Always a winner... for now.
+}
+
+bool GameEngine::LoadMaterial( std::string materialPath )
+{
+	bool success = false;
+
+	// Check if material already loaded
+
+	if (!graphics->isMaterialBuffered( materialPath ))
+	{
+		success = graphics->BufferMaterial( materialPath );
+	}
+	else
+	{
+		success = true; // if it is already loaded it previously succeeded so we'll call this a win too.
+	}
+
+	return success;
 }
 
 void GameEngine::FillGEVertex( GEVertex* dest, float x, float y, float z, float r, float g, float b, float a, float nx, float ny, float nz, float u, float v )

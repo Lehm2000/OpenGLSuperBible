@@ -81,8 +81,8 @@ class ImageUtilities
 {
 private:
 public:
-	IUImage LoadBitmap(const char* filename);
-	IUImage LoadTarga(const char* filename);
+	IUImage<unsigned char> LoadBitmap(const char* filename);
+	IUImage<unsigned char> LoadTarga(const char* filename);
 
 };
 

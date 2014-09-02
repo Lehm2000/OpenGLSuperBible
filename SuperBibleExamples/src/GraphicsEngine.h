@@ -21,10 +21,10 @@
 #include "glext.h"
 #include "vmath.h"  //vector math header from OpenGL Super Bible.  TODO Probably best to replace this at some point.
 
-#include "ShaderManager.h"
+#include "MaterialManager.h"
 #include "GEObject.h"
 #include "GEMesh.h"
-#include "GEShader.h"
+#include "GEMaterial.h"
 
 //temporary place to define vertex structs
 struct vertex
@@ -76,13 +76,10 @@ private:
 
 	const std::map< std::string, GEObject* >* gameEntities;  // this is a pointer to the gameEntities... passed from the game engine when it was created.
 	
-	// std::map< std::string, GLuint > vaoMap;	// each mesh type will have its own vertex array object, the key will be the mesh class. 
-	// std::map< std::string, GLuint > vbMap;		// one vb for each vao... for now unless it becomes unwieldly
 	std::map< std::string, GEMesh > meshMap;	// Holds all the mesh information for the Graphics Engine.
-	//std::map< std::string, GLuint > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
-	std::map< std::string, GEShader > shaderMap;	// compiled shaders programs.  shadername/path, pointer to shader.
+	std::map< std::string, GEMaterial > materialMap;	// Holds all materials for the game.  Materials hold the shader plus references to the textures used.
 	
-	ShaderManager shaderMan;	//for shader operations
+	MaterialManager materialMan;	//for material operations
 
 	//some temp variables for the alien rain example
 	GLuint          rain_buffer;
@@ -177,9 +174,9 @@ public:
 	double getCurrentTime() const;
 
 	bool isMeshBuffered( std::string meshPath );
-	bool isShaderBuffered( std::string shaderPath );
+	bool isMaterialBuffered( std::string materialPath );
 	bool BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts );
-	bool BufferShader( std::string shaderPath );
+	bool BufferMaterial( std::string materialPath );
 	
 	
 	
@@ -225,4 +222,4 @@ public:
 
 };
 
-#endif //GRAPHICSENGINE_H
+#endif // GRAPHICSENGINE_H

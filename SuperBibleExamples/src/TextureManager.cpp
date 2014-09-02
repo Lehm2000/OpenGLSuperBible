@@ -9,7 +9,7 @@
 
 #include "TextureManager.h"
 
-#include "GEImage.h"
+
 #include "ImageUtilities\IUImage.h"
 
 /**
@@ -21,48 +21,9 @@ TextureManager::TextureManager()
 	texturePath = "./textures/";
 }
 
-GEImage TextureManager::LoadTexture( const char* filename, const char texType )
-{
-	IUImage loadedTexture;
-	GEImage finalTexture;
 
-	ImageUtilities imageUtilities;
-
-	if ( filename != nullptr && texType != 0 )
-	{
-
-		char fullFilename[1024];	//TODO: deal with magic number here.
-	
-		//combine filepath for shaders with supplied filename.
-		strcpy( fullFilename, texturePath.c_str() );
-		strcat( fullFilename, filename );
-
-		switch (texType)
-		{
-		case GE_TEXTYPE_BMP:
-			loadedTexture = imageUtilities.LoadBitmap( fullFilename );
-			break;
-		case GE_TEXTYPE_TARGA:
-			break;
-		default:
-			break;
-		}
-
-		//check if we successfully loaded an image
-		if ( loadedTexture.getDataSize() > 0 )  //Sufficient test?
-		{
-			//convert it to GEImage format.
-			finalTexture = ConvertTexture(&loadedTexture);
-			
-		}
-
-		
-	}
-
-	return finalTexture;
-}
-
-GEImage TextureManager::ConvertTexture(const IUImage* sourceTexture)
+/*
+GEImage TextureManager::ConvertTexture(const IUImage<unsigned char>* sourceTexture)
 {
 	GEImage outputTexture;
 
@@ -99,4 +60,5 @@ GEImage TextureManager::ConvertTexture(const IUImage* sourceTexture)
 
 	return outputTexture;
 }
+*/
 

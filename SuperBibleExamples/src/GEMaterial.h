@@ -1,5 +1,5 @@
-#ifndef GESHADER_H
-#define GESHADER_H
+#ifndef GEMATERIAL_H
+#define GEMATERIAL_H
 
 /**
 	GEShader
@@ -11,7 +11,7 @@
 #include <string>
 #include <GL\glew.h>
 
-class GEShader
+class GEMaterial
 {
 private:
 	GLuint program;					// compiled program
@@ -20,9 +20,9 @@ private:
 public:
 	// Structors
 
-	GEShader();
-	GEShader( GLuint program, std::vector<std::string> textures );
-	~GEShader();
+	GEMaterial();
+	GEMaterial( GLuint program, std::vector<std::string> textures );
+	~GEMaterial();
 
 	// Setters
 	
@@ -37,4 +37,4 @@ public:
 };
 
 
-#endif /* GESHADER_H */
+#endif /* GEMATERIAL_H */
