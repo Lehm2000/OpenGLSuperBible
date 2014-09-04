@@ -2,6 +2,8 @@
 
 out vec4 color;
 
+//vec4 myColor();	// debug test.
+
 in VS_OUT
 {
 	//vec2 tc;
@@ -12,4 +14,5 @@ in VS_OUT
 void main(void)
 {
 	color = fs_in.color;
+	//color = myColor();		//debug link test.
 }

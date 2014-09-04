@@ -6,7 +6,8 @@ layout (location = 1) in vec4 color;
 out VS_OUT
 {
 	//vec2 tc;
-	vec4 color;
+	vec4 color;  // removed for debug test
+	//color;			// debug version
 } vs_out;
 
 uniform mat4 world_matrix;

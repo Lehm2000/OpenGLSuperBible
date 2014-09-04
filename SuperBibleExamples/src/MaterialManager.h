@@ -30,15 +30,22 @@ public:
 	
 	std::string LoadShaderSource(const char* filename);
 	GLuint CreateShaderFromSource(const GLchar** source, GLenum shaderType );
+	
+	/**
+		Load, Create and then Compile a shader from a file.
+
+		@param filename - file on disk that will be loaded
+		@param shaderType - Type of shader we are making
+		@return - compiled shader ( 0 if failed )
+	*/
 	GLuint CompileShaderFromSource(const char* filename, GLenum shaderType );
 
 	/**
-		@param shader
-		@param program
-		@param shaderName - solely for debug.
+		@param shader - shader that will be attached to the program
+		@param program - program the shader is attached to.
 		@return void
 	*/
-	void AttachShaderToProgram( GLuint shader, GLuint program, std::string shaderName);
+	void AttachShaderToProgram( GLuint shader, GLuint program );
 	
 };
 

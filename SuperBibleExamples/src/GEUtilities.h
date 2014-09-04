@@ -12,6 +12,6 @@
 
 std::string LTrim( std::string trimString );
 std::string RTrim( std::string trimString );
-std::string Trim( std::string trimString );
+std::string LRTrim( std::string trimString );
 
 #endif /* GEUTILITIES_H */

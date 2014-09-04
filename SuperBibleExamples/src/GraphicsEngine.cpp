@@ -493,12 +493,30 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVe
 
 bool GraphicsEngine::BufferMaterial( std::string materialPath )
 {
-	GEMaterial newShader = materialMan.LoadMaterial( materialPath );
+	bool success = false; 
 
-	// Add it to the shader map
+	printf( "Buffering Material: %s\n====================================\n", materialPath.c_str() );
+
+	GEMaterial newMaterial = materialMan.LoadMaterial( materialPath );
+
+	// Verify the material loaded
+
+	if ( newMaterial.getProgram() != 0 )
+	{
+		// Add it to the shader map
 	 
-	materialMap.insert( std::pair< std::string, GEMaterial >( "default", newShader ) );
+		materialMap.insert( std::pair< std::string, GEMaterial >( "default", newMaterial ) );
 
-	return true;
+		success = true;
+
+		printf ( "Buffering Complete\n");
+	}
+	else
+	{
+		printf ( "Buffering Failed\n");
+	}
+
+
+	return success;
 }
 

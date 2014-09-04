@@ -6,9 +6,11 @@
 	@author Jeff Adams
 */
 #include <string>
+#include <stdio.h>
 
 #include "MaterialManager.h"
 #include "GEUtilities.h"
+
 
 /**
 	Default Constructor
@@ -27,13 +29,16 @@ MaterialManager::MaterialManager()
 */
 GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 {
-	GEMaterial returnShader;
+	GEMaterial returnMaterial;
+	bool success = true;
 
-	GLuint vertexShader;
-	GLuint fragmentShader;
-	GLuint tessControlShader;
-	GLuint tessEvalShader;
-	GLuint geometryShader;
+	// Initial shader refs to 0 for error checking.
+	GLuint vertexShader = 0;
+	GLuint fragmentShader = 0;
+	GLuint tessControlShader = 0;
+	GLuint tessEvalShader = 0;
+	GLuint geometryShader = 0;
+
 	GLuint program = 0;
 
 	GLenum err;
@@ -49,12 +54,19 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 	std::string geometryShaderPath;
 	std::string fragmentShaderPath;
 
+	printf( "\nCreating Material: %s\n===============================================================\n", matName.c_str() );
+	printf( "Loading Definition: %s...", filename.c_str() );
 
 	inFile.open ( filename, std::ifstream::in );
 
 	if ( inFile.is_open() )
 	{
+		printf( "Success\n" );
+
 		// go through each line of the file and determine what it is setting.
+
+		printf( "Reading Definition:\n");
+
 		while ( std::getline (inFile,fBuffer) )
 		{
 			// find where the '=' char is
@@ -62,8 +74,8 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 			if ( equalPos != std::string::npos )
 			{
 				// split each line
-				std::string mParameter = RTrim( fBuffer.substr( 0, equalPos ) );
-				std::string mValue = LTrim( fBuffer.substr( equalPos + 1, std::string::npos ) );
+				std::string mParameter = LRTrim( fBuffer.substr( 0, equalPos ) );
+				std::string mValue = LRTrim( fBuffer.substr( equalPos + 1, std::string::npos ) );
 
 				// evaluate each parameter
 				if (mParameter == "vertex_shader")
@@ -93,67 +105,138 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 				}
 				// TODO: textures.
 
-				printf( "Shader Param: '%s', Value: '%s'\n",mParameter.c_str(),mValue.c_str() );
+				if ( !mValue.empty() )
+					printf( "\tShader Param: '%s', Value: '%s'\n",mParameter.c_str(),mValue.c_str() );
 			}
 		}
 		// close file... why am I even commenting this?
 		inFile.close();
 
 		// load the shaders
-		program = glCreateProgram();
+		program = glCreateProgram();	// TODO: need to error check this?
 
-		// TODO remove repeating code.
-		if ( !vertexShaderPath.empty() )
+		// TODO: Change the next five if statments into a loop?
+		if ( !vertexShaderPath.empty() && success )  // if a vertex shader was specified and something else hasn't failed yet.
 		{
+			printf( "Vertex Shader: %s\n", vertexShaderPath.c_str() );
 			vertexShader = CompileShaderFromSource( vertexShaderPath.c_str(), GL_VERTEX_SHADER );
-			AttachShaderToProgram( vertexShader, program, vertexShaderPath );
-			glDeleteShader( vertexShader );
+			if ( vertexShader != 0 )
+			{
+				AttachShaderToProgram( vertexShader, program );  //TODO: how do we error check this?
+				glDeleteShader( vertexShader );
+			}
+			else
+				success = false;
 		}
 
-		if ( !tessControlShaderPath.empty() )
+		if ( !tessControlShaderPath.empty() && success )
 		{
-			tessControlShader = CompileShaderFromSource( tessControlShaderPath.c_str(),GL_TESS_CONTROL_SHADER );
-			AttachShaderToProgram( tessControlShader, program, tessControlShaderPath );
-			glDeleteShader( tessControlShader );
+			printf( "Tesselation Control Shader: %s\n", tessControlShaderPath.c_str() );
+			tessControlShader = CompileShaderFromSource( tessControlShaderPath.c_str(), GL_TESS_CONTROL_SHADER );
+			if( tessControlShader != 0 )
+			{
+				AttachShaderToProgram( tessControlShader, program );
+				glDeleteShader( tessControlShader );
+			}
+			else
+				success = false;
 		}
 
-		if ( !tessEvalShaderPath.empty() )
+		if ( !tessEvalShaderPath.empty() && success )
 		{
+			printf( "Tesselation Evaluation Shader: %s\n", tessEvalShaderPath.c_str() );
 			tessEvalShader = CompileShaderFromSource( tessEvalShaderPath.c_str(), GL_TESS_EVALUATION_SHADER );
-			AttachShaderToProgram( tessEvalShader, program, tessEvalShaderPath );
-			glDeleteShader( tessEvalShader );
+			if( tessEvalShader != 0)
+			{
+				AttachShaderToProgram( tessEvalShader, program );
+				glDeleteShader( tessEvalShader );
+			}
+			else
+				success = false;
 		}
 
-		if ( !geometryShaderPath.empty() )
+		if ( !geometryShaderPath.empty() && success )
 		{
+			printf( "Geomentry: %s\n", geometryShaderPath.c_str() );
 			geometryShader = CompileShaderFromSource( geometryShaderPath.c_str(), GL_GEOMETRY_SHADER );
-			AttachShaderToProgram( geometryShader, program, geometryShaderPath );
-			glDeleteShader( geometryShader );
+			if( geometryShader != 0 )
+			{
+				AttachShaderToProgram( geometryShader, program );
+				glDeleteShader( geometryShader );
+			}
+			else
+				success = false;
 		}
 
-		if ( !fragmentShaderPath.empty() )
+		if ( !fragmentShaderPath.empty() && success )
 		{
+			printf( "Fragment Shader: %s\n", fragmentShaderPath.c_str() );
 			fragmentShader = CompileShaderFromSource( fragmentShaderPath.c_str(), GL_FRAGMENT_SHADER );
-			AttachShaderToProgram( fragmentShader, program, fragmentShaderPath );
-			glDeleteShader( fragmentShader );
+			if( fragmentShader != 0)
+			{
+				AttachShaderToProgram( fragmentShader, program );
+				glDeleteShader( fragmentShader );
+			}
+			else
+				success = false;
 		}
 
-		glLinkProgram(program);
-		err = glGetError();
-		if (err != GL_NO_ERROR )
+		if ( success )
 		{
-			printf("Link Error: %d", err); 
+			GLint return_code;
+
+			printf( "Linking..." );
+
+			glLinkProgram( program );
+
+			//check success
+			glGetProgramiv(program, GL_LINK_STATUS, &return_code);
+			if (return_code == GL_TRUE)  
+			{
+				printf("Success\n");
+			}
+			else
+			{
+				printf("Failed\n");
+
+				GLint logLength;
+
+				glGetProgramiv( program, GL_INFO_LOG_LENGTH, &logLength );
+
+				GLchar* log = new GLchar[logLength + 1];
+				glGetProgramInfoLog( program, logLength, NULL, log );
+
+				printf(log);
+
+				success = false;
+			}
 		}
+
+		if ( !success )
+		{
+			glDeleteProgram( program );
+			program = 0;	
+		}
+		
+		returnMaterial.setProgram( program );
+			
+		// set textures here.... if it has any.
+
+	}
+	else  // could not open file.
+	{
+		printf("Failed\n");
+		returnMaterial.setProgram( 0 );		// set no program when failed.
+	}
+
+	if( returnMaterial.getProgram() != 0 )
+	{
+		printf( "Succeeded creating material.\n\n" );
 	}
 	else
-	{
-		printf("Failed Opening Material: %s\n",filename.c_str());
-	}
+		printf( "Failed Creating material.\n\n" );
 
-	returnShader.setProgram ( program );
-	// set textures here.... if it has any.
-
-	return returnShader;
+	return returnMaterial;
 }
 
 /**
@@ -179,7 +262,8 @@ std::string MaterialManager::LoadShaderSource(const char* filename)
 	
 	inFile.open (fullFilename, std::ifstream::in);
 	
-	//TODO: Get some error handling up in here.
+	printf( "\tLoading Source..." );
+
 	//check if file is open.
 	if (inFile.is_open())
 	{
@@ -188,12 +272,16 @@ std::string MaterialManager::LoadShaderSource(const char* filename)
 		{
 			shader += sbuffer +"\n";	//add buffer to the shader
 		}
+		
 		//close file... why am I even commenting this.
 		inFile.close();
+
+		printf ( "Success\n" );
 	}
 	else
 	{
-		printf("%s Failed Opening\n",filename);
+		printf("Failed\n",filename);
+		shader = "";
 	}
 
 	return shader;
@@ -208,65 +296,82 @@ std::string MaterialManager::LoadShaderSource(const char* filename)
 */
 GLuint MaterialManager::CreateShaderFromSource(const GLchar** source, GLenum shaderType )
 {
-	GLuint shader;
+	GLuint shader = 0;
+
+
 
 	shader = glCreateShader(shaderType);
-	glShaderSource(shader, 1, source, NULL);
+
+	if (shader != 0)
+	{
+		glShaderSource(shader, 1, source, NULL);
+	}
 
 	return shader;
 }
 
-/**
-	Load, Create and then Compile a shader from a file.
-
-	@param filename - file on disk that will be loaded
-	@param shaderType - Type of shader we are making
-	@return - compiled shader
-*/
 GLuint MaterialManager::CompileShaderFromSource(const char* filename, GLenum shaderType )
 {
 	//vars
-	GLuint shader;
+	GLuint shader = 0;
 	std::string shaderSource;
 	GLint return_code;
 
 	shaderSource = LoadShaderSource(filename);
 
-	const GLchar* shaderSourceArray[]={ shaderSource.c_str() };
+	if( shaderSource != "" )
+	{
 
-	shader = CreateShaderFromSource(shaderSourceArray,shaderType );
+		const GLchar* shaderSourceArray[]={ shaderSource.c_str() };
+
+		shader = CreateShaderFromSource( shaderSourceArray, shaderType );  // TODO error check this.
 	
-	glCompileShader(shader);
+		printf ( "\tCompiling..." );
 
-	//check success
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &return_code);
-	if (return_code == GL_TRUE)  //TODO: Better error handling.
-	{
-		printf("%s Compiled\n",filename);
-	}
-	else
-	{
-		//TODO: Better error handling.
-		printf("%s Failed\n",filename);
+		glCompileShader(shader);
 
-		int logLength;
-		GLchar log[2048];
-		glGetShaderInfoLog(shader,2048,&logLength,log);
-		printf(log);
+		//check success
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &return_code);
+		if (return_code == GL_TRUE)  
+		{
+			printf("Success\n");
+		}
+		else
+		{
+			printf("Failed\n");
+
+			GLint logLength;
+
+			glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &logLength );
+
+			GLchar* log = new GLchar[logLength + 1];
+			glGetShaderInfoLog( shader, logLength, NULL, log );
+
+			printf(log);
+
+			//clean up.
+			glDeleteShader( shader );
+			shader = 0;
+		}
 	}
+	
 
 	return shader;
 }
 
-void MaterialManager::AttachShaderToProgram( GLuint shader, GLuint program, std::string shaderName)
+void MaterialManager::AttachShaderToProgram( GLuint shader, GLuint program )
 {
 	GLenum err;
+
+	printf( "\tAttaching Shader...");
 
 	glAttachShader(program, shader);
 	err = glGetError();
 	if (err != GL_NO_ERROR )
 	{
-		printf("Error Attaching: %s %d", shaderName.c_str(), err); 
+		printf( "Failed: %d\n", err ); 
 	}
+	else
+		printf( "Success\n");
 	
 }

@@ -122,8 +122,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // tutorial/test renderer
-		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		//graphics->Render( getGameTime() );  // tutorial/test renderer
+		graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 
