@@ -3,6 +3,7 @@ tess_control_shader =
 tess_eval_shader = 
 geometry_shader = 
 fragment_shader = default.frag.glsl
+fragment_shader = default.frag2.glsl
 texture01 = 
 texture02 = 
 texture03 = 

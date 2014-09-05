@@ -1,0 +1,2 @@
+vertex_shader = alien_rain_vert.glsl
+fragment_shader = alien_rain_frag.glsl

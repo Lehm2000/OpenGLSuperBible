@@ -65,7 +65,8 @@ void GraphicsEngine::Render(const double currentTime)
 
 	float t = (float)currentTime;
 
-	glUseProgram(rendering_program);
+	//glUseProgram(rendering_program);
+	glUseProgram( materialMap["alien_rain"].getProgram() );
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, rain_buffer); 
 
@@ -89,8 +90,8 @@ void GraphicsEngine::Render(const double currentTime)
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
 
-	GLint mv_location = glGetUniformLocation(rendering_program, "mv_matrix");
-	GLint proj_location = glGetUniformLocation(rendering_program, "proj_matrix");
+	//GLint mv_location = glGetUniformLocation(rendering_program, "mv_matrix");
+	//GLint proj_location = glGetUniformLocation(rendering_program, "proj_matrix");
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -253,7 +254,9 @@ bool GraphicsEngine::InitShaders(void)
 {
 	// Temp tutorial code.
 
-	GLuint vertex_shader;
+	BufferMaterial( "alien_rain" );
+
+	/*GLuint vertex_shader;
 	GLuint fragment_shader;
 	GLuint tess_control_shader;
 	GLuint tess_eval_shader;
@@ -302,7 +305,7 @@ bool GraphicsEngine::InitShaders(void)
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 
-	
+	*/
 
 	return true;
 }
@@ -505,7 +508,7 @@ bool GraphicsEngine::BufferMaterial( std::string materialPath )
 	{
 		// Add it to the shader map
 	 
-		materialMap.insert( std::pair< std::string, GEMaterial >( "default", newMaterial ) );
+		materialMap.insert( std::pair< std::string, GEMaterial >( materialPath, newMaterial ) );
 
 		success = true;
 
