@@ -55,7 +55,18 @@ GraphicsEngine::~GraphicsEngine()
 // this version of render is for tutorial code.
 void GraphicsEngine::Render(const double currentTime)
 {
-	glBindVertexArray(vertex_array_object);
+	// get the viewport info out of the game entities
+	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
+	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
+
+	// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
+	glm::mat4 viewMatrix;
+	std::map< std::string, GEObject* >::const_iterator camIt = (*gameEntities).find("gameCam");
+	CameraObject* gameCam = (CameraObject*)camIt->second;
+	if (gameCam->getClassName() == "PerspectiveCamera" )
+	{
+		viewMatrix = glm::perspective( ((PerspectiveCamera*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+	}
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const GLfloat one = 1.0f;
@@ -63,35 +74,43 @@ void GraphicsEngine::Render(const double currentTime)
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
-	float t = (float)currentTime;
+	unsigned int renderCount = 0;
 
-	//glUseProgram(rendering_program);
-	glUseProgram( materialMap["alien_rain"].getProgram() );
-
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, rain_buffer); 
-
-	vmath::vec4 * droplet = (vmath::vec4 *) glMapBufferRange(GL_UNIFORM_BUFFER,0,256* sizeof (vmath::vec4), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-
-	for (int i = 0; i < 256; i++)
+	// Iterate throught game entities here.
+	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->begin(); it != gameEntities->end(); it++ )
 	{
-		droplet[i][0] = droplet_x_offset[i];
-		droplet[i][1] = 2.0f - fmodf( (t + float(i) ) * droplet_fall_speed[i], 4.31f);
-		droplet[i][2] = t * droplet_rot_speed[i];
-		droplet[i][3] = 0.0f;
+		if ( it->second->isVisible() )
+		{
+			renderCount++;
+
+			GLuint colorSubs[3];
+			GEMaterial renderMaterial;
+			
+			renderMaterial = materialMap[ "SolidRGB_Subroutine" ];
+
+			glUseProgram ( renderMaterial.getProgram() );
+			
+			GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
+			GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "view_matrix" );
+
+			colorSubs[0] = glGetProgramResourceIndex( renderMaterial.getProgram(), GL_FRAGMENT_SUBROUTINE, "colorSubRed" );
+			colorSubs[1] = glGetProgramResourceIndex( renderMaterial.getProgram(), GL_FRAGMENT_SUBROUTINE, "colorSubGreen" );
+			colorSubs[2] = glGetProgramResourceIndex( renderMaterial.getProgram(), GL_FRAGMENT_SUBROUTINE, "colorSubBlue" );
+
+			glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &colorSubs[ renderCount % 3 ] );
+
+			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
+
+			glBindVertexArray( renderMesh.getVOA() );
+
+			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
+
+			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+			glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+            
+			glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
+		}
 	}
-
-	glUnmapBuffer(GL_UNIFORM_BUFFER);
-
-	int alien_index;
-
-	for ( alien_index = 0; alien_index < 256; alien_index++)
-	{
-		glVertexAttribI1i(0, alien_index);
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
-
-	//GLint mv_location = glGetUniformLocation(rendering_program, "mv_matrix");
-	//GLint proj_location = glGetUniformLocation(rendering_program, "proj_matrix");
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -104,7 +123,7 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
 	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
 
-	// calculate the view matrix... which is constant for all objects... only need to calc once.
+	// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 	glm::mat4 viewMatrix;
 	std::map< std::string, GEObject* >::const_iterator camIt = (*gameEntities).find("gameCam");
 	CameraObject* gameCam = (CameraObject*)camIt->second;
@@ -126,15 +145,29 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	{
 		if ( it->second->isVisible() )
 		{
-			glUseProgram( materialMap["default"].getProgram() );
-			//glBindVertexArray( vaoMap[ it->second->getMesh() ] );
+			GEMaterial renderMaterial;
+			std::string renderMaterialName = it->second->getMaterial();
+
+			std::map< std::string, GEMaterial>::iterator mapIt = materialMap.find( renderMaterialName );
+
+			if ( mapIt != materialMap.end() )
+			{
+				renderMaterial = materialMap[ renderMaterialName ];
+			}
+			else
+			{
+				// if the material specified for this object is not found use the default
+				renderMaterial = materialMap[ "default" ];
+			}
+
+			glUseProgram ( renderMaterial.getProgram() );
 			
+			GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
+			GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "view_matrix" );
+
 			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
 
 			glBindVertexArray( renderMesh.getVOA() );
-
-			GLint worldMatrixLocation = glGetUniformLocation( materialMap["default"].getProgram(), "world_matrix" );
-			GLint viewMatrixLocation = glGetUniformLocation( materialMap["default"].getProgram(), "view_matrix" );
 
 			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
 
@@ -255,6 +288,7 @@ bool GraphicsEngine::InitShaders(void)
 	// Temp tutorial code.
 
 	BufferMaterial( "alien_rain" );
+	BufferMaterial( "SolidRGB_Subroutine" );
 
 	/*GLuint vertex_shader;
 	GLuint fragment_shader;

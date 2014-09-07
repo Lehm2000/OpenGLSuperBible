@@ -112,7 +112,7 @@ void GameEngine::Update()
 	// Update entities
 	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.begin(); it != gameEntities.end(); it++ )
 	{
-		it->second->Update( timeDelta );
+		it->second->Update( getGameTime(), timeDelta );
 	}
 
 	// Update the last frametime
@@ -122,8 +122,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // tutorial/test renderer
-		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		//graphics->Render( getGameTime() );  // tutorial/test renderer
+		graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 

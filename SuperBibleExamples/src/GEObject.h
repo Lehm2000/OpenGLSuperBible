@@ -11,7 +11,7 @@
 #include <string>
 #include <glm\glm.hpp>
 
-//#include "vmath.h"
+#include "GEController.h"
 
 
 
@@ -22,15 +22,15 @@ private:
 	std::string id;		// unique id for this object.  Is this necessary?
 	std::string name;	// non-unique name;
 
-	// spacial
+	// Transforms
 	glm::vec3 position;
 	glm::vec3 rotation;
 	glm::vec3 scale;
 
-	// Spacial Velocities.
-	glm::vec3 positionVel;
-	glm::vec3 rotationVel;
-	glm::vec3 scaleVel;
+	// Transform Controllers
+	GEController* positionController;
+	GEController* rotationController;
+	GEController* scaleController;
 
 	// Display
 	bool visible;				// draw it?
@@ -50,9 +50,9 @@ public:
 	virtual void setRotation(const glm::vec3 rotation);  // in Radians!
 	virtual void setScale(const glm::vec3 scale);
 	
-	virtual void setPositionVel(const glm::vec3 positionVel);
-	virtual void setRotationVel(const glm::vec3 rotationVel);	// in Radians!
-	virtual void setScaleVel(const glm::vec3 scaleVel);
+	virtual void setPositionController( GEController* positionController );
+	virtual void setRotationController( GEController* rotationController );	
+	virtual void setScaleController( GEController* scaleController);
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );
@@ -67,9 +67,9 @@ public:
 	glm::vec3 getRotation() const;
 	glm::vec3 getScale() const;
 	
-	glm::vec3 getPositionVel() const;
-	glm::vec3 getRotationVel() const;
-	glm::vec3 getScaleVel() const;
+	const GEController* getPositionController() const;
+	const GEController* getRotationController() const;
+	const GEController* getScaleController() const;
 
 	bool isVisible() const;
 	std::string getMesh() const;
@@ -90,9 +90,11 @@ public:
 	glm::mat4 GetTransformMatrix();
 
 	/**
+		Update()
+		@param gameTime - time (in seconds) passed since game began.
 		@param deltaTime - time (in seconds) passed since last frame.
 	*/
-	virtual void Update(const double deltaTime);
+	virtual void Update( const double gameTime, const double deltaTime);
 
 };
 
