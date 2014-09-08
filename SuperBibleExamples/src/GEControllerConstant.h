@@ -23,6 +23,7 @@ public:
 
 	GEControllerConstant();
 	GEControllerConstant(glm::vec3 deltaVec);
+	GEControllerConstant( const GEControllerConstant& source );
 	virtual ~GEControllerConstant();
 
 	// Setters
@@ -32,6 +33,14 @@ public:
 	glm::vec3 getDeltaVec() const;
 
 	// Functions
+
+	/**
+		clone()
+		Returns a pointer to a copy of itself.  Used when you need a copy of a
+		derived class and only have a pointer to the base class.
+		@return - pointer to a copy of this object
+	*/
+	virtual GEControllerConstant* clone() const;
 
 	/**
 		Update()

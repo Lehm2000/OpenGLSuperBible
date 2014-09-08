@@ -24,6 +24,7 @@ public:
 
 	GEControllerOscillator();
 	GEControllerOscillator( glm::vec3 amplitude, float frequency );
+	GEControllerOscillator( const GEControllerOscillator& source );
 	virtual ~GEControllerOscillator();
 
 	// Setters
@@ -35,6 +36,14 @@ public:
 	float getFrequency() const;
 
 	// Functions
+
+	/**
+		clone()
+		Returns a pointer to a copy of itself.  Used when you need a copy of a
+		derived class and only have a pointer to the base class.
+		@return - pointer to a copy of this object
+	*/
+	virtual GEControllerOscillator* clone() const;
 
 	/**
 		Update()

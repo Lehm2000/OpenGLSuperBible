@@ -18,14 +18,10 @@ GEObject::GEObject()
 	this->setRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 	this->setScale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
 
-	GEController* tempController = new GEController(); 
-	this->setPositionController ( tempController );
-	
-	tempController = new GEController(); 
-	this->setRotationController ( tempController );
-	
-	tempController = new GEController(); 
-	this->setScaleController ( tempController );
+	// Initialize the controller list... add base "static" controller to the as the first
+	this->addPositionController ( new GEController() );
+	this->addRotationController ( new GEController() );	
+	this->addScaleController ( new GEController() );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
@@ -41,14 +37,10 @@ GEObject::GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std
 	this->setRotation( rotation );
 	this->setScale( scale );
 
-	GEController* tempController = new GEController(); 
-	this->setPositionController ( tempController );
-	
-	tempController = new GEController(); 
-	this->setRotationController ( tempController );
-	
-	tempController = new GEController(); 
-	this->setScaleController ( tempController );
+	// Initialize the controller list... add base "static" controller as the first
+	this->addPositionController ( new GEController() );
+	this->addRotationController ( new GEController() );	
+	this->addScaleController ( new GEController() );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
@@ -57,22 +49,23 @@ GEObject::GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std
 
 GEObject::~GEObject()
 {
-	if (this->positionController != nullptr )
+	// Delete all the controllers
+	for ( unsigned int i = 0; i < positionControllers.size(); i++)
 	{
-		delete positionController;
-		positionController = 0;
+		delete positionControllers[i];
+		positionControllers[i] = nullptr;
 	}
 
-	if (this->rotationController != nullptr )
+	for ( unsigned int i = 0; i < rotationControllers.size(); i++)
 	{
-		delete rotationController;
-		rotationController = 0;
+		delete rotationControllers[i];
+		rotationControllers[i] = nullptr;
 	}
 
-	if (this->scaleController != nullptr )
+	for ( unsigned int i = 0; i < scaleControllers.size(); i++)
 	{
-		delete scaleController;
-		scaleController = 0;
+		delete scaleControllers[i];
+		scaleControllers[i] = nullptr;
 	}
 }
 
@@ -95,39 +88,6 @@ void GEObject::setRotation( const glm::vec3 rotation )
 void GEObject::setScale(const glm::vec3 scale)
 {
 	this->scale = scale;
-}
-
-void GEObject::setPositionController( GEController* positionController )
-{
-	if (this->positionController != nullptr )
-	{
-		delete this->positionController;
-		this->positionController = 0;
-	}
-
-	this->positionController = positionController;
-}
-
-void GEObject::setRotationController( GEController* rotationController )
-{
-	if (this->rotationController != nullptr )
-	{
-		delete this->rotationController;
-		this->rotationController = 0;
-	}
-
-	this->rotationController = rotationController;
-}
-
-void GEObject::setScaleController( GEController* scaleController)
-{
-	if (this->scaleController != nullptr )
-	{
-		delete this->scaleController;
-		this->scaleController = 0;
-	}
-
-	this->scaleController = scaleController;
 }
 
 void GEObject::setVisible( const bool visible )
@@ -171,6 +131,7 @@ glm::vec3 GEObject::getScale() const
 	return this->scale;
 }
 
+/*
 const GEController* GEObject::getPositionController() const
 {
 	return this->positionController;
@@ -185,6 +146,7 @@ const GEController* GEObject::getScaleController() const
 {
 	return this->scaleController;
 }
+*/
 
 
 bool GEObject::isVisible() const
@@ -255,14 +217,19 @@ glm::mat4 GEObject::GetTransformMatrix()
 {
 	glm::mat4 transformMatrix;
 
-	glm::vec3 combinedPosition = getPosition() ;  // place to hold the combined position information from the position controllers. (Once we enable more than 1)
-	glm::vec3 combinedRotation = getRotation() ;  // place to hold the combined position information from the position controllers. (Once we enable more than 1)
-	glm::vec3 combinedScale = getScale() ;  // place to hold the combined position information from the position controllers. (Once we enable more than 1)
+	glm::vec3 combinedPosition = getPosition() ;  // place to hold the combined position information from the position controllers. 
+	glm::vec3 combinedRotation = getRotation() ;  // place to hold the combined position information from the position controllers. 
+	glm::vec3 combinedScale = getScale() ;  // place to hold the combined position information from the position controllers.
 
-	// Calculate transforms (eventually loop through the controllers here)
-	combinedPosition = positionController->CalcTransform( combinedPosition );
-	combinedRotation = rotationController->CalcTransform( combinedRotation );
-	combinedScale = scaleController->CalcTransform( combinedScale );
+	// Calculate transforms... looping through the stack of controllers
+	for ( unsigned int i = 0; i < positionControllers.size(); i++)
+		combinedPosition = positionControllers[i]->CalcTransform( combinedPosition );
+
+	for ( unsigned int i = 0; i < rotationControllers.size(); i++)
+		combinedRotation = rotationControllers[i]->CalcTransform( combinedRotation );
+
+	for ( unsigned int i = 0; i < scaleControllers.size(); i++)
+		combinedScale = scaleControllers[i]->CalcTransform( combinedScale );
 
 	transformMatrix = glm::translate( glm::mat4(), combinedPosition ) * 
 		glm::rotate( glm::mat4(), combinedRotation[2], glm::vec3( 0.0f, 0.0f, 1.0f ) ) * 
@@ -276,7 +243,44 @@ glm::mat4 GEObject::GetTransformMatrix()
 void GEObject::Update( const double gameTime, const double deltaTime)
 {
 	// Let object controllers do their thing.
-	this->positionController->Control( this->getPosition(), gameTime, deltaTime );
-	this->rotationController->Control( this->getRotation(), gameTime, deltaTime );
-	this->scaleController->Control( this->getScale(), gameTime, deltaTime );
+
+	// TODO: should we be passing the previous controllers new vec3 instead of the objects vec3?
+	for ( unsigned int i = 0; i < positionControllers.size(); i++)
+		positionControllers[i]->Control( this->getPosition(), gameTime, deltaTime );
+
+	for ( unsigned int i = 0; i < rotationControllers.size(); i++)
+		rotationControllers[i]->Control( this->getRotation(), gameTime, deltaTime );
+
+	for ( unsigned int i = 0; i < scaleControllers.size(); i++)
+		scaleControllers[i]->Control( this->getScale(), gameTime, deltaTime );
+
+}
+
+void GEObject::addPositionController( GEController* positionController )
+{
+	this->positionControllers.push_back( positionController->clone() );  // add a copy of the controller to the controller vector
+}
+
+void GEObject::addRotationController( GEController* rotationController )
+{
+	this->rotationControllers.push_back( rotationController->clone() );		// add a copy of the controller to the controller vector
+}
+
+void GEObject::addScaleController( GEController* scaleController)
+{
+	this->scaleControllers.push_back( scaleController->clone() );	// add a copy of the controller to the controller vector
+}
+
+void GEObject::removePositionController( const unsigned int index )
+{
+	this->positionControllers.erase( positionControllers.begin() + index );
+}
+
+void GEObject::removeRotationController( const unsigned int index )
+{
+	this->rotationControllers.erase( rotationControllers.begin() + index );
+}
+void GEObject::removeScaleController( const unsigned int index)
+{
+	this->scaleControllers.erase( scaleControllers.begin() + index );
 }

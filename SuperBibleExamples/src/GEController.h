@@ -28,9 +28,18 @@ public:
 	// Structors
 	
 	GEController();
+	GEController( const GEController& source);
 	virtual ~GEController();
 
 	// Functions
+
+	/**
+		clone()
+		Returns a pointer to a copy of itself.  Used when you need a copy of a
+		derived class and only have a pointer to the base class.
+		@return - pointer to a copy of this object
+	*/
+	virtual GEController* clone() const;
 
 	/**
 		Control()

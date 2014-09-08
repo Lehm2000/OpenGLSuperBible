@@ -11,7 +11,13 @@ GEControllerOscillator::GEControllerOscillator()
 GEControllerOscillator::GEControllerOscillator( glm::vec3 amplitude, float frequency )
 {
 	this->setAmplitude( amplitude  );
-	this->setFrequency( frequency  );
+	this->setFrequency( frequency );
+}
+
+GEControllerOscillator::GEControllerOscillator( const GEControllerOscillator& source )
+{
+	this->setAmplitude( source.amplitude );
+	this->frequency = source.frequency;	// can't use setter for this as it modifies incoming value.
 }
 
 GEControllerOscillator::~GEControllerOscillator()
@@ -44,6 +50,11 @@ float GEControllerOscillator::getFrequency() const
 
 
 // Functions
+
+GEControllerOscillator* GEControllerOscillator::clone() const
+{
+	return new GEControllerOscillator( *this );
+}
 
 void GEControllerOscillator::Control( glm::vec3 objectVector, double gameTime, double deltaTime)
 {

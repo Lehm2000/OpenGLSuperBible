@@ -13,6 +13,11 @@ GEControllerConstant::GEControllerConstant(glm::vec3 deltaVec)
 	this->setDeltaVec( deltaVec );
 }
 
+GEControllerConstant::GEControllerConstant( const GEControllerConstant& source )
+{
+	this->deltaVec = source.deltaVec;
+}
+
 GEControllerConstant::~GEControllerConstant()
 {
 }
@@ -30,6 +35,11 @@ glm::vec3 GEControllerConstant::getDeltaVec() const
 }
 
 // Functions
+
+GEControllerConstant* GEControllerConstant::clone() const
+{
+	return new GEControllerConstant( *this );
+}
 
 void GEControllerConstant::Control( glm::vec3 objectVector, double gameTime, double deltaTime)
 {

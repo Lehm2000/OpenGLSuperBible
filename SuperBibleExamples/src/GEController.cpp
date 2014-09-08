@@ -10,12 +10,21 @@ GEController::GEController()
 	this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
 }
 
+GEController::GEController( const GEController& source)
+{
+	this->transformedVector = source.transformedVector;
+}
 
 GEController::~GEController()
 {
 }
 
 // Functions
+
+GEController* GEController::clone() const
+{
+	return new GEController(*this);
+}
 
 void GEController::Control( glm::vec3 objectVector, double gameTime, double deltaTime)
 {

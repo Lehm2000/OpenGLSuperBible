@@ -29,23 +29,29 @@ int main(void)
 
 	// Create a test object
 
+	GEController* tempPosCon;
+	GEController* tempRotCon;
+	GEController* tempScaCon;
+
 	GEObject* testObject = new GEObject( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 1.0f, 1.0f, 1.0f ), "test_object");
 	testObject->setMesh( "default" );
 	testObject->setMaterial( "default" );
+	testObject->addRotationController ( new GEControllerConstant( glm::vec3( 1.0f, 1.0f, 0.0f ) ) );
+	testObject->addPositionController ( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f), 6.0f ) );
+	testObject->addPositionController ( new GEControllerOscillator( glm::vec3( 0.1f, 0.0f, 0.0f), 0.5f ) );
 	gameEngine.AddEntity( "testObject", testObject );
 
 	GEObject* testObject2 = new GEObject( glm::vec3( 1.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 1.0f, 1.0f, 1.0f ), "test_object2");
 	testObject2->setMesh( "default" );
 	testObject2->setMaterial( "default" );
+	testObject2->addScaleController( new GEControllerOscillator( glm::vec3( 0.5f, 0.5f, 0.5f ) , 3.0f ) );
+	
 	gameEngine.AddEntity( "testObject2", testObject2 );
 
 	GEObject* testObject3 = new GEObject( glm::vec3( -1.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( .5f, .5f, .5f ), "test_object3");
 	testObject3->setMesh( "default" );
 	testObject3->setMaterial( "default" );
-	GEController* tempPosCon = new GEControllerOscillator( glm::vec3( 0.5f, 0.5f, 0.5f), 5.0f );
-	GEController* tempRotCon = new GEControllerConstant( glm::vec3( 1.0f, 1.0f, 1.0f) );
-	testObject3->setPositionController ( tempPosCon );
-	testObject3->setRotationController ( tempRotCon );
+	testObject3->addPositionController( new GEControllerOscillator( glm::vec3( 0.5f, 0.5f, 0.5f), 5.0f ) );
 	gameEngine.AddEntity( "testObject3", testObject3 );
 
 	while (gameRunning)
