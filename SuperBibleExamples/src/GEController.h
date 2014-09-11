@@ -14,22 +14,40 @@
 	Author: Jeff Adams
 */
 
+#include <map>
 #include <glm\glm.hpp>
 
+#include "GEObject.h"
+
+class GEObject;
 
 class GEController
 {
 protected:
 	// Members
 	
+	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example.
+	const std::map< std::string, GEObject* >* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
+
 	glm::vec3 transformedVector;	// the transformed data.
 
 public:
 	// Structors
 	
 	GEController();
+	GEController( const GEObject* parent, const std::map< std::string, GEObject* >* gameEntities );
 	GEController( const GEController& source);
 	virtual ~GEController();
+
+	// Setters
+
+	virtual void setParent( const GEObject* parent );
+	virtual void setGameEntities( const std::map< std::string, GEObject* >* gameEntities );
+
+	// Getters
+
+	virtual const GEObject* getParent() const;
+	virtual const std::map< std::string, GEObject* >* getGameEntities() const;
 
 	// Functions
 
@@ -49,7 +67,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( glm::vec3 objectVector, double gameTime, double deltaTime);
+	virtual void Control( glm::vec3 objectVector, double gameTime, double deltaTime );
 
 	/**
 		CalcTransform()

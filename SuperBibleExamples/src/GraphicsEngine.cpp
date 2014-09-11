@@ -8,8 +8,9 @@
 #include "GameEngine.h"
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
-#include "PerspectiveCamera.h"
-#include "ViewportInfo.h"
+#include "CameraPerspective.h"
+#include "InfoViewport.h"
+#include "InfoGameVars.h"
 
 
 //Link static variables
@@ -56,16 +57,16 @@ GraphicsEngine::~GraphicsEngine()
 void GraphicsEngine::Render(const double currentTime)
 {
 	// get the viewport info out of the game entities
-	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
-	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
+	std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
+	InfoViewport* viewportInfo = (InfoViewport*)vpIt->second;
 
 	// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 	glm::mat4 viewMatrix;
-	std::map< std::string, GEObject* >::const_iterator camIt = (*gameEntities).find("gameCam");
+	std::map< std::string, GEObject* >::const_iterator camIt = gameEntities->find("gameCam");
 	CameraObject* gameCam = (CameraObject*)camIt->second;
-	if (gameCam->getClassName() == "PerspectiveCamera" )
+	if (gameCam->getClassName() == "CameraPerspective" )
 	{
-		viewMatrix = glm::perspective( ((PerspectiveCamera*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
 	}
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -120,16 +121,16 @@ void GraphicsEngine::Render(const double currentTime)
 void GraphicsEngine::Render(const double currentTime, const std::map< std::string, GEObject* >* gameEntities_notused)
 {
 	// get the viewport info out of the game entities
-	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
-	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
+	std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
+	InfoViewport* viewportInfo = (InfoViewport*)vpIt->second;
 
 	// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 	glm::mat4 viewMatrix;
-	std::map< std::string, GEObject* >::const_iterator camIt = (*gameEntities).find("gameCam");
+	std::map< std::string, GEObject* >::const_iterator camIt = gameEntities->find("gameCam");
 	CameraObject* gameCam = (CameraObject*)camIt->second;
-	if (gameCam->getClassName() == "PerspectiveCamera" )
+	if (gameCam->getClassName() == "CameraPerspective" )
 	{
-		viewMatrix = glm::perspective( ((PerspectiveCamera*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
 	}
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -138,9 +139,8 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
-	// get view matrix
-
 	// Iterate throught game entities here.
+	
 	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->begin(); it != gameEntities->end(); it++ )
 	{
 		if ( it->second->isVisible() )
@@ -177,6 +177,48 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 			glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
 		}
 	}
+	
+	// Testing text output
+
+	GEMaterial fontMaterial = materialMap[ "SystemFont01" ];
+	glUseProgram( fontMaterial.getProgram() );
+	glActiveTexture( GL_TEXTURE0 );
+
+	GLint fontTextureLoc = glGetUniformLocation( fontMaterial.getProgram(), "fontTexture");
+	GLint screenMatrixLocation = glGetUniformLocation( fontMaterial.getProgram(), "screenMatrix" );
+	GLuint charSizeLoc = glGetUniformLocation( fontMaterial.getProgram(), "charSize" );
+	GLuint charCodeLoc = glGetUniformLocation( fontMaterial.getProgram(), "charCode" );
+	GLuint charOffsetLoc = glGetUniformLocation( fontMaterial.getProgram(), "charOffset" );
+	GLuint startPosLoc = glGetUniformLocation( fontMaterial.getProgram(), "startPos" );
+	
+	glUniform1f( charSizeLoc, 0.015f );
+	glUniform2f( startPosLoc, 0.0075, 0.0075 );
+	
+	//glVertexAttribI1i( 2, 0 );
+
+	glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)viewportInfo->getViewportHeight()/(float)viewportInfo->getViewportWidth(), 0.0f );
+
+	glUniformMatrix4fv(screenMatrixLocation, 1, GL_FALSE, &screenMatrix[0][0]);
+	
+	glUniform1i(fontTextureLoc, 0);
+
+	glBindTexture( GL_TEXTURE_2D, textureMap.find("SYS_Font01")->second );
+	
+	vpIt = gameEntities->find("SYS_Game_Vars");
+	InfoGameVars* gameVars = static_cast<InfoGameVars*>(vpIt->second);
+
+	std::string testString1 = "FPS: ";
+	std::string testString2 = std::to_string( 1.0 / gameVars->getDeltaFrameTime() );
+	testString1.append( testString2 );
+	
+	for (unsigned int i = 0; i<testString1.length(); i++ )
+	{
+		glUniform1ui( charCodeLoc, testString1.c_str()[i] );
+		glUniform1ui( charOffsetLoc, i );
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	}
+
+	
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -191,8 +233,8 @@ bool GraphicsEngine::Init()
 		//return false;
 		exit(EXIT_FAILURE);
 
-	std::map< std::string, GEObject* >::const_iterator vpIt = (*gameEntities).find("SYS_Viewport_Options");
-	ViewportInfo* viewportInfo = (ViewportInfo*)vpIt->second;
+	std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
+	InfoViewport* viewportInfo = (InfoViewport*)vpIt->second;
 
 	//vars for window dimensions... temporary
 	//int winWidth = 640;
@@ -289,6 +331,7 @@ bool GraphicsEngine::InitShaders(void)
 
 	BufferMaterial( "alien_rain" );
 	BufferMaterial( "SolidRGB_Subroutine" );
+	BufferMaterial( "SystemFont01" );
 
 	/*GLuint vertex_shader;
 	GLuint fragment_shader;
@@ -454,6 +497,36 @@ void GraphicsEngine::InitTextures(void)
 	//	clean up
 	delete [] data[0];
 	delete [] data[1];
+
+
+	// Load the font Texture
+	IUImage<unsigned char> fontTex = texMan.LoadTexture( "font01.bmp", GE_TEXTYPE_BMP, returnType );
+	
+	unsigned char* fontTexData;
+	fontTexData = (unsigned char*)malloc( fontTex.getDataSize() );
+	fontTex.getData( fontTexData );
+
+	GLuint fontTexture;
+	glGenTextures(1, &fontTexture);
+	glBindTexture(GL_TEXTURE_2D, fontTexture);
+
+	glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, fontTex.getWidth(), fontTex.getHeight() );
+	glTexSubImage2D( GL_TEXTURE_2D,0,0,0, fontTex.getWidth(), fontTex.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, fontTexData );
+
+	glGenerateMipmap( GL_TEXTURE_2D );
+
+	textureMap.insert( std::pair< std::string, GLuint >( "SYS_Font01", fontTexture ) );
+
+	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
+	GLuint sampler;
+	glGenSamplers(1, &sampler);
+
+	//	set some sampler options
+	glSamplerParameteri(sampler,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(sampler,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+
+	//	now bind it to a texture unit
+	glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
 
 }
 

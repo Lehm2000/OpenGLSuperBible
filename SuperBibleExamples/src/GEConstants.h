@@ -1,0 +1,7 @@
+#ifndef GECONSTANTS_H
+#define GECONSTANTS_H
+
+#define GE_PI 3.1415926535f
+
+
+#endif /* GECONSTANTS_H */

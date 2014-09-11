@@ -88,39 +88,41 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 				//(basically rounds up to next multiple of 4)
 				int paddedFileRowSize = ((dibHeader.bitDepth * dibHeader.width + 31) / 32) * 4;
 				
-				//also need the row size for the destination which is not padded.
+				// also need the row size for the destination which is not padded.
 				int unpaddedFileRowSize = dibHeader.width * (dibHeader.bitDepth/8);
 
 				unsigned int totalImageElements = dibHeader.width * dibHeader.height * (dibHeader.bitDepth/8);
 
 				unsigned int i, j, k;
 
-				//iterate through all the rows
+				// iterate through all the rows
 				for (i = 0; i < dibHeader.height; i++)
 				{ 
-					//at what memory location in imageFileData does row begin.
+					// at what memory location in imageFileData does row begin.
 					unsigned int rowStartLocation = paddedFileRowSize * i; 
 
-					//iterate throught the columns in the rows.
+					// iterate throught the columns in the rows.
 					for (j = 0; j < dibHeader.width; j++)
 					{
-						//iterate through the color channels
+						// iterate through the color channels
 						for (k = 0; k < dibHeader.bitDepth/8; k++)
 						{
 							//determine locations to read/write
-							unsigned int locDest =  (i * unpaddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k ;
-							locDest = ( totalImageElements - locDest ) - 1;	// BMPs are stored upside down, so reverse the destination to put the image back in the proper order.
 							
+							// BMP's rows are reversed.. so top row is at the bottom.  So we need to flip the rows.  Thats what the dibHeader.height - 1 is all about.
+							unsigned int locDest =  ( ( ( dibHeader.height - 1) - i ) * unpaddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k ;
+							
+							// No need to reverse the source as well.
 							unsigned int locSource = (i * paddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k;
 
-							//read and place in destination.
+							// read and place in destination.
 							tempData[locDest] = imageFileData[locSource];
 						}
 					}
 					
 				}
 
-				//put the loaded and converted image data into the return image.
+				// put the loaded and converted image data into the return image.
 				returnImage.setData(dibHeader.width, dibHeader.height, dibHeader.bitDepth/8 , tempData);
 
 				//do some cleanup

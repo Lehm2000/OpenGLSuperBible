@@ -1,5 +1,5 @@
-#ifndef PERSPECTIVECAMERA_H
-#define PERSPECTIVECAMERA_H
+#ifndef CAMERAPERSPECTIVE_H
+#define CAMERAPERSPECTIVE_H
 
 /**
 	PerspectiveCamera
@@ -15,7 +15,7 @@
 
 #include "CameraObject.h"
 
-class PerspectiveCamera: public CameraObject
+class CameraPerspective: public CameraObject
 {
 private:
 	float fov;
@@ -23,9 +23,9 @@ private:
 public:
 
 	// Structors
-	PerspectiveCamera();
-	PerspectiveCamera( glm::vec3 position, glm::vec3 rotation, float fov, bool targeted, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	~PerspectiveCamera();
+	CameraPerspective();
+	CameraPerspective( glm::vec3 position, glm::vec3 rotation, float fov );
+	~CameraPerspective();
 
 	// Setters
 	void setFov( const float fov );
@@ -37,4 +37,4 @@ public:
 	virtual std::string getClassName();
 };
 
-#endif /* PERSPECTIVECAMERA_H */
+#endif /* CAMERAPERSPECTIVE_H */

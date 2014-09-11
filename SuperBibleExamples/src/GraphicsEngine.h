@@ -78,7 +78,8 @@ private:
 	
 	std::map< std::string, GEMesh > meshMap;	// Holds all the mesh information for the Graphics Engine.
 	std::map< std::string, GEMaterial > materialMap;	// Holds all materials for the game.  Materials hold the shader plus references to the textures used.
-	
+	std::map< std::string, GLuint > textureMap;			// Holds textures for the game.
+
 	MaterialManager materialMan;	//for material operations
 
 	//some temp variables for the alien rain example

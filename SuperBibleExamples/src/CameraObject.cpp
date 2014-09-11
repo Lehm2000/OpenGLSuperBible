@@ -8,50 +8,16 @@
 CameraObject::CameraObject()
 {
 	this->setVisible( false );
-	this->setTargeted( false );
-	this->setTargetPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
 }
 
-CameraObject::CameraObject( glm::vec3 position, glm::vec3 rotation, bool targeted, glm::vec3 targetPosition )
+CameraObject::CameraObject( glm::vec3 position, glm::vec3 rotation )
 	:GEObject( position, rotation, glm::vec3( 1.0f, 1.0f, 1.0f ) )
 {
 	this->setVisible( false );
-	this->setTargeted( targeted );
-	this->setTargetPosition( targetPosition );
 }
 
 CameraObject::~CameraObject()
 {
-}
-
-// Setters
-void CameraObject::setTargeted( const bool targeted )
-{
-	this->targeted = targeted;
-
-	// If the camera is set to targeted calculate its new rotation.
-	if ( targeted )
-		CalcTargetRotation();
-}
-
-void CameraObject::setTargetPosition( const glm::vec3 targetPosition )
-{
-	this->targetPosition = targetPosition;
-
-	// If the camera is set to targeted calculate its new rotation.
-	if ( this->targeted )
-		CalcTargetRotation();
-}
-
-// Getters
-bool CameraObject::isTargeted() const
-{
-	return targeted;
-}
-
-glm::vec3 CameraObject::getTargetPosition() const
-{
-	return targetPosition;
 }
 
 // Functions
@@ -64,21 +30,23 @@ glm::mat4 CameraObject::GetViewMatrix()
 {
 	glm::mat4 viewMatrix;
 
+	/*
 	if (targeted)
 	{
-		viewMatrix = glm::lookAt( getPosition(), getTargetPosition(), glm::vec3( 0.0f, 1.0f, 0.0f ) );  //Currently does not support camera tilt... TODO need to figure up vector.
+		viewMatrix = glm::lookAt( getTransformedPosition(), getTargetPosition(), glm::vec3( 0.0f, 1.0f, 0.0f ) );  //Currently does not support camera tilt... TODO need to figure up vector.
 	}
 	else
-	{
+	{*/
 		// First guess at this matrix... probably could be more efficient.
-		viewMatrix = glm::inverse( glm::translate( glm::mat4(), getPosition() ) * glm::rotate(glm::mat4(), getRotation()[1], glm::vec3(0,1,0) ) * glm::rotate(glm::mat4(), getRotation()[0], glm::vec3(1,0,0) ) );
-	}
+		viewMatrix = glm::inverse( glm::translate( glm::mat4(), getTransformedPosition() ) * glm::rotate(glm::mat4(), getTransformedRotation()[1], glm::vec3(0,1,0) ) * glm::rotate(glm::mat4(), getTransformedRotation()[0], glm::vec3(1,0,0) ) );
+	//}
 	
 	return viewMatrix;
 }
 
 void CameraObject::CalcTargetRotation()
 {
+	/*  TODO: Move to lookat controller
 	if ( this->targeted )	// Verify that this camera is targeted.
 	{
 		// We need to calculate the x and y rotations.  The z rotation is left alone to allow tilt/roll.
@@ -116,4 +84,5 @@ void CameraObject::CalcTargetRotation()
 		// assign the new calculated rotation back.
 		setRotation ( newRot );
 	}
+	*/
 }

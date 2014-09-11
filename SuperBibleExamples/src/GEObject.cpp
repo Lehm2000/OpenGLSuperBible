@@ -1,5 +1,5 @@
 
-
+#include <map>
 #include <random>
 #include <stdlib.h>
 #include <glm\glm.hpp>
@@ -216,26 +216,19 @@ std::string GEObject::getClassName()
 glm::mat4 GEObject::GetTransformMatrix()
 {
 	glm::mat4 transformMatrix;
+	glm::vec3 transformedPosition;
+	glm::vec3 transformedRotation;
+	glm::vec3 transformedScale;
 
-	glm::vec3 combinedPosition = getPosition() ;  // place to hold the combined position information from the position controllers. 
-	glm::vec3 combinedRotation = getRotation() ;  // place to hold the combined position information from the position controllers. 
-	glm::vec3 combinedScale = getScale() ;  // place to hold the combined position information from the position controllers.
+	transformedPosition = getTransformedPosition();
+	transformedRotation = getTransformedRotation();
+	transformedScale = getTransformedScale();
 
-	// Calculate transforms... looping through the stack of controllers
-	for ( unsigned int i = 0; i < positionControllers.size(); i++)
-		combinedPosition = positionControllers[i]->CalcTransform( combinedPosition );
-
-	for ( unsigned int i = 0; i < rotationControllers.size(); i++)
-		combinedRotation = rotationControllers[i]->CalcTransform( combinedRotation );
-
-	for ( unsigned int i = 0; i < scaleControllers.size(); i++)
-		combinedScale = scaleControllers[i]->CalcTransform( combinedScale );
-
-	transformMatrix = glm::translate( glm::mat4(), combinedPosition ) * 
-		glm::rotate( glm::mat4(), combinedRotation[2], glm::vec3( 0.0f, 0.0f, 1.0f ) ) * 
-		glm::rotate( glm::mat4(), combinedRotation[1], glm::vec3( 0.0f, 1.0f, 0.0f ) ) * 
-		glm::rotate( glm::mat4(), combinedRotation[0], glm::vec3( 1.0f, 0.0f, 0.0f ) ) *
-		glm::scale( glm::mat4(), combinedScale);
+	transformMatrix = glm::translate( glm::mat4(), transformedPosition ) * 
+		glm::rotate( glm::mat4(), transformedRotation.z, glm::vec3( 0.0f, 0.0f, 1.0f ) ) * 
+		glm::rotate( glm::mat4(), transformedRotation.y, glm::vec3( 0.0f, 1.0f, 0.0f ) ) * 
+		glm::rotate( glm::mat4(), transformedRotation.x, glm::vec3( 1.0f, 0.0f, 0.0f ) ) *
+		glm::scale( glm::mat4(), transformedScale);
 
 	return transformMatrix;
 }
@@ -256,18 +249,51 @@ void GEObject::Update( const double gameTime, const double deltaTime)
 
 }
 
+glm::vec3 GEObject::getTransformedPosition() const
+{
+	glm::vec3 combinedPosition = getPosition() ;  // place to hold the combined position information from the position controllers.
+
+	for ( unsigned int i = 0; i < positionControllers.size(); i++)
+		combinedPosition = positionControllers[i]->CalcTransform( combinedPosition );
+
+	return combinedPosition;
+}
+
+glm::vec3 GEObject::getTransformedRotation() const
+{
+	glm::vec3 combinedRotation = getRotation() ;  // place to hold the combined position information from the position controllers.
+
+	for ( unsigned int i = 0; i < rotationControllers.size(); i++)
+		combinedRotation = rotationControllers[i]->CalcTransform( combinedRotation );
+
+	return combinedRotation;
+}
+
+glm::vec3 GEObject::getTransformedScale() const
+{
+	glm::vec3 combinedScale = getScale() ;  // place to hold the combined position information from the position controllers.
+
+	for ( unsigned int i = 0; i < scaleControllers.size(); i++)
+		combinedScale = scaleControllers[i]->CalcTransform( combinedScale );
+
+	return combinedScale;
+}
+
 void GEObject::addPositionController( GEController* positionController )
 {
+	positionController->setParent( this );
 	this->positionControllers.push_back( positionController->clone() );  // add a copy of the controller to the controller vector
 }
 
 void GEObject::addRotationController( GEController* rotationController )
 {
+	rotationController->setParent( this );
 	this->rotationControllers.push_back( rotationController->clone() );		// add a copy of the controller to the controller vector
 }
 
 void GEObject::addScaleController( GEController* scaleController)
 {
+	scaleController->setParent( this );
 	this->scaleControllers.push_back( scaleController->clone() );	// add a copy of the controller to the controller vector
 }
 
@@ -283,4 +309,18 @@ void GEObject::removeRotationController( const unsigned int index )
 void GEObject::removeScaleController( const unsigned int index)
 {
 	this->scaleControllers.erase( scaleControllers.begin() + index );
+}
+
+void GEObject::setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities)
+{
+	// give all the transform controllers a pointer to the gameEntities
+
+	for ( unsigned int i = 0; i < positionControllers.size(); i++)
+		positionControllers[i]->setGameEntities( gameEntities );
+
+	for ( unsigned int i = 0; i < rotationControllers.size(); i++)
+		rotationControllers[i]->setGameEntities( gameEntities );
+
+	for ( unsigned int i = 0; i < scaleControllers.size(); i++)
+		scaleControllers[i]->setGameEntities( gameEntities );
 }

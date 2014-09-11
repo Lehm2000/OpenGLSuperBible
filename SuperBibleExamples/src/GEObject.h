@@ -14,13 +14,13 @@
 
 #include "GEController.h"
 
-
+class GEController;
 
 class GEObject
 {
 private:
 	// Members
-	std::string id;		// unique id for this object.  Is this necessary?
+	std::string id;		// unique id for this object.  TODO Is this necessary?
 	std::string name;	// non-unique name;
 
 	// Transforms
@@ -50,10 +50,6 @@ public:
 	virtual void setPosition(const glm::vec3 position);
 	virtual void setRotation(const glm::vec3 rotation);  // in Radians!
 	virtual void setScale(const glm::vec3 scale);
-	
-	//virtual void setPositionController( GEController* positionController );
-	//virtual void setRotationController( GEController* rotationController );	
-	//virtual void setScaleController( GEController* scaleController);
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );
@@ -99,6 +95,24 @@ public:
 	*/
 	virtual void Update( const double gameTime, const double deltaTime);
 
+	/**
+		getTransformedPosition()
+		Returns the combined result of the position controllers.
+	*/
+	virtual glm::vec3 getTransformedPosition() const;
+
+	/**
+		getTransformedRotation()
+		Returns the combined result of the rotation controllers.
+	*/
+	virtual glm::vec3 getTransformedRotation() const;
+
+	/**
+		getTransformedScale()
+		Returns the combined result of the scale controllers.
+	*/
+	virtual glm::vec3 getTransformedScale() const;
+
 	virtual void addPositionController( GEController* positionController );
 	virtual void addRotationController( GEController* rotationController );	
 	virtual void addScaleController( GEController* scaleController);
@@ -106,6 +120,8 @@ public:
 	virtual void removePositionController( const unsigned int index );
 	virtual void removeRotationController( const unsigned int index );	
 	virtual void removeScaleController( const unsigned int index);
+
+	virtual void setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities);
 
 };
 

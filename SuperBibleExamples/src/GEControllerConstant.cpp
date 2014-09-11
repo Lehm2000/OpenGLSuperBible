@@ -8,14 +8,16 @@ GEControllerConstant::GEControllerConstant()
 {
 }
 
-GEControllerConstant::GEControllerConstant(glm::vec3 deltaVec)
+GEControllerConstant::GEControllerConstant( const glm::vec3 deltaVec )
+	:GEController()
 {
 	this->setDeltaVec( deltaVec );
 }
 
 GEControllerConstant::GEControllerConstant( const GEControllerConstant& source )
+	:GEController( source.parent, source.gameEntities )
 {
-	this->deltaVec = source.deltaVec;
+	this->setDeltaVec( source.deltaVec );
 }
 
 GEControllerConstant::~GEControllerConstant()

@@ -2,8 +2,8 @@
 #define GECONTROLLEROSCILLATOR_H
 
 /**
-	GEControllerConstant
-	Purpose: GEController object that applies a constant change to the object
+	GEControllerOscillator
+	Purpose: GEController object that oscillates at a given amplitude an frequency.
 	Author: Jeff Adams
 */
 

@@ -1,6 +1,7 @@
 
 
 #include "GEControllerOscillator.h"
+#include "GEConstants.h"
 
 //Structors
 
@@ -9,12 +10,14 @@ GEControllerOscillator::GEControllerOscillator()
 }
 
 GEControllerOscillator::GEControllerOscillator( glm::vec3 amplitude, float frequency )
+	:GEController()
 {
 	this->setAmplitude( amplitude  );
 	this->setFrequency( frequency );
 }
 
 GEControllerOscillator::GEControllerOscillator( const GEControllerOscillator& source )
+	:GEController( source.parent, source.gameEntities )
 {
 	this->setAmplitude( source.amplitude );
 	this->frequency = source.frequency;	// can't use setter for this as it modifies incoming value.
@@ -33,7 +36,7 @@ void GEControllerOscillator::setAmplitude( const glm::vec3 amplitude )
 
 void GEControllerOscillator::setFrequency( const float frequency )
 {
-	this->frequency = frequency / ( 2.0f * 3.1415f );
+	this->frequency = frequency / ( 2.0f * GE_PI );
 }
 
 
@@ -45,7 +48,7 @@ glm::vec3 GEControllerOscillator::getAmplitude() const
 
 float GEControllerOscillator::getFrequency() const
 {
-	return this->frequency * ( 2.0f * 3.1415f );
+	return this->frequency * ( 2.0f * GE_PI );
 }
 
 

@@ -3,8 +3,11 @@
 
 #include "GameEngine.h"
 #include "CameraObject.h"
-#include "PerspectiveCamera.h"
-#include "ViewportInfo.h"
+#include "CameraPerspective.h"
+#include "InfoViewport.h"
+#include "GEControllerOscillator.h"
+#include "GEControllerLookAt.h"
+#include "InfoGameVars.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -59,14 +62,9 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 	switch (camType)
 	{
 	case CAMTYPE_PERSPECTIVE:
-		gameCam = new PerspectiveCamera( position, rotation, fov, false, targetPosition );
-		break;
-	case CAMTYPE_PERSPECTIVE_TARGETED:
-		gameCam = new PerspectiveCamera( position, rotation, fov, true, targetPosition );
+		gameCam = new CameraPerspective( position, rotation, fov );
 		break;
 	case CAMTYPE_ORTHO:
-		break;
-	case CAMTYPE_ORTHO_TARGETED:
 		break;
 	case CAMTYPE_2D:
 		break;
@@ -77,7 +75,9 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 	if( gameCam != nullptr )
 	{
 		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
-		AddEntity( "gameCam", static_cast<GEObject*>(gameCam) );
+		//gameCam->addPositionController( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
+		gameCam->addRotationController( new GEControllerLookAt( "testObject") );
+		AddEntity( "gameCam", gameCam );
 	}
 }
 
@@ -94,8 +94,12 @@ bool GameEngine::Initialize()
 
 	// Setup the viewport options... is this the best place for this?
 
-	GEObject* viewportOptions = new ViewportInfo( 1280, 720 );
+	GEObject* viewportOptions = new InfoViewport( 1280, 720 );
 	AddEntity( "SYS_Viewport_Options", viewportOptions );  //add the options to the entity list.
+
+	// Add the game variable object
+	GEObject* gameVars = new InfoGameVars();
+	AddEntity( "SYS_Game_Vars", gameVars );
 
 	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
 
@@ -104,15 +108,21 @@ bool GameEngine::Initialize()
 
 void GameEngine::Update()
 {
-	//update the game world here.
-	double timeDelta = getGameTime() - lastFrameTime;
+	// get a reference to the game vars.
+	std::map< std::string, GEObject* >::iterator vpIt = gameEntities.find("SYS_Game_Vars");
+	InfoGameVars* gameVars = static_cast<InfoGameVars*>(vpIt->second);
+	
+	//update the game time
+	gameVars->setCurrentFrameTime( getGameTime() );
+	
+	//double timeDelta = getGameTime() - lastFrameTime;
 
 	// Do input
 
 	// Update entities
 	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.begin(); it != gameEntities.end(); it++ )
 	{
-		it->second->Update( getGameTime(), timeDelta );
+		it->second->Update( getGameTime(), gameVars->getDeltaFrameTime() );
 	}
 
 	// Update the last frametime
@@ -147,6 +157,9 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 		if (gameEntities.find( entityName ) == gameEntities.end() )
 		{
 			// if it is not, add it.
+
+			// pass the gameEntities pointer to the entity here... which it will pass to the controllers.
+			entity->setControllerGameEntitiesPointer( &gameEntities );
 
 			gameEntities.insert( std::pair< std::string, GEObject* >( entityName, entity ) );
 

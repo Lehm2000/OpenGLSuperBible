@@ -1,36 +1,41 @@
-#ifndef GECONTROLLERCONSTANT_H
-#define GECONTROLLERCONSTANT_H
+#ifndef GECONTROLLERLOOKAT_H
+#define GECONTROLLERLOOKAT_H
 
 /**
-	GEControllerConstant
-	Purpose: GEController object that applies a constant change to the object
+	GEControllerLookAt
+	Purpose: GEController object that compares a target position and compares 
+	it to the parent position and returns angles necessary to point at the 
+	target.  Best used as a rotation controller.  Odd things would occur if
+	used as another type of controller.
 	Author: Jeff Adams
 */
 
+#include <string>
 #include <glm\glm.hpp>
 
 #include "GEController.h"
+#include "GEObject.h"
 
-class GEControllerConstant: public GEController
+class GEControllerLookAt: public GEController
 {
 private:
 	// Members
 
-	glm::vec3 deltaVec;  // Position, Rotation (Radians) or Scale change per second 
+	std::string targetName;	// What are we looking at.
 
 public:
 	//Structors
 
-	GEControllerConstant();
-	GEControllerConstant( const glm::vec3 deltaVec );
-	GEControllerConstant( const GEControllerConstant& source );
-	virtual ~GEControllerConstant();
+	GEControllerLookAt();
+	GEControllerLookAt( const std::string targetName );
+	GEControllerLookAt( const GEControllerLookAt& source );
+	virtual ~GEControllerLookAt();
 
 	// Setters
-	void setDeltaVec( const glm::vec3 deltaVec );
+	void setTargetName( const std::string targetName );
 
 	// Getters
-	glm::vec3 getDeltaVec() const;
+	std::string getTargetName() const;
 
 	// Functions
 
@@ -40,7 +45,7 @@ public:
 		derived class and only have a pointer to the base class.
 		@return - pointer to a copy of this object
 	*/
-	virtual GEControllerConstant* clone() const;
+	virtual GEControllerLookAt* clone() const;
 
 	/**
 		Update()
@@ -62,4 +67,4 @@ public:
 
 };
 
-#endif /* GECONTROLLERCONSTANT_H */
+#endif /* GECONTROLLERLOOKAT_H */

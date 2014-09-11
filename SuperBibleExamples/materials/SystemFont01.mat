@@ -1,0 +1,2 @@
+vertex_shader = SystemFont01.vert.glsl
+fragment_shader = SystemFont01.frag.glsl

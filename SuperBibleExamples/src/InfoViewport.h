@@ -10,7 +10,7 @@
 
 #include "GEObject.h"
 
-class ViewportInfo: public GEObject
+class InfoViewport: public GEObject
 {
 private:
 	// Members
@@ -19,8 +19,8 @@ private:
 
 public:
 	// Structors
-	ViewportInfo();
-	ViewportInfo( unsigned short viewportWidth, unsigned short viewportHeight );
+	InfoViewport();
+	InfoViewport( unsigned short viewportWidth, unsigned short viewportHeight );
 	// destructor not needed yet
 
 	// Setters
