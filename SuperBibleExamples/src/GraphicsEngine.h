@@ -176,7 +176,17 @@ public:
 
 	bool isMeshBuffered( std::string meshPath );
 	bool isMaterialBuffered( std::string materialPath );
-	bool BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts );
+
+	/**
+		BufferMesh()
+		Takes mesh and stores it in the map of mesh objects
+		@param meshPath - unique mesh name/path.
+		@param mesh - pointer to vertex data
+		@param numVerts - number of vertices in the mesh.
+		@param vertIndices - pointer to vertex indices
+		@param numIndices
+	*/
+	bool BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, GLushort* vertIndices, unsigned int numIndices );
 	bool BufferMaterial( std::string materialPath );
 	
 	

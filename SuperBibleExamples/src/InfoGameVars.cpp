@@ -6,6 +6,7 @@ InfoGameVars::InfoGameVars()
 {
 	lastFrameTime = 0.0 ;
 	this->setCurrentFrameTime( 0.0 );
+	this->setVisible(false);
 }
 
 // Setters

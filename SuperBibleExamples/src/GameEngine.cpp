@@ -8,6 +8,7 @@
 #include "GEControllerOscillator.h"
 #include "GEControllerLookAt.h"
 #include "InfoGameVars.h"
+#include "GEConstants.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -76,7 +77,7 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 	{
 		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
 		//gameCam->addPositionController( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
-		gameCam->addRotationController( new GEControllerLookAt( "testObject") );
+		//gameCam->addRotationController( new GEControllerLookAt( "testObject") );
 		AddEntity( "gameCam", gameCam );
 	}
 }
@@ -100,6 +101,8 @@ bool GameEngine::Initialize()
 	// Add the game variable object
 	GEObject* gameVars = new InfoGameVars();
 	AddEntity( "SYS_Game_Vars", gameVars );
+
+	// Buffer the default meshes... TODO: Move somewhere else
 
 	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
 
@@ -195,48 +198,146 @@ bool GameEngine::LoadMesh( std::string meshPath )
 	{
 		// Load mesh here... for now we'll hard code a mesh.
 
-		GEVertex meshVerts[36];
+		if( meshPath == "default" || meshPath =="cube")
+		{
+			GEVertex meshVerts[8];
 
-		//define a cube
-		FillGEVertex( &meshVerts[0], -0.25f, 0.25f, -0.25f,		0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[1], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[2], 0.25f, -0.25f, -0.25f,		1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[3], 0.25f, -0.25f, -0.25f,		1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[4], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[5], -0.25f, 0.25f, -0.25f,		0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[6], 0.25f, -0.25f, -0.25f,		1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[7], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[8], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[9], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[10], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[11], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[12], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[13], -0.25f, -0.25f, 0.25f,	0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[14], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[15], -0.25f, -0.25f, 0.25f,	0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[16], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[17], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[18], -0.25f, -0.25f, 0.25f,	0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[19], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[20], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 0.25f );
-		FillGEVertex( &meshVerts[21], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[22], -0.25f, 0.25f, -0.25f,	0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[23], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[24], -0.25f, -0.25f, 0.25f,	0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[25], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[26], 0.25f, -0.25f, -0.25f,	1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[27], 0.25f, -0.25f, -0.25f,	1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-		FillGEVertex( &meshVerts[28], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[29], -0.25f, -0.25f, 0.25f,	0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-		FillGEVertex( &meshVerts[30], -0.25f, 0.25f, -0.25f,	0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[31], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[32], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[33], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-		FillGEVertex( &meshVerts[34], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-		FillGEVertex( &meshVerts[35], -0.25f, 0.25f, -0.25f,	0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			//define a cube
+			FillGEVertex( &meshVerts[0], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			FillGEVertex( &meshVerts[1], -0.25f, 0.25f, -0.25f,		0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
+			FillGEVertex( &meshVerts[2], 0.25f, -0.25f, -0.25f,		1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			FillGEVertex( &meshVerts[3], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			FillGEVertex( &meshVerts[4], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
+			FillGEVertex( &meshVerts[5], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			FillGEVertex( &meshVerts[6], -0.25f, -0.25f, 0.25f,		0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			FillGEVertex( &meshVerts[7], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
 
-		//pass to the engine here.
-		graphics->BufferMesh( meshPath, meshVerts, 36 );
+			// define the indexes
+
+			GLushort vertexIndecies[] =
+			{
+				0,1,2,3,4,5,6,7,0,1,0xFFFF,
+				0,2,6,4,0xFFFF,
+				1,3,7,5,0xFFFF
+			};
+			
+			//pass to the engine here.
+			graphics->BufferMesh( meshPath, meshVerts, 8, vertexIndecies, 21 );
+		}
+		else if ( meshPath == "diamond" )
+		{
+			GEVertex meshVerts[6];
+
+			//define a cube
+			FillGEVertex( &meshVerts[0], 0.0f, 1.0f, 0.0f,		0.5f, 1.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			FillGEVertex( &meshVerts[1], 0.0f, 0.0f, -1.0f,		0.5f, 0.5f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
+			FillGEVertex( &meshVerts[2], 1.0f, 0.0f, 0.0f,		1.0f, 0.5f, 0.5f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			FillGEVertex( &meshVerts[3], 0.0f, 0.0f, 1.0f,		0.5f, 0.5f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			FillGEVertex( &meshVerts[4], -1.0f, 0.0f, 0.0f,		0.0f, 0.5f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
+			FillGEVertex( &meshVerts[5], 0.0f, -1.0f, 0.0f,		0.5f, 0.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+
+			// define the indexes
+
+			GLushort vertexIndecies[] =
+			{
+				0,1,2,0xFFFF,
+				0,2,3,0xFFFF,
+				0,3,4,0xFFFF,
+				0,4,1,0xFFFF,
+				5,1,2,0xFFFF,
+				5,2,3,0xFFFF,
+				5,3,4,0xFFFF,
+				5,4,1
+				
+				
+			};
+			
+			//pass to the engine here.
+			graphics->BufferMesh( meshPath, meshVerts, 6, vertexIndecies, 31 );
+		}
+
+		else if ( meshPath == "sphere" )
+		{
+			const unsigned int numVSegments = 8;					// Vertical Segments
+			const unsigned int numHSegments = numVSegments * 2;		// Horizontal Segments
+
+			const unsigned int numVerts = ( (numVSegments - 1) * numHSegments ) + 2;
+
+			const float radius = 0.5;
+
+			GEVertex meshVerts[ numVerts ];
+
+			// generate a sphere
+
+			FillGEVertex( &meshVerts[0], 0.0f, radius, 0.0f,		0.5f, 1.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+
+			for( unsigned int i = 1; i < numVSegments; i++ )
+			{
+				// specify the start point of this vertical level
+				float y = cos( GE_PI * (float)i / (float)numVSegments ) * radius;
+				float x = sin( GE_PI * (float)i / (float)numVSegments ) * radius;  // this is also the distance from the y-axis.
+				//float z = 0.0f;
+
+				// next revolve it around the y-axis
+				for( unsigned int j = 0; j< numHSegments; j++ )
+				{
+					float finalx = cos( GE_PI * ( 2.0 * (float)j / (float)numHSegments) ) * x;
+					float z = sin( GE_PI * ( 2.0 * (float)j / (float)numHSegments) ) * x;
+					
+					FillGEVertex( &meshVerts[ ( i * numHSegments ) + j - ( numHSegments - 1 )], finalx, y, z,		(finalx+radius)/(2.0*radius),(y+radius)/(2.0*radius), (z+radius)/(2.0*radius), 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+				}
+			}
+
+			FillGEVertex( &meshVerts[ numVerts -1 ], 0.0f, radius * -1.0f, 0.0f,		0.5f, 0.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+
+			// now deal with the indexes... We'll create strips that start from the top of the sphere and go down.  
+			// So we'll have the same number of strips as we do Horizontal segments
+
+			// calculate the number needed.  
+
+			const unsigned int numIndiciesStrip = ( 2 * numVSegments ) + 1;				// 2 indicies for each vertical level + 1 for the restart index
+			const unsigned int numTotalIndicies = ( numIndiciesStrip ) * numHSegments;  //  * the number of H segments 
+
+
+			GLushort vertexIndicies[ numTotalIndicies ];
+
+			// now fill in the indices
+
+			for ( unsigned int i = 0; i < numHSegments; i++)
+			{
+				for ( unsigned int j = 0; j < numVSegments + 1; j++)  // we add one for the final bottom row.
+				{
+					if ( j == 0) // first row
+					{
+						vertexIndicies[ i * numIndiciesStrip] = 0;
+					}
+					else if ( j == numVSegments ) // last row
+					{
+						vertexIndicies[ ( i * numIndiciesStrip ) + ( ( 2 * j ) - 1 ) ] = numVerts - 1;
+						vertexIndicies[ ( i * numIndiciesStrip ) + ( 2 * j ) ] = 0xFFFF;  // restart index
+					}
+					else // one of the middle rows
+					{
+						unsigned int indexVal = ((j - 1)*numHSegments) +1 +i;
+
+						vertexIndicies[ ( i * numIndiciesStrip ) + ( ( 2 * j ) - 1 ) ] = indexVal;
+						
+						if (indexVal == j*numHSegments)
+						{
+							indexVal -= numHSegments;
+							
+						}
+						
+						vertexIndicies[ ( i * numIndiciesStrip ) + ( ( 2 * j ) - 0 ) ] = indexVal +1;
+					
+					}
+				}
+			}
+
+
+			graphics->BufferMesh( meshPath, meshVerts, numVerts, vertexIndicies, numTotalIndicies);
+
+		}
 
 	}
 

@@ -102,7 +102,7 @@ void GraphicsEngine::Render(const double currentTime)
 
 			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
 
-			glBindVertexArray( renderMesh.getVOA() );
+			glBindVertexArray( renderMesh.getVertexArrayObject() );
 
 			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
 
@@ -133,14 +133,15 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
 	}
 
-	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	const GLfloat bkColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 	const GLfloat one = 1.0f;
 	
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
 	// Iterate throught game entities here.
-	
+	for (int i = 0; i <1; i++)
+	{
 	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->begin(); it != gameEntities->end(); it++ )
 	{
 		if ( it->second->isVisible() )
@@ -149,7 +150,7 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 			std::string renderMaterialName = it->second->getMaterial();
 
 			std::map< std::string, GEMaterial>::iterator mapIt = materialMap.find( renderMaterialName );
-
+			
 			if ( mapIt != materialMap.end() )
 			{
 				renderMaterial = materialMap[ renderMaterialName ];
@@ -159,7 +160,7 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 				// if the material specified for this object is not found use the default
 				renderMaterial = materialMap[ "default" ];
 			}
-
+			
 			glUseProgram ( renderMaterial.getProgram() );
 			
 			GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
@@ -167,18 +168,40 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 
 			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
 
-			glBindVertexArray( renderMesh.getVOA() );
-
+			glBindVertexArray( renderMesh.getVertexArrayObject() );
+			
 			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
 
 			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 			glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
             
-			glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
+			//glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
+			//glDrawElements( renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0);
+			glEnable( GL_PRIMITIVE_RESTART );
+			glPrimitiveRestartIndex( 0xFFFF );
+			for (int j = 0; j<1; j++ )  // just to test performance
+			{
+				//glDrawElements( renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0);
+				glBindBuffer( GL_DRAW_INDIRECT_BUFFER, renderMesh.getIndirectBuffer() );
+				glDrawElementsIndirect( renderMesh.getMeshType(), GL_UNSIGNED_SHORT, 0);
+				//glDrawElementsInstanced(  renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0, 10000);
+			}
+			glDisable( GL_PRIMITIVE_RESTART );
+			/*for (int i = 0; i<6; i++)
+			{
+				glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)(4*i*sizeof(GLushort) ) );
+			};*/
 		}
 	}
-	
+	}
+
+
 	// Testing text output
+	
+	//std::map< std::string, GEObject* >::const_iterator fontIt = gameEntities->find("SYS_FONT");
+	GEMesh fontMesh = meshMap[ "SYS_FONT" ];
+	
+	glBindVertexArray( fontMesh.getVertexArrayObject() );
 
 	GEMaterial fontMaterial = materialMap[ "SystemFont01" ];
 	glUseProgram( fontMaterial.getProgram() );
@@ -187,14 +210,10 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	GLint fontTextureLoc = glGetUniformLocation( fontMaterial.getProgram(), "fontTexture");
 	GLint screenMatrixLocation = glGetUniformLocation( fontMaterial.getProgram(), "screenMatrix" );
 	GLuint charSizeLoc = glGetUniformLocation( fontMaterial.getProgram(), "charSize" );
-	GLuint charCodeLoc = glGetUniformLocation( fontMaterial.getProgram(), "charCode" );
-	GLuint charOffsetLoc = glGetUniformLocation( fontMaterial.getProgram(), "charOffset" );
 	GLuint startPosLoc = glGetUniformLocation( fontMaterial.getProgram(), "startPos" );
 	
 	glUniform1f( charSizeLoc, 0.015f );
 	glUniform2f( startPosLoc, 0.0075, 0.0075 );
-	
-	//glVertexAttribI1i( 2, 0 );
 
 	glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)viewportInfo->getViewportHeight()/(float)viewportInfo->getViewportWidth(), 0.0f );
 
@@ -211,12 +230,11 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	std::string testString2 = std::to_string( 1.0 / gameVars->getDeltaFrameTime() );
 	testString1.append( testString2 );
 	
-	for (unsigned int i = 0; i<testString1.length(); i++ )
-	{
-		glUniform1ui( charCodeLoc, testString1.c_str()[i] );
-		glUniform1ui( charOffsetLoc, i );
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	}
+	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar)*testString1.length(), testString1.c_str());
+	glVertexAttribDivisor(0, 1);
+	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, testString1.length() );
+	glVertexAttribDivisor(0, 0);
 
 	
 
@@ -411,6 +429,42 @@ void GraphicsEngine::InitBuffers(void)
         droplet_fall_speed[i] = random_float() + 0.2f;
     }
 
+
+	// Create the font buffers
+	
+	// Create GLuint to hold new voa.  Each Mesh gets its own voa.
+	GLuint fontVOA;
+	
+	// Create a new buffers
+	GLuint fontVBO;
+
+	// Create the Vertex
+	
+	glGenVertexArrays( 1, &fontVOA );
+	glBindVertexArray( fontVOA );
+
+	glGenBuffers( 1, &fontVBO );
+	glBindBuffer( GL_ARRAY_BUFFER, fontVBO );
+
+	//GLuint testarray[] ={ 2,10};
+	//glBufferData( GL_ARRAY_BUFFER, sizeof( GLchar ) * 2, testarray, GL_DYNAMIC_DRAW );
+	//glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVB() );
+	//glBufferSubData( GL_ARRAY_BUFFER,0,sizeof(GLuint) *2,&testarray );
+
+	// create a buffer 80 characters long.
+	//GLuint testarray[] ={ 'a','b','c'};
+	glBufferData( GL_ARRAY_BUFFER, sizeof( GLubyte ) * 80, 0, GL_DYNAMIC_DRAW );
+	//glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(testarray), &testarray);
+
+	// Character Code
+	glVertexAttribIPointer( 0, 1, GL_UNSIGNED_BYTE, 0, 0);
+	glEnableVertexAttribArray(0);
+
+	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0);  // the font mesh doesn't really fit the GEMesh type... new type?
+	meshMap["SYS_FONT"] = newMesh;
+	
+	
+
 }
 
 void GraphicsEngine::InitTextures(void)
@@ -565,19 +619,23 @@ bool GraphicsEngine::isMaterialBuffered( std::string materialPath )
 	return buffered;
 }
 
-bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVerts )
+bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, GLushort* vertIndices, unsigned int numIndices )
 {
 	// Create GLuint to hold new voa.  Each Mesh gets its own voa.
-	GLuint newVoa;
+	GLuint newVertexArrayObject;
 	
-	// Create a new buffer
-	GLuint newBuffer;
-	
-	glGenVertexArrays( 1, &newVoa );
-	glBindVertexArray( newVoa );
+	// Create a new buffers
+	GLuint newVertexBuffer;
+	GLuint newIndexBuffer;
+	GLuint newIndirectBuffer;
 
-	glGenBuffers( 1, &newBuffer );
-	glBindBuffer( GL_ARRAY_BUFFER, newBuffer );
+	// Create the Vertex
+	
+	glGenVertexArrays( 1, &newVertexArrayObject );
+	glBindVertexArray( newVertexArrayObject );
+
+	glGenBuffers( 1, &newVertexBuffer );
+	glBindBuffer( GL_ARRAY_BUFFER, newVertexBuffer );
 	glBufferData( GL_ARRAY_BUFFER, sizeof( GEVertex ) * numVerts, mesh, GL_STATIC_DRAW );
 
 	// Position
@@ -591,9 +649,29 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, int numVe
 	// Normals
 	// Texture Coords.
 
+	// Create the Index Buffer
+	
+	glGenBuffers( 1, &newIndexBuffer );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, newIndexBuffer );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( GLushort ) * numIndices, vertIndices, GL_STATIC_DRAW ); 
+
+	// create the indirect buffer
+	DrawElementsIndirectCommand indirectBufferData;
+
+	indirectBufferData.baseInstance = 0;
+	indirectBufferData.baseVertex = 0;
+	indirectBufferData.firstIndex = 0;
+	indirectBufferData.instanceCount = 1;
+	indirectBufferData.elemCount = numIndices; 
+
+	glGenBuffers( 1, &newIndirectBuffer );
+	glBindBuffer( GL_DRAW_INDIRECT_BUFFER, newIndirectBuffer );
+	glBufferData( GL_DRAW_INDIRECT_BUFFER, sizeof(indirectBufferData), &indirectBufferData, GL_STATIC_DRAW );
+	
+
 	// Next put mesh into the map
 
-	GEMesh newMesh( GL_TRIANGLES, numVerts, newVoa, newBuffer );  // TODO: where does GL_TRIAnGLES come from?
+	GEMesh newMesh( GL_TRIANGLE_STRIP, numVerts, numIndices, newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );  // TODO: where does GL_TRIAnGLES come from?
 	meshMap[meshPath] = newMesh;
 
 	// Unbind voa??  Don't for now.
