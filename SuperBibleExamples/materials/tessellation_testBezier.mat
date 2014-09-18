@@ -1,0 +1,6 @@
+vertex_shader = tessellation_testBezier.vert.glsl
+tess_control_shader = tessellation_testBezier.tessctrl.glsl 
+tess_eval_shader = tessellation_testBezier.tesseval.glsl 
+geometry_shader = 
+fragment_shader = tessellation_testBezier.frag.glsl
+

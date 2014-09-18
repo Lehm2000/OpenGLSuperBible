@@ -102,9 +102,16 @@ bool GameEngine::Initialize()
 	GEObject* gameVars = new InfoGameVars();
 	AddEntity( "SYS_Game_Vars", gameVars );
 
+	// create the graphics engine
+	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
+
+	// load some default materials TODO: Move somewhere else
+	LoadMaterial("tessellation_test");
+	LoadMaterial("tessellation_testBezier");
+
 	// Buffer the default meshes... TODO: Move somewhere else
 
-	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
+	
 
 	return success;
 }
@@ -135,8 +142,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		//graphics->Render( getGameTime() );  // tutorial/test renderer
-		graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		graphics->Render( getGameTime() );  // tutorial/test renderer
+		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 
@@ -258,7 +265,7 @@ bool GameEngine::LoadMesh( std::string meshPath )
 
 		else if ( meshPath == "sphere" )
 		{
-			const unsigned int numVSegments = 8;					// Vertical Segments
+			const unsigned int numVSegments = 32;					// Vertical Segments
 			const unsigned int numHSegments = numVSegments * 2;		// Horizontal Segments
 
 			const unsigned int numVerts = ( (numVSegments - 1) * numHSegments ) + 2;

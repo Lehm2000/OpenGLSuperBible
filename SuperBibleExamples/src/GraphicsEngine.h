@@ -156,6 +156,14 @@ public:
 	void Render(const double currentTime, const std::map< std::string, GEObject* >* gameEntities);
 
 	/**
+		Renders the FPS counter. 
+
+		@param currentTime - the time since the program started.
+		
+	*/
+	void RenderFPS(const double currentTime);
+
+	/**
 		Updates the window size.  
 
 		@param x

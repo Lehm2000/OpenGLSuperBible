@@ -75,43 +75,35 @@ void GraphicsEngine::Render(const double currentTime)
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
-	unsigned int renderCount = 0;
-
-	// Iterate throught game entities here.
-	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->begin(); it != gameEntities->end(); it++ )
-	{
-		if ( it->second->isVisible() )
-		{
-			renderCount++;
-
-			GLuint colorSubs[3];
-			GEMaterial renderMaterial;
+	
+	GEMaterial renderMaterial;
 			
-			renderMaterial = materialMap[ "SolidRGB_Subroutine" ];
+	renderMaterial = materialMap.find("tessellation_testBezier")->second;
 
-			glUseProgram ( renderMaterial.getProgram() );
+	glUseProgram ( renderMaterial.getProgram() );
 			
-			GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
-			GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "view_matrix" );
+	GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
+	GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "view_matrix" );
+	GLint tessLevelLocation = glGetUniformLocation( renderMaterial.getProgram(), "tessLevel" );
+	GLint displaceTextureLoc = glGetUniformLocation( renderMaterial.getProgram(), "displaceTexture");
 
-			colorSubs[0] = glGetProgramResourceIndex( renderMaterial.getProgram(), GL_FRAGMENT_SUBROUTINE, "colorSubRed" );
-			colorSubs[1] = glGetProgramResourceIndex( renderMaterial.getProgram(), GL_FRAGMENT_SUBROUTINE, "colorSubGreen" );
-			colorSubs[2] = glGetProgramResourceIndex( renderMaterial.getProgram(), GL_FRAGMENT_SUBROUTINE, "colorSubBlue" );
+	//bind the displace texture
+	//glBindTexture( GL_TEXTURE_2D, textureMap.find("DisplaceTest")->second );
 
-			glUniformSubroutinesuiv( GL_FRAGMENT_SHADER, 1, &colorSubs[ renderCount % 3 ] );
+	//glm::mat4 worldMatrix = it->second->GetTransformMatrix();
+	glm::mat4 worldMatrix = glm::rotate(glm::mat4(),(float)currentTime / 4.0f,glm::vec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), glm::vec3(1.0f, 1.0f, 1.0f));
 
-			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
+	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	//glUniform1f( tessLevelLocation, (sin((float)currentTime / 3.0) +1.0f)*10.0);
+	glUniform1f( tessLevelLocation, (sin((float)currentTime / 2.0) *30.0f)+31.0);
+    glUniform1i(displaceTextureLoc, 0);
+	glPatchParameteri( GL_PATCH_VERTICES, 4);
+	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	glDrawArrays(GL_PATCHES, 0 , 4);
+	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
-			glBindVertexArray( renderMesh.getVertexArrayObject() );
-
-			glm::mat4 worldMatrix = it->second->GetTransformMatrix();
-
-			glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-			glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-            
-			glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
-		}
-	}
+	RenderFPS( currentTime );
 
 	glfwSwapBuffers(window);
 	glfwPollEvents();
@@ -196,7 +188,21 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	}
 
 
+	RenderFPS( currentTime );
+
+	
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+
+void GraphicsEngine::RenderFPS(const double currentTime)
+{
 	// Testing text output
+
+	// get the viewport info out of the game entities
+	std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
+	InfoViewport* viewportInfo = (InfoViewport*)vpIt->second;
 	
 	//std::map< std::string, GEObject* >::const_iterator fontIt = gameEntities->find("SYS_FONT");
 	GEMesh fontMesh = meshMap[ "SYS_FONT" ];
@@ -235,11 +241,6 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	glVertexAttribDivisor(0, 1);
 	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, testString1.length() );
 	glVertexAttribDivisor(0, 0);
-
-	
-
-	glfwSwapBuffers(window);
-	glfwPollEvents();
 }
 
 bool GraphicsEngine::Init()
@@ -581,6 +582,28 @@ void GraphicsEngine::InitTextures(void)
 
 	//	now bind it to a texture unit
 	glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
+
+	
+	
+	// Load the displace Texture
+	IUImage<unsigned char> displaceTex = texMan.LoadTexture( "displace_test.bmp", GE_TEXTYPE_BMP, returnType );
+	
+	unsigned char* displaceTexData;
+	displaceTexData = (unsigned char*)malloc( displaceTex.getDataSize() );
+	displaceTex.getData( displaceTexData );
+
+	GLuint displaceTexture;
+	glGenTextures(1, &displaceTexture);
+	glBindTexture(GL_TEXTURE_2D, displaceTexture);
+
+	glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, displaceTex.getWidth(), displaceTex.getHeight() );
+	glTexSubImage2D( GL_TEXTURE_2D,0,0,0, displaceTex.getWidth(), displaceTex.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, displaceTexData );
+
+	glGenerateMipmap( GL_TEXTURE_2D );
+
+	textureMap.insert( std::pair< std::string, GLuint >( "DisplaceTest", displaceTexture ) );
+
+	
 
 }
 
