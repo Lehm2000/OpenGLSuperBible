@@ -110,7 +110,7 @@ bool GameEngine::Initialize()
 	LoadMaterial("tessellation_testBezier");
 
 	// Buffer the default meshes... TODO: Move somewhere else
-
+	LoadMesh( "beziersphere" );
 	
 
 	return success;
@@ -340,10 +340,39 @@ bool GameEngine::LoadMesh( std::string meshPath )
 					}
 				}
 			}
+		
 
 
 			graphics->BufferMesh( meshPath, meshVerts, numVerts, vertexIndicies, numTotalIndicies);
 
+		}
+		else if ( meshPath == "beziersphere" )
+		{
+			GEVertex meshVerts[8];
+
+			//define a cube
+			FillGEVertex( &meshVerts[0], -1.00f, -1.00f, -1.00f,	0.0f, 0.0f, 0.0f, 1.0f,		-1.00f, -1.00f, -1.00f,		-0.0f, 1.0f );
+			FillGEVertex( &meshVerts[1], -1.00f, 1.00f, -1.00f,		0.0f, 1.0f, 0.0f, 1.0f,		-1.00f, 1.00f, -1.00f,		-0.0f, -0.0f );
+			FillGEVertex( &meshVerts[2], 1.00f, -1.00f, -1.00f,		1.0f, 0.0f, 0.0f, 1.0f,		1.00f, -1.00f, -1.00f,		1.0f, -0.0f );
+			FillGEVertex( &meshVerts[3], 1.00f, 1.00f, -1.00f,		1.0f, 1.0f, 0.0f, 1.0f,		1.00f, 1.00f, -1.00f,		1.0f, -0.0f );
+			FillGEVertex( &meshVerts[4], 1.00f, -1.00f, 1.00f,		1.0f, 0.0f, 1.0f, 1.0f,		1.00f, -1.00f, 1.00f,		1.0f, 1.0f );
+			FillGEVertex( &meshVerts[5], 1.00f, 1.00f, 1.00f,		1.0f, 1.0f, 1.0f, 1.0f,		1.00f, 1.00f, 1.00f,		-0.0f, 1.0f );
+			FillGEVertex( &meshVerts[6], -1.00f, -1.00f, 1.00f,		0.0f, 0.0f, 1.0f, 1.0f,		-1.00f, -1.00f, 1.00f,		1.0f, -0.0f );
+			FillGEVertex( &meshVerts[7], -1.00f, 1.00f, 1.00f,		0.0f, 1.0f, 1.0f, 1.0f,		-1.00f, 1.00f, 1.00f,		1.0f, -0.0f );
+
+			// define the indexes
+
+			GLushort vertexIndecies[] =
+			{
+				0,1,2,3,0xFFFF,
+				2,3,4,5,0xFFFF,
+				4,5,6,7,0xFFFF,
+				6,7,0,1,0xFFFF,
+				0,2,6,4,0xFFFF,
+				1,3,7,5,0xFFFF
+			};
+
+			graphics->BufferMesh( meshPath, meshVerts, 8, vertexIndecies, 30 );
 		}
 
 	}
@@ -378,9 +407,10 @@ void GameEngine::FillGEVertex( GEVertex* dest, float x, float y, float z, float 
 	dest->g = g;
 	dest->b = b;
 	dest->a = a;
-	dest->nx = nx;
-	dest->ny = ny;
-	dest->nz = nz;
+	glm::vec3 newNormal = glm::normalize( glm::vec3(nx, ny, nz) );
+	dest->nx = newNormal.x;
+	dest->ny = newNormal.y;
+	dest->nz = newNormal.z;
 	dest->u = u;
 	dest->v = v;
 }

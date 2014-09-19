@@ -75,6 +75,11 @@ void GraphicsEngine::Render(const double currentTime)
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
+	std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("beziersphere");
+
+	GEMesh renderMesh = meshIt->second;
+
+	glBindVertexArray( renderMesh.getVertexArrayObject() );
 	
 	GEMaterial renderMaterial;
 			
@@ -91,16 +96,21 @@ void GraphicsEngine::Render(const double currentTime)
 	//glBindTexture( GL_TEXTURE_2D, textureMap.find("DisplaceTest")->second );
 
 	//glm::mat4 worldMatrix = it->second->GetTransformMatrix();
-	glm::mat4 worldMatrix = glm::rotate(glm::mat4(),(float)currentTime / 4.0f,glm::vec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), glm::vec3(1.0f, 1.0f, 1.0f));
+	glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 4.0f,glm::vec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
 
-	glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
-	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+	glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
+	glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
 	//glUniform1f( tessLevelLocation, (sin((float)currentTime / 3.0) +1.0f)*10.0);
-	glUniform1f( tessLevelLocation, (sin((float)currentTime / 2.0) *30.0f)+31.0);
-    glUniform1i(displaceTextureLoc, 0);
+	glUniform1f( tessLevelLocation, (sin((float)currentTime / 2.0) * 5.0f ) + 6.0 );
+	//glUniform1f( tessLevelLocation, 5.0);
+    glUniform1i( displaceTextureLoc, 0 );
 	glPatchParameteri( GL_PATCH_VERTICES, 4);
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	glDrawArrays(GL_PATCHES, 0 , 4);
+	//glDrawArrays(GL_PATCHES, 0 , 4);
+	glEnable( GL_PRIMITIVE_RESTART );
+	glPrimitiveRestartIndex( 0xFFFF );
+	glDrawElements( GL_PATCHES,renderMesh.getNumIndices(),GL_UNSIGNED_SHORT, 0 );
+	glDisable( GL_PRIMITIVE_RESTART );
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
 	RenderFPS( currentTime );
@@ -158,6 +168,7 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 			GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
 			GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "view_matrix" );
 
+			// DO NOT ACCESS MAP THIS WAY!!!!!!!.  CHANGE ASAP
 			GEMesh renderMesh = meshMap[ it->second->getMesh() ];
 
 			glBindVertexArray( renderMesh.getVertexArrayObject() );
@@ -670,7 +681,13 @@ bool GraphicsEngine::BufferMesh( std::string meshPath, GEVertex* mesh, unsigned 
 	glEnableVertexAttribArray(1);
 
 	// Normals
+	glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, nx ));
+	glEnableVertexAttribArray(2);
+	
 	// Texture Coords.
+
+	
+	
 
 	// Create the Index Buffer
 	
