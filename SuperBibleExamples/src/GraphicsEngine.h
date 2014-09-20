@@ -14,6 +14,7 @@
 #include <math.h>
 #include <string>
 #include <map>
+#include <queue>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -25,6 +26,7 @@
 #include "GEObject.h"
 #include "GEMesh.h"
 #include "GEMaterial.h"
+#include "InputItem.h"
 
 //temporary place to define vertex structs
 struct vertex
@@ -79,6 +81,7 @@ private:
 	std::map< std::string, GEMesh > meshMap;	// Holds all the mesh information for the Graphics Engine.
 	std::map< std::string, GEMaterial > materialMap;	// Holds all materials for the game.  Materials hold the shader plus references to the textures used.
 	std::map< std::string, GLuint > textureMap;			// Holds textures for the game.
+	std::queue< InputItem > InputList;					// Holds inputs that have been recorded.
 
 	MaterialManager materialMan;	//for material operations
 
@@ -93,12 +96,17 @@ public:
 
 	
 
-	//constructors
+	// structors
 	GraphicsEngine();
 	GraphicsEngine( const std::map< std::string, GEObject* >* gameEntities );  // passes a pointer to the game entities.
 	~GraphicsEngine();
 
-	static vmath::mat4 proj_matrix;	//for the global projection matrix
+	// setters
+
+	// getters
+	std::queue< InputItem >* getInputList();
+
+	static vmath::mat4 proj_matrix;	//for the global projection matrix.. TODO eliminate this.
 
 	//functions...
 	
@@ -197,6 +205,7 @@ public:
 	bool BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, GLushort* vertIndices, unsigned int numIndices );
 	bool BufferMaterial( std::string materialPath );
 	
+	void QueueInputItem( InputItem input );
 	
 	
 	//do these static functions need to be here?  They didn't seem to work if moved out of the header
@@ -207,9 +216,23 @@ public:
 
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
-		if(key== GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-			glfwSetWindowShouldClose(window, GL_TRUE);
+		// since this function is not a part of this class officially we need to 
+		// retrieve the pointer to it to was set when the engine was initialized
+		GraphicsEngine* GEPointer = (GraphicsEngine*)glfwGetWindowUserPointer(window);	
+		
+		/*if(key== GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+			glfwSetWindowShouldClose(window, GL_TRUE);*/
+
+		// Do any key translations here in the event that the keycode on this platform does not match our definition.
+
+		// Then add the key to the input list
+		GEPointer->QueueInputItem( InputItem( GE_INPUT_KEY, key, action, glm::vec2( 0.0f, 0.0f ) ) );
+		
+		
+
+
 	}
+	
 
 	static void window_size_callback(GLFWwindow* window, int width, int height)
 	{

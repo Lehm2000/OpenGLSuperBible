@@ -9,6 +9,7 @@
 #include "GEControllerLookAt.h"
 #include "InfoGameVars.h"
 #include "GEConstants.h"
+#include "GEInputState.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -102,6 +103,10 @@ bool GameEngine::Initialize()
 	GEObject* gameVars = new InfoGameVars();
 	AddEntity( "SYS_Game_Vars", gameVars );
 
+	// Add the input state object... keeps track of current inputs.
+	GEObject* inputState = new GEInputState();
+	AddEntity( "SYS_Input_State", inputState );
+
 	// create the graphics engine
 	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
 
@@ -118,6 +123,53 @@ bool GameEngine::Initialize()
 
 void GameEngine::Update()
 {
+	// Do input--------------------------------------------------------------------------------------------
+
+	// Get a reference to the input state
+	std::map< std::string, GEObject* >::iterator isIt = gameEntities.find("SYS_Input_State");
+	GEInputState* inputState = static_cast<GEInputState*>(isIt->second);
+
+	// Get pointer to the input queue in the graphics engine.
+	std::queue< InputItem >* inputList = graphics->getInputList();
+	
+	// do the input here.
+	while (inputList->size() > 0 )
+	{
+		InputItem curInput= inputList->front();
+
+		// need a pressed bool for keys and buttons... assume not pressed.
+		bool pressed = false;
+
+		unsigned int inputType = curInput.getInputType();
+
+		switch ( inputType )
+		{
+		case GE_INPUT_KEY:
+
+			
+			// unless it tells us it was pressed
+			if ( curInput.getInputAction() == GE_ACTION_PRESS || curInput.getInputAction() == GE_ACTION_REPEAT)
+				pressed = true;
+
+			// update the key state in the game engine.
+			inputState->setKeyboardKey( curInput.getInputIndex(), pressed );
+
+			break;
+		case GE_INPUT_MOUSEBUTTON:
+			break;
+		case GE_INPUT_MOUSEPOSITION:
+			break;
+		case GE_INPUT_MOUSESCROLL:
+			break;
+		//default:
+		}
+
+		// remove the top item from the queue
+		inputList->pop();
+	}
+
+	// Update game variables------------------------------------------------------------------------------
+	
 	// get a reference to the game vars.
 	std::map< std::string, GEObject* >::iterator vpIt = gameEntities.find("SYS_Game_Vars");
 	InfoGameVars* gameVars = static_cast<InfoGameVars*>(vpIt->second);
@@ -127,9 +179,7 @@ void GameEngine::Update()
 	
 	//double timeDelta = getGameTime() - lastFrameTime;
 
-	// Do input
-
-	// Update entities
+	// Update entities--------------------------------------------------------------------------------------
 	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.begin(); it != gameEntities.end(); it++ )
 	{
 		it->second->Update( getGameTime(), gameVars->getDeltaFrameTime() );

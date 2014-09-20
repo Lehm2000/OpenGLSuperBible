@@ -121,6 +121,12 @@ public:
 	virtual void removeRotationController( const unsigned int index );	
 	virtual void removeScaleController( const unsigned int index);
 
+	/**
+		setControllerGameEntitiesPointer()
+		Sets the pointer to the gameEntities so the controller can access the properties of other game entities.
+		@ param gameEntities - pointer to the gameEntities
+		@ return void
+	*/
 	virtual void setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities);
 
 };

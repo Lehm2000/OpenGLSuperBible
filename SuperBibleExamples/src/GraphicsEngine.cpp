@@ -11,6 +11,7 @@
 #include "CameraPerspective.h"
 #include "InfoViewport.h"
 #include "InfoGameVars.h"
+#include "GEInputState.h"
 
 
 //Link static variables
@@ -53,6 +54,14 @@ GraphicsEngine::~GraphicsEngine()
 	//vb
 }
 
+// setters
+
+// getters
+std::queue< InputItem >* GraphicsEngine::getInputList()
+{
+	return &InputList;
+}
+
 // this version of render is for tutorial code.
 void GraphicsEngine::Render(const double currentTime)
 {
@@ -66,7 +75,7 @@ void GraphicsEngine::Render(const double currentTime)
 	CameraObject* gameCam = (CameraObject*)camIt->second;
 	if (gameCam->getClassName() == "CameraPerspective" )
 	{
-		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * gameCam->GetViewMatrix();
 	}
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -252,23 +261,43 @@ void GraphicsEngine::RenderFPS(const double currentTime)
 	glVertexAttribDivisor(0, 1);
 	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, testString1.length() );
 	glVertexAttribDivisor(0, 0);
+
+	// temp render the pressed inputs.------------------------------------------
+
+	// get pointer to the input state
+	std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find("SYS_Input_State");
+	GEInputState* inputState = (GEInputState*)isIt->second;
+
+	std::string inputString = "";
+	
+	for ( unsigned int i = 0; i<INPUTSTATE_MAX_KEY_BUTTONS; i++ )
+	{
+		if (inputState->getKeyboardKey( i ) )  // if key pressed
+		{
+			inputString.append( inputState->KeyToString( i ) );  // get the string representation of it
+		}
+	}
+
+	
+	glUniform2f( startPosLoc, 0.0075, 0.0275 );
+	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+	glVertexAttribDivisor(0, 1);
+	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+	glVertexAttribDivisor(0, 0);
 }
 
 bool GraphicsEngine::Init()
 {
 	glfwSetErrorCallback(error_callback);
 
-	//initial OpenGL (glfw)
-	if(!glfwInit())
-		//return false;
-		exit(EXIT_FAILURE);
+	// initial OpenGL (glfw)
+	if( !glfwInit() )
+		exit( EXIT_FAILURE );
 
 	std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
 	InfoViewport* viewportInfo = (InfoViewport*)vpIt->second;
 
-	//vars for window dimensions... temporary
-	//int winWidth = 640;
-	//int winHeight = 480;
 
 	//	Added so that OSX would use OpenGL 3.2 instead of the default 2.1
 	/**
@@ -317,6 +346,9 @@ bool GraphicsEngine::Init()
 	// specify some callback functions
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetWindowSizeCallback(window, window_size_callback);
+
+	// set the window pointer to this graphics engine so the callback functions have access to it.
+	glfwSetWindowUserPointer( window, this ); 	
 	
 	//not sure this is the best place for these, but will work for now
 	InitShaders();
@@ -746,5 +778,10 @@ bool GraphicsEngine::BufferMaterial( std::string materialPath )
 
 
 	return success;
+}
+
+void GraphicsEngine::QueueInputItem( InputItem input )
+{
+	InputList.push( input );
 }
 

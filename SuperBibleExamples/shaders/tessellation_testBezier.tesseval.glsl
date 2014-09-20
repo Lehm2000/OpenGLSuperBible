@@ -39,7 +39,7 @@ mat4 rotationMatrix(vec3 axis, float angle)
 
 void main(void)
 {
-	float handleLen = 0.39;  // how long to make the control handles... make uniform??
+	float handleLen = 0.38;  // how long to make the control handles... make uniform??
 	
 	float edgeLength1 = tcs_in[0].edgeLengths[0];
 	float edgeLength2 = tcs_in[0].edgeLengths[1];
@@ -69,25 +69,9 @@ void main(void)
 	
 	vec3 newEdge = p2 - p1;
 	float newEdgeLength = length( newEdge );
-	
-	// now comes the tricky part.  We need to figure out the new normal directions for the new edge.
-	// We can't mix the two normals.  We need to rotate one normal around a common axis to match the other as gl_TessCoord.x increases.
 
-	// Start by finding the rotation axis.
-	vec3 normalRotationAxis1 = normalize( cross(tcs_in[1].normal, tcs_in[0].normal) );
-	vec3 normalRotationAxis2 = normalize( cross(tcs_in[3].normal, tcs_in[2].normal) );
-
-	// Find the angle between each other
-	float normalAngle1 = acos( dot( tcs_in[0].normal, tcs_in[1].normal) );
-	float normalAngle2 = acos( dot( tcs_in[2].normal, tcs_in[3].normal) );
-
-	// Create the rotation Matricies.  The rotation amount is controlled by the x coord of the gl_TessCoord
-	mat4 rotateMatrix1 = rotationMatrix(normalRotationAxis1, normalAngle1 * gl_TessCoord.x);
-	mat4 rotateMatrix2 = rotationMatrix(normalRotationAxis2, normalAngle2 * gl_TessCoord.x);
-
-	// apply the rotationMatrix to get the new normals
-	vec3 newNormal1 = (rotateMatrix1 * vec4( tcs_in[0].normal, 1.0)).xyz;
-	vec3 newNormal2 = (rotateMatrix2 * vec4( tcs_in[2].normal, 1.0)).xyz;
+	vec3 newNormal1 = normalize( mix( tcs_in[0].normal, tcs_in[1].normal, gl_TessCoord.x ) );
+	vec3 newNormal2 = normalize( mix( tcs_in[2].normal, tcs_in[3].normal, gl_TessCoord.x ) );
 
 	// get the new bezier handles
 	vec3 newEdgeHandle1 = normalize( cross( cross( newNormal1, newEdge), newNormal1 ) )  ;

@@ -11,5 +11,5 @@ in VS_OUT
 void main(void)
 {
 	
-	color = vec4(0.5, 0.5, 1.0, 1.0);
+	color = vec4(0.5 * ((gl_FragCoord.z /gl_FragCoord.w +2.0) / 4.0), 0.5 * ((gl_FragCoord.z /gl_FragCoord.w+2.0) / 4.0), 1.0 * ((gl_FragCoord.z /gl_FragCoord.w+2.0) / 4.0), 1.0);
 }
