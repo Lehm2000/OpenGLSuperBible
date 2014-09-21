@@ -172,27 +172,27 @@
 class InputItem
 {
 private:
-	unsigned int inputType;		// GE_INPUT_*
-	unsigned int inputIndex;	// Key number, mouse button etc
-	unsigned int inputAction;	// Up/down etc GE_ACTION_*
+	int inputType;		// GE_INPUT_*, must be int to allow -1.
+	int inputIndex;	// Key number, mouse button etc
+	int inputAction;	// Up/down etc GE_ACTION_*
 	glm::vec2 inputPosition;	// either screen position (mouse), or offset (mouse scroll) 
 
 public:
 
 	// Structors
 	InputItem();
-	InputItem( unsigned int inputType, unsigned int inputIndex, unsigned int inputAction, glm::vec2 inputPosition );
+	InputItem( int inputType, int inputIndex, int inputAction, glm::vec2 inputPosition );
 
 	// Setters
-	void setInputType( const unsigned int inputType );
-	void setInputIndex( const unsigned int inputIndex );
-	void setInputAction( const unsigned int inputAction );
+	void setInputType( const int inputType );
+	void setInputIndex( const int inputIndex );
+	void setInputAction( const int inputAction );
 	void setInputPosition( const glm::vec2 inputPosition );
 
 	// Getters
-	unsigned int getInputType() const;
-	unsigned int getInputIndex() const;
-	unsigned int getInputAction() const;
+	int getInputType() const;
+	int getInputIndex() const;
+	int getInputAction() const;
 	glm::vec2 getInputPosition() const;
 
 	

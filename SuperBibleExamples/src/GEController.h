@@ -49,7 +49,7 @@ public:
 	virtual const GEObject* getParent() const;
 	virtual const std::map< std::string, GEObject* >* getGameEntities() const;
 
-	// Functions
+	// Functions 
 
 	/**
 		clone()

@@ -25,6 +25,26 @@ GEInputState::GEInputState()
 	this->setVisible( false );	// this is not a visible game object.
 }
 
+GEInputState::GEInputState( glm::vec2 mousePosition )
+{
+	// initialize the inputstate members
+
+	for ( unsigned short i = 0; i< INPUTSTATE_MAX_KEY_BUTTONS; i++ )
+	{
+		this->setKeyboardKey( i, false );
+	}
+
+	for ( unsigned short i = 0; i< INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
+	{
+		this->setMouseButton( i, false );
+	}
+
+	this->setMousePosition( mousePosition );
+
+	// set other parameters
+	this->setVisible( false );	// this is not a visible game object.
+}
+
 // Setters
 void GEInputState::setKeyboardKey( const unsigned short key, bool pressed )
 {
@@ -74,7 +94,7 @@ std::string GEInputState::KeyToString( unsigned int keyIndex )
 	switch ( keyIndex )
 	{
 	case GE_KEY_SPACE:
-		returnString = " ";
+		returnString = "SPACE";
 		break;
 	case GE_KEY_APOSTROPHE:
 		returnString = "'";
@@ -223,82 +243,220 @@ std::string GEInputState::KeyToString( unsigned int keyIndex )
 	case GE_KEY_WORLD_2:
 		returnString = "#";
 		break;
+
+		
+	case GE_KEY_ESCAPE:
+		returnString = "ESC";
+		break;
+	case GE_KEY_ENTER:
+		returnString = "ENTER";
+		break;
+	case GE_KEY_TAB:
+		returnString = "TAB";
+		break;
+	case GE_KEY_BACKSPACE:
+		returnString = "BACKSPACE";
+		break;
+	case GE_KEY_INSERT:
+		returnString = "INS";
+		break;
+	case GE_KEY_DELETE:
+		returnString = "DEL";
+		break;
+	case GE_KEY_RIGHT:
+		returnString = "RIGHT";
+		break;
+	case GE_KEY_LEFT:
+		returnString = "LEFT";
+		break;
+	case GE_KEY_DOWN:
+		returnString = "DOWN";
+		break;
+	case GE_KEY_UP:
+		returnString = "UP";
+		break;
+	case GE_KEY_PAGE_UP:
+		returnString = "PAGEUP";
+		break;
+	case GE_KEY_PAGE_DOWN:
+		returnString = "PAGEDOWN";
+		break;
+	case GE_KEY_HOME:
+		returnString = "HOME";
+		break;
+	case GE_KEY_END:
+		returnString = "END";
+		break;
+	case GE_KEY_CAPS_LOCK:
+		returnString = "CAPSLOCK";
+		break;
+	case GE_KEY_SCROLL_LOCK:
+		returnString = "SCROLLLOCK";
+		break;
+	case GE_KEY_NUM_LOCK:
+		returnString = "NUMLOCK";
+		break;
+	case GE_KEY_PRINT_SCREEN:
+		returnString = "PRTSCRN";
+		break;
+	case GE_KEY_PAUSE:
+		returnString = "PAUSE";
+		break;
+	case GE_KEY_F1:
+		returnString = "F1";
+		break;
+	case GE_KEY_F2:
+		returnString = "F2";
+		break;
+	case GE_KEY_F3:
+		returnString = "F3";
+		break;
+	case GE_KEY_F4:
+		returnString = "F4";
+		break;
+	case GE_KEY_F5:
+		returnString = "F5";
+		break;
+	case GE_KEY_F6:
+		returnString = "F6";
+		break;
+	case GE_KEY_F7:
+		returnString = "F7";
+		break;
+	case GE_KEY_F8:
+		returnString = "F8";
+		break;
+	case GE_KEY_F9:
+		returnString = "F9";
+		break;
+	case GE_KEY_F10:
+		returnString = "F10";
+		break;
+	case GE_KEY_F11:
+		returnString = "F11";
+		break;
+	case GE_KEY_F12:
+		returnString = "F12";
+		break;
+	case GE_KEY_F13:
+		returnString = "F13";
+		break;
+	case GE_KEY_F14:
+		returnString = "F14";
+		break;
+	case GE_KEY_F15:
+		returnString = "F15";
+		break;
+	case GE_KEY_F16:
+		returnString = "F16";
+		break;
+	case GE_KEY_F17:
+		returnString = "F17";
+		break;
+	case GE_KEY_F18:
+		returnString = "F18";
+		break;
+	case GE_KEY_F19:
+		returnString = "F19";
+		break;
+	case GE_KEY_F20:
+		returnString = "F20";
+		break;
+	case GE_KEY_F21:
+		returnString = "F21";
+		break;
+	case GE_KEY_F22:
+		returnString = "F22";
+		break;
+	case GE_KEY_F23:
+		returnString = "F23";
+		break;
+	case GE_KEY_F24:
+		returnString = "F24";
+		break;
+	case GE_KEY_F25:
+		returnString = "F25";
+		break;
+	case GE_KEY_KP_0:
+		returnString = "KP0";
+		break;
+	case GE_KEY_KP_1:
+		returnString = "KP1";
+		break;
+	case GE_KEY_KP_2:
+		returnString = "KP2";
+		break;
+	case GE_KEY_KP_3:
+		returnString = "KP3";
+		break;
+	case GE_KEY_KP_4:
+		returnString = "KP4";
+		break;
+	case GE_KEY_KP_5:
+		returnString = "KP5";
+		break;
+	case GE_KEY_KP_6:
+		returnString = "KP6";
+		break;
+	case GE_KEY_KP_7:
+		returnString = "KP7";
+		break;
+	case GE_KEY_KP_8:
+		returnString = "KP8";
+		break;
+	case GE_KEY_KP_9:
+		returnString = "KP9";
+		break;
+	case GE_KEY_KP_DECIMAL:
+		returnString = ".";
+		break;
+	case GE_KEY_KP_DIVIDE:
+		returnString = "/";
+		break;
+	case GE_KEY_KP_MULTIPLY:
+		returnString = "*";
+		break;
+	case GE_KEY_KP_SUBTRACT:
+		returnString = "-";
+		break;
+	case GE_KEY_KP_ADD:
+		returnString = "+";
+		break;
+	case GE_KEY_KP_ENTER:
+		returnString = "ENTER";
+		break;
+	case GE_KEY_KP_EQUAL:
+		returnString = "=";
+		break;
+	case GE_KEY_LEFT_SHIFT:
+		returnString = "LFSHIFT";
+		break;
+	case GE_KEY_LEFT_CONTROL:
+		returnString = "LFCTRL";
+		break;
+	case GE_KEY_LEFT_ALT:
+		returnString = "LFALT";
+		break;
+	case GE_KEY_LEFT_SUPER:
+		returnString = "LFSUPER";
+		break;
+	case GE_KEY_RIGHT_SHIFT:
+		returnString = "RTSHIFT";
+		break;
+	case GE_KEY_RIGHT_CONTROL:
+		returnString = "RTCTRL";
+		break;
+	case GE_KEY_RIGHT_ALT:
+		returnString = "RTALT";
+		break;
+	case GE_KEY_RIGHT_SUPER:
+		returnString = "RTSUPER";
+		break;
+	case GE_KEY_MENU:
+		returnString = "MENU";
+		break;
 	
 	}
-	
-
-	/* Function keys */
-	/*#define GE_KEY_ESCAPE             256
-	#define GE_KEY_ENTER              257
-	#define GE_KEY_TAB                258
-	#define GE_KEY_BACKSPACE          259
-	#define GE_KEY_INSERT             260
-	#define GE_KEY_DELETE             261
-	#define GE_KEY_RIGHT              262
-	#define GE_KEY_LEFT               263
-	#define GE_KEY_DOWN               264
-	#define GE_KEY_UP                 265
-	#define GE_KEY_PAGE_UP            266
-	#define GE_KEY_PAGE_DOWN          267
-	#define GE_KEY_HOME               268
-	#define GE_KEY_END                269
-	#define GE_KEY_CAPS_LOCK          280
-	#define GE_KEY_SCROLL_LOCK        281
-	#define GE_KEY_NUM_LOCK           282
-	#define GE_KEY_PRINT_SCREEN       283
-	#define GE_KEY_PAUSE              284
-	#define GE_KEY_F1                 290
-	#define GE_KEY_F2                 291
-	#define GE_KEY_F3                 292
-	#define GE_KEY_F4                 293
-	#define GE_KEY_F5                 294
-	#define GE_KEY_F6                 295
-	#define GE_KEY_F7                 296
-	#define GE_KEY_F8                 297
-	#define GE_KEY_F9                 298
-	#define GE_KEY_F10                299
-	#define GE_KEY_F11                300
-	#define GE_KEY_F12                301
-	#define GE_KEY_F13                302
-	#define GE_KEY_F14                303
-	#define GE_KEY_F15                304
-	#define GE_KEY_F16                305
-	#define GE_KEY_F17                306
-	#define GE_KEY_F18                307
-	#define GE_KEY_F19                308
-	#define GE_KEY_F20                309
-	#define GE_KEY_F21                310
-	#define GE_KEY_F22                311
-	#define GE_KEY_F23                312
-	#define GE_KEY_F24                313
-	#define GE_KEY_F25                314
-	#define GE_KEY_KP_0               320
-	#define GE_KEY_KP_1               321
-	#define GE_KEY_KP_2               322
-	#define GE_KEY_KP_3               323
-	#define GE_KEY_KP_4               324
-	#define GE_KEY_KP_5               325
-	#define GE_KEY_KP_6               326
-	#define GE_KEY_KP_7               327
-	#define GE_KEY_KP_8               328
-	#define GE_KEY_KP_9               329
-	#define GE_KEY_KP_DECIMAL         330
-	#define GE_KEY_KP_DIVIDE          331
-	#define GE_KEY_KP_MULTIPLY        332
-	#define GE_KEY_KP_SUBTRACT        333
-	#define GE_KEY_KP_ADD             334
-	#define GE_KEY_KP_ENTER           335
-	#define GE_KEY_KP_EQUAL           336
-	#define GE_KEY_LEFT_SHIFT         340
-	#define GE_KEY_LEFT_CONTROL       341
-	#define GE_KEY_LEFT_ALT           342
-	#define GE_KEY_LEFT_SUPER         343
-	#define GE_KEY_RIGHT_SHIFT        344
-	#define GE_KEY_RIGHT_CONTROL      345
-	#define GE_KEY_RIGHT_ALT          346
-	#define GE_KEY_RIGHT_SUPER        347
-	#define GE_KEY_MENU               348
-	#define GE_KEY_LAST               GE_KEY_MENU */
 
 	return returnString;
 

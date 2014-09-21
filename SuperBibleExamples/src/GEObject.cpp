@@ -131,24 +131,6 @@ glm::vec3 GEObject::getScale() const
 	return this->scale;
 }
 
-/*
-const GEController* GEObject::getPositionController() const
-{
-	return this->positionController;
-}
-
-const GEController* GEObject::getRotationController() const
-{
-	return this->rotationController;
-}
-
-const GEController* GEObject::getScaleController() const
-{
-	return this->scaleController;
-}
-*/
-
-
 bool GEObject::isVisible() const
 {
 	return this->visible;
@@ -237,7 +219,6 @@ void GEObject::Update( const double gameTime, const double deltaTime)
 {
 	// Let object controllers do their thing.
 
-	// TODO: should we be passing the previous controllers new vec3 instead of the objects vec3?
 	for ( unsigned int i = 0; i < positionControllers.size(); i++)
 		positionControllers[i]->Control( this->getPosition(), gameTime, deltaTime );
 

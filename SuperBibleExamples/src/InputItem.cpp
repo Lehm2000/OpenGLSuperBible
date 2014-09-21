@@ -11,7 +11,7 @@ InputItem::InputItem()
 	this->setInputPosition( glm::vec2( 0.0f, 0.0f ) );
 }
 
-InputItem::InputItem( unsigned int inputType, unsigned int inputIndex, unsigned int inputAction, glm::vec2 inputPosition )
+InputItem::InputItem( int inputType, int inputIndex, int inputAction, glm::vec2 inputPosition )
 {
 	this->setInputType( inputType );
 	this->setInputIndex( inputIndex );
@@ -19,17 +19,17 @@ InputItem::InputItem( unsigned int inputType, unsigned int inputIndex, unsigned 
 	this->setInputPosition( inputPosition );
 }
 
-void InputItem::setInputType( const unsigned int inputType )
+void InputItem::setInputType( const int inputType )
 {
 	this->inputType = inputType;
 }
 
-void InputItem::setInputIndex( const unsigned int inputIndex )
+void InputItem::setInputIndex( const int inputIndex )
 {
 	this->inputIndex = inputIndex;
 }
 
-void InputItem::setInputAction( const unsigned int inputAction )
+void InputItem::setInputAction( const int inputAction )
 {
 	this->inputAction = inputAction;
 }
@@ -41,17 +41,17 @@ void InputItem::setInputPosition( const glm::vec2 inputPosition )
 
 
 // Getters
-unsigned int InputItem::getInputType() const
+int InputItem::getInputType() const
 {
 	return this->inputType;
 }
 
-unsigned int InputItem::getInputIndex() const
+int InputItem::getInputIndex() const
 {
 	return this->inputIndex;
 }
 
-unsigned int InputItem::getInputAction() const
+int InputItem::getInputAction() const
 {
 	return this->inputAction;
 }

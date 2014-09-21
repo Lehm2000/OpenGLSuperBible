@@ -7,6 +7,8 @@
 #include "InfoViewport.h"
 #include "GEControllerOscillator.h"
 #include "GEControllerLookAt.h"
+#include "GEControllerInputMousePositionX.h"
+#include "GEControllerInputMousePositionY.h"
 #include "InfoGameVars.h"
 #include "GEConstants.h"
 #include "GEInputState.h"
@@ -79,6 +81,8 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
 		//gameCam->addPositionController( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
 		//gameCam->addRotationController( new GEControllerLookAt( "testObject") );
+		gameCam->addRotationController( new GEControllerInputMousePositionX( glm::vec3( 0.0f, -0.005f, 0.0f ) ) );
+		gameCam->addRotationController( new GEControllerInputMousePositionY( glm::vec3( -0.005f, 0.0f, 0.0f ) ) );
 		AddEntity( "gameCam", gameCam );
 	}
 }
@@ -104,7 +108,7 @@ bool GameEngine::Initialize()
 	AddEntity( "SYS_Game_Vars", gameVars );
 
 	// Add the input state object... keeps track of current inputs.
-	GEObject* inputState = new GEInputState();
+	GEObject* inputState = new GEInputState( glm::vec2( ((InfoViewport*)viewportOptions)->getViewportWidth()/2, ((InfoViewport*)viewportOptions)->getViewportHeight()/2) );
 	AddEntity( "SYS_Input_State", inputState );
 
 	// create the graphics engine
@@ -158,6 +162,7 @@ void GameEngine::Update()
 		case GE_INPUT_MOUSEBUTTON:
 			break;
 		case GE_INPUT_MOUSEPOSITION:
+			inputState->setMousePosition( curInput.getInputPosition() );
 			break;
 		case GE_INPUT_MOUSESCROLL:
 			break;
@@ -192,8 +197,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // tutorial/test renderer
-		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		//graphics->Render( getGameTime() );  // tutorial/test renderer
+		graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 

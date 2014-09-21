@@ -237,9 +237,11 @@ void GraphicsEngine::RenderFPS(const double currentTime)
 	GLint screenMatrixLocation = glGetUniformLocation( fontMaterial.getProgram(), "screenMatrix" );
 	GLuint charSizeLoc = glGetUniformLocation( fontMaterial.getProgram(), "charSize" );
 	GLuint startPosLoc = glGetUniformLocation( fontMaterial.getProgram(), "startPos" );
+	GLuint fontColorLoc = glGetUniformLocation( fontMaterial.getProgram(), "fontColor" );
 	
 	glUniform1f( charSizeLoc, 0.015f );
 	glUniform2f( startPosLoc, 0.0075, 0.0075 );
+	glUniform4f( fontColorLoc, 1.0f, 0.0f, 0.0f, 1.0f );
 
 	glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)viewportInfo->getViewportHeight()/(float)viewportInfo->getViewportWidth(), 0.0f );
 
@@ -270,16 +272,30 @@ void GraphicsEngine::RenderFPS(const double currentTime)
 
 	std::string inputString = "";
 	
-	for ( unsigned int i = 0; i<INPUTSTATE_MAX_KEY_BUTTONS; i++ )
+	for ( unsigned int i = 0; i < INPUTSTATE_MAX_KEY_BUTTONS; i++ )
 	{
 		if (inputState->getKeyboardKey( i ) )  // if key pressed
 		{
 			inputString.append( inputState->KeyToString( i ) );  // get the string representation of it
+			inputString.append( " " );
 		}
 	}
 
+	glUniform2f( startPosLoc, 0.0075, 0.04 );
+	glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+	glVertexAttribDivisor(0, 1);
+	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+	glVertexAttribDivisor(0, 0);
+
+	// now render the mouse position
+	inputString = "";
 	
+	inputString = std::to_string( (int)inputState->getMousePosition().x ) + ", " + std::to_string( (int)inputState->getMousePosition().y );
+
 	glUniform2f( startPosLoc, 0.0075, 0.0275 );
+	glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
 	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
 	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
 	glVertexAttribDivisor(0, 1);
@@ -344,8 +360,10 @@ bool GraphicsEngine::Init()
 	printf( "GL_SHADING_LANGUAGE_VERSION: %s\n\n",glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 	// specify some callback functions
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetKeyCallback( window, key_callback );
+	glfwSetWindowSizeCallback( window, window_size_callback );
+	glfwSetCursorPos( window, viewportInfo->getViewportWidth() / 2, viewportInfo->getViewportHeight() / 2 );
+	glfwSetCursorPosCallback( window, mouse_position_callback );
 
 	// set the window pointer to this graphics engine so the callback functions have access to it.
 	glfwSetWindowUserPointer( window, this ); 	

@@ -2,9 +2,11 @@
 #include <glm\glm.hpp>
 
 #include "GEControllerConstant.h"
+#include "GEController.h"
 
 
 GEControllerConstant::GEControllerConstant()
+	:GEController()
 {
 }
 

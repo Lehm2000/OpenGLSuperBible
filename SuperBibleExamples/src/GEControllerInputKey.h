@@ -1,36 +1,33 @@
-#ifndef GECONTROLLERCONSTANT_H
-#define GECONTROLLERCONSTANT_H
+#ifndef GECONTROLLERINPUTKEY_H
+#define GECONTROLLERINPUTKEY_H
 
 /**
-	GEControllerConstant
-	Purpose: GEController object that applies a constant change to the object
+	GEControllerInputKey
+	Purpose: GEController that monitors the status of a specified key and applies the specifed deltaVec to it.
 	Author: Jeff Adams
 */
-
 #include <glm\glm.hpp>
 
-#include "GEController.h"
+#include "GEControllerConstant.h"
 
-class GEControllerConstant: public GEController
+class GEControllerInputKey: public GEControllerConstant
 {
-protected:
-	// Members
-
-	glm::vec3 deltaVec;  // Position, Rotation (Radians) or Scale change per second 
+private:
+	unsigned short key;		// key to listen for.
+	bool pressed;			// is the key pressed
+	bool pressedPrev;		// was the key pressed the last time around.
 
 public:
-	//Structors
-
-	GEControllerConstant();
-	GEControllerConstant( const glm::vec3 deltaVec );
-	GEControllerConstant( const GEControllerConstant& source );
-	virtual ~GEControllerConstant();
+	GEControllerInputKey();
+	GEControllerInputKey( const glm::vec3 deltaVec, unsigned short key );
+	GEControllerInputKey( const GEControllerInputKey& source );
+	virtual ~GEControllerInputKey();
 
 	// Setters
-	void setDeltaVec( const glm::vec3 deltaVec );
+	void setKey( unsigned short key );
 
 	// Getters
-	glm::vec3 getDeltaVec() const;
+	unsigned int getKey() const;
 
 	// Functions
 
@@ -40,11 +37,11 @@ public:
 		derived class and only have a pointer to the base class.
 		@return - pointer to a copy of this object
 	*/
-	virtual GEControllerConstant* clone() const;
+	virtual GEControllerInputKey* clone() const;
 
 	/**
-		Control()
-		Takes objectVector and applies the deltaVec to it.
+		Update()
+		Takes objectVector and applies the deltaVec to it if this objects key is pressed.
 		@param startVector - starting point of the object.  Could be position, rotation or scale
 		@param gameTime - time since the game started
 		@param deltaTime - time since the last frame
@@ -59,7 +56,7 @@ public:
 			Usually the objects original transform.
 	*/
 	virtual glm::vec3 CalcTransform( glm::vec3 sourceVector );
-
 };
 
-#endif /* GECONTROLLERCONSTANT_H */
+
+#endif /* GECONTROLLERINPUTKEY_H */

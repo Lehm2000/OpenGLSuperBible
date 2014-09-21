@@ -33,6 +33,7 @@ public:
 
 	// Structors
 	GEInputState();
+	GEInputState( glm::vec2 mousePosition );
 
 	// Setters
 	void setKeyboardKey( const unsigned short key, bool pressed );

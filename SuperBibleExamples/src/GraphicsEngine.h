@@ -208,7 +208,8 @@ public:
 	void QueueInputItem( InputItem input );
 	
 	
-	//do these static functions need to be here?  They didn't seem to work if moved out of the header
+	// Callback Functions
+
 	static void error_callback(int error, const char* description)
 	{
 		fputs(description, stderr);
@@ -227,13 +228,18 @@ public:
 
 		// Then add the key to the input list
 		GEPointer->QueueInputItem( InputItem( GE_INPUT_KEY, key, action, glm::vec2( 0.0f, 0.0f ) ) );
-		
-		
+	
+	}
 
+	static void mouse_position_callback( GLFWwindow* window, double xpos, double ypos )
+	{
+		// since this function is not a part of this class officially we need to 
+		// retrieve the pointer to it to was set when the engine was initialized
+		GraphicsEngine* GEPointer = (GraphicsEngine*)glfwGetWindowUserPointer(window);
 
+		GEPointer->QueueInputItem( InputItem( GE_INPUT_MOUSEPOSITION, -1, GE_ACTION_NONE, glm::vec2( (float)xpos, (float)ypos ) ) );
 	}
 	
-
 	static void window_size_callback(GLFWwindow* window, int width, int height)
 	{
 		
@@ -242,8 +248,8 @@ public:
 		proj_matrix = vmath::perspective(50.0f, aspect, 0.1f, 1000.0f);
 		glViewport(0,0,width,height);
 		
-		
 	}
+
 
 	//super bible static rain example below here.
 	unsigned int seed;
