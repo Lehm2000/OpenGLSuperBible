@@ -1,0 +1,6 @@
+vertex_shader = tessellation_test.vert.glsl
+tess_control_shader = tessellation_test.tessctrl.glsl 
+tess_eval_shader = tessellation_test.tesseval.glsl 
+geometry_shader = 
+fragment_shader = tessellation_test.frag.glsl
+

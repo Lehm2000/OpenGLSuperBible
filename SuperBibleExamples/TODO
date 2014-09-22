@@ -1,0 +1,7 @@
+TODO
+Add rotation calculation for targeted cameras
+Add functionality to add meshes (load/generate)
+Add material functionality.
+Get the render function to render the game state.
+
+DONE

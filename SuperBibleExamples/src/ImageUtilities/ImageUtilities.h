@@ -1,7 +1,7 @@
 #ifndef IMAGEUTILITIES_H
 #define IMAGEUTILITIES_H
 
-#include "GEImage.h"  //TODO ImageUtilites should not include GEImage.  Create a new generic image class
+#include "IUImage.h"
 
 //bitmap compression constants
 #define BI_RGB 0
@@ -48,7 +48,7 @@ struct BITMAPINFOHEADER //Bitmap info for Windows NT & 3.1x or later
 #define TGA_RLE_PALETTE				9
 #define TGA_RLE_RGB					10
 #define TGA_COMPRESSED_BW			11
-#define TGA_COMPRESSED_PALETTE	32
+#define TGA_COMPRESSED_PALETTE		32
 #define TGA_COMPRESSED_PALETTE_QT	33
 
 
@@ -77,8 +77,14 @@ struct TargaHeader
 
 //Image functions
 
-GEImage LoadBitmap(const char* filename);
-GEImage LoadTarga(const char* filename);
+class ImageUtilities
+{
+private:
+public:
+	IUImage<unsigned char> LoadBitmap(const char* filename);
+	IUImage<unsigned char> LoadTarga(const char* filename);
+
+};
 
 
 #endif /*IMAGEUTILITIES_H */

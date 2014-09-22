@@ -1,0 +1,2 @@
+vertex_shader = default.vert.glsl
+fragment_shader = SolidRGB_Subroutine.frag.glsl
