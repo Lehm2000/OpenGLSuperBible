@@ -11,26 +11,27 @@
 
 #include "GEController.h"
 
-class GEControllerConstant: public GEController
+template <class T>
+class GEControllerConstant: public GEController<T>
 {
 protected:
 	// Members
 
-	glm::vec3 deltaVec;  // Position, Rotation (Radians) or Scale change per second 
+	T valueDelta;  // how much to change the value per second.
 
 public:
 	//Structors
 
 	GEControllerConstant();
-	GEControllerConstant( const glm::vec3 deltaVec );
-	GEControllerConstant( const GEControllerConstant& source );
+	GEControllerConstant( const T valueDelta );
+	GEControllerConstant( const GEControllerConstant<T>& source );
 	virtual ~GEControllerConstant();
 
 	// Setters
-	void setDeltaVec( const glm::vec3 deltaVec );
+	void setValueDelta( const T valueDelta );
 
 	// Getters
-	glm::vec3 getDeltaVec() const;
+	T getValueDelta() const;
 
 	// Functions
 
@@ -40,7 +41,7 @@ public:
 		derived class and only have a pointer to the base class.
 		@return - pointer to a copy of this object
 	*/
-	virtual GEControllerConstant* clone() const;
+	virtual GEControllerConstant<T>* clone() const;
 
 	/**
 		Control()
@@ -50,7 +51,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( glm::vec3 objectVector, double gameTime, double deltaTime);
+	virtual void Control( T initialValue, double gameTime, double deltaTime);
 
 	/**
 		CalcTransform()
@@ -58,8 +59,73 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual glm::vec3 CalcTransform( glm::vec3 sourceVector );
+	virtual T CalcTransform( T sourceValue );
 
 };
+
+template <class T>
+GEControllerConstant<T>::GEControllerConstant()
+	:GEController()
+{
+}
+
+template <class T>
+GEControllerConstant<T>::GEControllerConstant( const T valueDelta )
+	:GEController()
+{
+	this->setValueDelta( valueDelta );
+}
+
+template <class T>
+GEControllerConstant<T>::GEControllerConstant( const GEControllerConstant<T>& source )
+	:GEController( source.parent, source.gameEntities )
+{
+	this->setValueDelta( source.valueDelta );
+}
+
+template <class T>
+GEControllerConstant<T>::~GEControllerConstant()
+{
+}
+
+// Setters
+
+template <class T>
+void GEControllerConstant<T>::setValueDelta( const T valueDelta )
+{
+	this->valueDelta = valueDelta;
+}
+
+// Getters
+
+template <class T>
+T GEControllerConstant<T>::getValueDelta() const
+{
+	return this->valueDelta;
+}
+
+// Functions
+
+template <class T>
+GEControllerConstant<T>* GEControllerConstant<T>::clone() const
+{
+	return new GEControllerConstant<T>( *this );
+}
+
+template <class T>
+void GEControllerConstant<T>::Control( T initialValue, double gameTime, double deltaTime)
+{
+	transformedValue = transformedValue + ( initialValue * (float)deltaTime  );
+}
+
+template <class T>
+T GEControllerConstant<T>::CalcTransform( T sourceValue )
+{
+	return sourceValue + transformedValue;
+}
+
+typedef GEControllerConstant<float> GEControllerConstantf1;
+typedef GEControllerConstant<glm::vec2> GEControllerConstantv2;
+typedef GEControllerConstant<glm::vec3> GEControllerConstantv3;
 
 #endif /* GECONTROLLERCONSTANT_H */

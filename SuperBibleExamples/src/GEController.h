@@ -21,6 +21,7 @@
 
 class GEObject;
 
+template <class T>
 class GEController
 {
 protected:
@@ -29,7 +30,7 @@ protected:
 	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example.
 	const std::map< std::string, GEObject* >* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
 
-	glm::vec3 transformedVector;	// the transformed data.
+	T transformedValue;	// the transformed data.
 
 public:
 	// Structors
@@ -57,7 +58,7 @@ public:
 		derived class and only have a pointer to the base class.
 		@return - pointer to a copy of this object
 	*/
-	virtual GEController* clone() const;
+	virtual GEController<T>* clone() const;
 
 	/**
 		Control()
@@ -67,7 +68,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( glm::vec3 objectVector, double gameTime, double deltaTime );
+	virtual void Control( T initialValue, double gameTime, double deltaTime );
 
 	/**
 		CalcTransform()
@@ -75,8 +76,96 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual glm::vec3 CalcTransform( glm::vec3 sourceVector ); 
+	virtual T CalcTransform( T sourceValue ); 
 };
+
+// Structors
+template <class T>
+GEController<T>::GEController()
+{
+	//this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
+
+	this->setParent( nullptr );
+	this->setGameEntities( nullptr );
+}
+
+template <class T>
+GEController<T>::GEController( const GEObject* parent, const std::map< std::string, GEObject* >* gameEntities )
+{
+	//this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
+
+	this->setParent( parent );
+	this->setGameEntities( gameEntities );
+}
+
+template <class T>
+GEController<T>::GEController( const GEController& source)
+{
+	this->transformedValue = source.transformedValue;
+	this->setParent( source.parent );	// okay to pass this pointer along
+	this->setGameEntities( source.gameEntities );	// okay to pass this pointer along
+}
+
+template <class T>
+GEController<T>::~GEController()
+{
+	// DO NOT DELETE parent and gameEntities... I know you want to because they are pointers... trust me on this one, just don't.
+}
+
+// Setters
+
+template <class T>
+void GEController<T>::setParent( const GEObject* parent )
+{
+	this->parent = parent;
+}
+
+template <class T>
+void GEController<T>::setGameEntities( const std::map< std::string, GEObject* >* gameEntities )
+{
+	this->gameEntities = gameEntities;
+}
+
+
+// Getters
+
+template <class T>
+const GEObject* GEController<T>::getParent() const
+{
+	return this->parent;
+}
+
+template <class T>
+const std::map< std::string, GEObject* >* GEController<T>::getGameEntities() const
+{
+	return this->gameEntities;
+}
+
+
+// Functions
+
+template <class T>
+GEController<T>* GEController<T>::clone() const
+{
+	return new GEController<T>(*this);
+}
+
+template <class T>
+void GEController<T>::Control( T initialValue, double gameTime, double deltaTime)
+{
+	this->transformedValue = ( *new T() );  // completely ignore incoming data.
+	
+}
+
+template <class T>
+T GEController<T>::CalcTransform( T sourceValue )
+{
+	return sourceValue;  //return the source as the transformed.
+}
+
+typedef GEController<float> GEControllerf1;
+typedef GEController<glm::vec2> GEControllerv2;
+typedef GEController<glm::vec3> GEControllerv3;
 
 
 #endif /* GECONTROLLER_H */

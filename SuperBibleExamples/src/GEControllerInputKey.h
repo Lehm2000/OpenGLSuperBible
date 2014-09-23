@@ -9,8 +9,10 @@
 #include <glm\glm.hpp>
 
 #include "GEControllerConstant.h"
+#include "GEInputState.h"
 
-class GEControllerInputKey: public GEControllerConstant
+template <class T>
+class GEControllerInputKey: public GEControllerConstant<T>
 {
 private:
 	unsigned short key;		// key to listen for.
@@ -19,8 +21,8 @@ private:
 
 public:
 	GEControllerInputKey();
-	GEControllerInputKey( const glm::vec3 deltaVec, unsigned short key );
-	GEControllerInputKey( const GEControllerInputKey& source );
+	GEControllerInputKey( const T valueDelta, unsigned short key );
+	GEControllerInputKey( const GEControllerInputKey<T>& source );
 	virtual ~GEControllerInputKey();
 
 	// Setters
@@ -37,7 +39,7 @@ public:
 		derived class and only have a pointer to the base class.
 		@return - pointer to a copy of this object
 	*/
-	virtual GEControllerInputKey* clone() const;
+	virtual GEControllerInputKey<T>* clone() const;
 
 	/**
 		Update()
@@ -47,7 +49,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( glm::vec3 objectVector, double gameTime, double deltaTime);
+	virtual void Control( T initialValue, double gameTime, double deltaTime);
 
 	/**
 		CalcTransform()
@@ -55,8 +57,98 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual glm::vec3 CalcTransform( glm::vec3 sourceVector );
+	virtual T CalcTransform( T sourceValue );
 };
 
+template <class T>
+GEControllerInputKey<T>::GEControllerInputKey()
+	:GEControllerConstant<T>()
+{
+	this->setKey( GE_KEY_UNKNOWN );
+	
+}
+
+template <class T>
+GEControllerInputKey<T>::GEControllerInputKey( const T valueDelta, unsigned short key )
+	:GEControllerConstant<T>( valueDelta )
+{
+	this->setKey( key );
+}
+
+template <class T>
+GEControllerInputKey<T>::GEControllerInputKey( const GEControllerInputKey<T>& source )
+	:GEControllerConstant<T>( source.valueDelta )
+{
+	this->setKey( source.key );
+}
+
+template <class T>
+GEControllerInputKey<T>::~GEControllerInputKey()
+{
+}
+
+
+// Setters
+
+template <class T>
+void GEControllerInputKey<T>::setKey( unsigned short key )
+{
+	this->key = key;
+}
+
+
+// Getters
+
+template <class T>
+unsigned int GEControllerInputKey<T>::getKey() const
+{
+	return this->key;
+}
+
+
+// Functions
+
+template <class T>
+GEControllerInputKey<T>* GEControllerInputKey<T>::clone() const
+{
+	return new GEControllerInputKey<T>( *this );
+}
+
+template <class T>
+void GEControllerInputKey<T>::Control( T initialValue, double gameTime, double deltaTime)
+{
+	// Update the key status
+
+	this->pressedPrev = this->pressed;
+
+	std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	
+	if ( isIt != gameEntities->end() )
+	{
+		GEInputState* inputState = (GEInputState*)isIt->second;
+		this->pressed = inputState->getKeyboardKey( this->key );
+	}
+	else
+	{
+		// if fail to find the input state object... assume its not pressed.
+		this->pressed = false;
+	}
+
+	// then apply the delta if the key is pressed.
+	if ( this->pressed )
+	{
+		transformedValue = transformedValue + ( valueDelta * (float)deltaTime );
+	}
+}
+
+template <class T>
+T GEControllerInputKey<T>::CalcTransform( T sourceValue )
+{
+	return sourceValue + transformedValue;
+}
+
+typedef GEControllerInputKey<float> GEControllerInputKeyf1;
+typedef GEControllerInputKey<glm::vec2> GEControllerInputKeyv2;
+typedef GEControllerInputKey<glm::vec3> GEControllerInputKeyv3;
 
 #endif /* GECONTROLLERINPUTKEY_H */

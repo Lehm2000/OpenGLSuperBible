@@ -13,25 +13,27 @@
 #include <glm\glm.hpp>
 
 #include "GEController.h"
+#include "GEProperty.h"
 
+template <class T>
 class GEController;
 
 class GEObject
 {
-private:
+protected:
 	// Members
 	std::string id;		// unique id for this object.  TODO Is this necessary?
 	std::string name;	// non-unique name;
 
 	// Transforms
-	glm::vec3 position;
-	glm::vec3 rotation;
-	glm::vec3 scale;
+	GEPropertyv3 position;
+	GEPropertyv3 rotation;
+	GEPropertyv3 scale;
 
 	// Transform Controllers
-	std::vector<GEController*> positionControllers;
-	std::vector<GEController*> rotationControllers;
-	std::vector<GEController*> scaleControllers;
+	//std::vector<GEController*> positionControllers;
+	//std::vector<GEController*> rotationControllers;
+	//std::vector<GEController*> scaleControllers;
 
 	// Display
 	bool visible;				// draw it?
@@ -60,9 +62,9 @@ public:
 	std::string getID() const;
 	std::string getName() const;
 	
-	glm::vec3 getPosition() const;
-	glm::vec3 getRotation() const;
-	glm::vec3 getScale() const;
+	glm::vec3 getBasePosition() const;
+	glm::vec3 getBaseRotation() const;
+	glm::vec3 getBaseScale() const;
 	
 	/*  // these might be irrelevant now
 	const GEController* getPositionController() const;
@@ -113,9 +115,9 @@ public:
 	*/
 	virtual glm::vec3 getTransformedScale() const;
 
-	virtual void addPositionController( GEController* positionController );
-	virtual void addRotationController( GEController* rotationController );	
-	virtual void addScaleController( GEController* scaleController);
+	virtual void addPositionController( GEControllerv3* positionController );
+	virtual void addRotationController( GEControllerv3* rotationController );	
+	virtual void addScaleController( GEControllerv3* scaleController);
 
 	virtual void removePositionController( const unsigned int index );
 	virtual void removeRotationController( const unsigned int index );	
