@@ -41,7 +41,6 @@ public:
 	virtual std::string getClassName();
 	glm::mat4 GetViewMatrix();
 
-	void CalcTargetRotation();  // TODO: Move to lookat controller
 };
 
 

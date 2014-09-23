@@ -6,7 +6,7 @@
 #include "CameraPerspective.h"
 #include "InfoViewport.h"
 #include "GEControllerOscillator.h"
-#include "GEControllerLookAt.h"
+//#include "GEControllerLookAt.h"
 #include "GEControllerInputMousePositionX.h"
 #include "GEControllerInputMousePositionY.h"
 #include "InfoGameVars.h"
@@ -80,9 +80,9 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 	{
 		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
 		//gameCam->addPositionController( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
-		//gameCam->addRotationController( new GEControllerLookAt( "testObject") );
-		gameCam->addRotationController( new GEControllerInputMousePositionX( glm::vec3( 0.0f, -0.005f, 0.0f ) ) );
-		gameCam->addRotationController( new GEControllerInputMousePositionY( glm::vec3( -0.005f, 0.0f, 0.0f ) ) );
+		//gameCam->addRotationController( new GEControllerLookAtv3( "testObject") );
+		gameCam->addRotationController( new GEControllerInputMousePositionXv3( glm::vec3( 0.0f, -0.005f, 0.0f ) ) );
+		gameCam->addRotationController( new GEControllerInputMousePositionYv3( glm::vec3( -0.005f, 0.0f, 0.0f ) ) );
 		AddEntity( "gameCam", gameCam );
 	}
 }

@@ -75,7 +75,7 @@ void GraphicsEngine::Render(const double currentTime)
 	CameraObject* gameCam = (CameraObject*)camIt->second;
 	if (gameCam->getClassName() == "CameraPerspective" )
 	{
-		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * gameCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * gameCam->GetViewMatrix();
 	}
 
 	const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -141,7 +141,7 @@ void GraphicsEngine::Render(const double currentTime, const std::map< std::strin
 	CameraObject* gameCam = (CameraObject*)camIt->second;
 	if (gameCam->getClassName() == "CameraPerspective" )
 	{
-		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)gameCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * gameCam->GetViewMatrix();
 	}
 
 	const GLfloat bkColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };

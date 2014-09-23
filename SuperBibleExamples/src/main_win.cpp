@@ -24,26 +24,26 @@ int main(void)
 
 	// Create a test object
 
-	GEController* tempPosCon;
-	GEController* tempRotCon;
-	GEController* tempScaCon;
+	//GEController* tempPosCon;
+	//GEController* tempRotCon;
+	//GEController* tempScaCon;
 
 	GEObject* testObject = new GEObject( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( .5f, .5f, .5f ), "test_object");
 	testObject->setMesh( "sphere" );
 	testObject->setMaterial( "default" );
-	testObject->addRotationController ( new GEControllerConstant( glm::vec3( 1.0f, 1.0f, 0.0f ) ) );
-	testObject->addPositionController ( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f), 6.0f ) );
-	testObject->addPositionController ( new GEControllerOscillator( glm::vec3( 2.0f, 0.0f, 1.0f), 7.0f ) );
+	testObject->addRotationController ( new GEControllerConstantv3( glm::vec3( 1.0f, 1.0f, 0.0f ) ) );
+	testObject->addPositionController ( new GEControllerOscillatorv3( glm::vec3( 0.0f, 1.0f, 0.0f), 6.0f ) );
+	testObject->addPositionController ( new GEControllerOscillatorv3( glm::vec3( 2.0f, 0.0f, 1.0f), 7.0f ) );
 	gameEngine.AddEntity( "testObject", testObject );
 
 	GEObject* testObject2 = new GEObject( glm::vec3( 1.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 1.0f, 1.0f, 1.0f ), "test_object2");
 	testObject2->setMesh( "cube" );
 	testObject2->setMaterial( "default" );
-	GEControllerInputMousePositionX testController( glm::vec3( 1.0f, 1.0f, 0.0f ) );
-	GEControllerInputKey testController2( glm::vec3( 0.0f, 1.0f, 0.0f ), GE_KEY_W );
-	GEControllerOscillator testController3( glm::vec3( 0.25f, 0.25f, 0.25f ) , 3.0f );
+	GEControllerInputMousePositionXv3 testController( glm::vec3( 1.0f, 1.0f, 0.0f ) );
+	GEControllerInputKeyv3 testController2( glm::vec3( 0.0f, 1.0f, 0.0f ), GE_KEY_W );
+	GEControllerOscillatorv3 testController3( glm::vec3( 0.25f, 0.25f, 0.25f ) , 3.0f );
 	//testObject2->addRotationController( new GEControllerInputMousePosition( glm::vec3( 0.01f, 0.01f, 0.0f ) ) );
-	testObject2->addScaleController( new GEControllerOscillator( glm::vec3( 0.25f, 0.25f, 0.25f ) , 3.0f ) );
+	testObject2->addScaleController( new GEControllerOscillatorv3( glm::vec3( 0.25f, 0.25f, 0.25f ) , 3.0f ) );
 	
 	gameEngine.AddEntity( "testObject2", testObject2 );
 
@@ -51,10 +51,10 @@ int main(void)
 	testObject3->setMesh( "diamond" );
 	testObject3->setMaterial( "default" );
 	//testObject3->addPositionController( new GEControllerOscillator( glm::vec3( 0.5f, 0.5f, 0.5f), 5.0f ) );
-	testObject3->addPositionController( new GEControllerInputKey( glm::vec3( 0.0f, 1.0f, 0.0f ), GE_KEY_W ) );
-	testObject3->addPositionController( new GEControllerInputKey( glm::vec3( 0.0f, -1.0f, 0.0f ), GE_KEY_S ) );
-	testObject3->addPositionController( new GEControllerInputKey( glm::vec3( -1.0f, 0.0f, 0.0f ), GE_KEY_A ) );
-	testObject3->addPositionController( new GEControllerInputKey( glm::vec3( 1.0f, -0.0f, 0.0f ), GE_KEY_D ) );
+	testObject3->addPositionController( new GEControllerInputKeyv3( glm::vec3( 0.0f, 1.0f, 0.0f ), GE_KEY_W ) );
+	testObject3->addPositionController( new GEControllerInputKeyv3( glm::vec3( 0.0f, -1.0f, 0.0f ), GE_KEY_S ) );
+	testObject3->addPositionController( new GEControllerInputKeyv3( glm::vec3( -1.0f, 0.0f, 0.0f ), GE_KEY_A ) );
+	testObject3->addPositionController( new GEControllerInputKeyv3( glm::vec3( 1.0f, -0.0f, 0.0f ), GE_KEY_D ) );
 	testObject3->addRotationController( new GEControllerLookAt( "testObject") );
 	gameEngine.AddEntity( "testObject3", testObject3 );
 

@@ -26,13 +26,38 @@ void CameraPerspective::setFov( const float fov )
 }
 
 // Getters
-float CameraPerspective::getFov() const
+float CameraPerspective::getBaseFov() const
 {
-	return fov;
+	return fov.getBaseValue();
+}
+
+float CameraPerspective::getFinalFov() const
+{
+	return fov.getFinalValue();
 }
 
 // Functions
 std::string CameraPerspective::getClassName()
 {
 	return "CameraPerspective";
+}
+
+void CameraPerspective::Update( const double gameTime, const double deltaTime)
+{
+	// Let property controllers do their thing.
+
+	position.Update( gameTime, deltaTime);
+	rotation.Update( gameTime, deltaTime);
+	scale.Update( gameTime, deltaTime);
+	fov.Update( gameTime, deltaTime);
+}
+
+void CameraPerspective::addFOVController( GEControllerf1* scaleController)
+{
+	fov.addController( scaleController, this );
+}
+
+void CameraPerspective::removeFOVController( const unsigned int index )
+{
+	this->fov.removeController( index );
 }
