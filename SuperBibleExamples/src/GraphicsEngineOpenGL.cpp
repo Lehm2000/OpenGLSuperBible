@@ -28,7 +28,7 @@ GraphicsEngineOpenGL::GraphicsEngineOpenGL()
 	
 }
 
-GraphicsEngineOpenGL::GraphicsEngineOpenGL( const std::map< std::string, GEObject* >* gameEntities )
+GraphicsEngineOpenGL::GraphicsEngineOpenGL( const GEObjectContainer* gameEntities )
 {
 	seed = 0x13371337;  //here just for the alien rain example
 

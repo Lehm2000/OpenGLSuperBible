@@ -14,6 +14,7 @@
 #include "GraphicsEngine.h"
 #include "GEObject.h"
 #include "CameraObject.h"
+#include "GEObjectContainer.h"
 
 class GameEngine
 {
@@ -24,7 +25,7 @@ private:
 	double lastFrameTime;  
 
 	// Game Objects
-	std::map< std::string, GEObject* > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
+	GEObjectContainer gameEntities;		// Contains all objects in the game.
 
 	// System Objects
 	GraphicsEngine* graphics;	// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.

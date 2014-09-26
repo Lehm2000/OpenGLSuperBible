@@ -16,6 +16,12 @@ CameraPerspective::CameraPerspective( GEvec3 position, GEvec3 rotation, float fo
 	this->setFov( fov );
 }
 
+CameraPerspective::CameraPerspective( const CameraPerspective& source )
+	:CameraObject( source )
+{
+	this->fov = source.fov;
+}
+
 CameraPerspective::~CameraPerspective()
 {
 }
@@ -69,7 +75,12 @@ void CameraPerspective::removeFOVController( const unsigned int index )
 	this->fov.removeController( index );
 }
 
-void CameraPerspective::setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities)
+CameraPerspective* CameraPerspective::clone() const
+{
+	return new CameraPerspective( *this );
+}
+
+void CameraPerspective::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities)
 {
 	// give all the transform controllers a pointer to the gameEntities
 

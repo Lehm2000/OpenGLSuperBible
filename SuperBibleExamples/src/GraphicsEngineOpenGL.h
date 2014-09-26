@@ -24,6 +24,7 @@
 #include "GraphicsEngine.h"
 #include "MaterialManager.h"
 #include "GEObject.h"
+#include "GEObjectContainer.h"
 #include "GEMesh.h"
 #include "GEMaterial.h"
 #include "InputItem.h"
@@ -46,7 +47,7 @@ public:
 
 	// structors
 	GraphicsEngineOpenGL();
-	GraphicsEngineOpenGL( const std::map< std::string, GEObject* >* gameEntities );  // passes a pointer to the game entities.
+	GraphicsEngineOpenGL( const GEObjectContainer* gameEntities );  // passes a pointer to the game entities.
 	~GraphicsEngineOpenGL();
 
 	// setters

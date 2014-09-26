@@ -18,17 +18,19 @@
 GraphicsEngine::GraphicsEngine()
 {
 	this->gameEntities = nullptr;
-	this->inputList.empty();
+	while (!this->inputList.empty() );
+		this->inputList.pop();
 
 }
 
-GraphicsEngine::GraphicsEngine( const std::map< std::string, GEObject* >* gameEntities )
+GraphicsEngine::GraphicsEngine( const GEObjectContainer* gameEntities )
 {
 	
 
 	this->gameEntities = gameEntities;
 
-	this->inputList.empty();
+	while (!this->inputList.empty() );
+		this->inputList.pop();
 }
 
 GraphicsEngine::~GraphicsEngine()

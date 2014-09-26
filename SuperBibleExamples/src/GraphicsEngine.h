@@ -67,14 +67,14 @@ class GraphicsEngine
 {
 protected:
 	
-	const std::map< std::string, GEObject* >* gameEntities;  // this is a pointer to the gameEntities... passed from the game engine when it was created.
+	const GEObjectContainer* gameEntities;  // this is a pointer to the gameEntities... passed from the game engine when it was created.
 	std::queue< InputItem > inputList;					// Holds inputs that have been recorded.
 
 public:
 
 	// structors
 	GraphicsEngine();
-	GraphicsEngine( const std::map< std::string, GEObject* >* gameEntities );  // passes a pointer to the game entities.
+	GraphicsEngine( const GEObjectContainer* gameEntities );  // passes a pointer to the game entities.
 	virtual ~GraphicsEngine();
 
 	// setters

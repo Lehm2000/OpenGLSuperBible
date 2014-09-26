@@ -15,10 +15,13 @@
 #include "TypeDefinitions.h"
 #include "GEController.h"
 #include "GEProperty.h"
+#include "GEObjectContainer.h"
 
 
 template <class T>
 class GEController;
+
+class GEObjectContainer;
 
 class GEObject
 {
@@ -32,11 +35,6 @@ protected:
 	GEPropertyv3 rotation;
 	GEPropertyv3 scale;
 
-	// Transform Controllers
-	//std::vector<GEController*> positionControllers;
-	//std::vector<GEController*> rotationControllers;
-	//std::vector<GEController*> scaleControllers;
-
 	// Display
 	bool visible;				// draw it?
 	std::string mesh;			// path to the mesh.
@@ -45,6 +43,7 @@ protected:
 public:
 	// Structors
 	GEObject();
+	GEObject( const GEObject& source );
 	GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string name = std::string( "" ) );
 	virtual ~GEObject();
 
@@ -100,30 +99,10 @@ public:
 	virtual void Update( const double gameTime, const double deltaTime);
 
 	/**
-		getTransformedPosition()
-		Returns the combined result of the position controllers.
+		clone()
+		Creates a copy of the object and returns it.
 	*/
-	//virtual GEvec3 getTransformedPosition() const;
-
-	/**
-		getTransformedRotation()
-		Returns the combined result of the rotation controllers.
-	*/
-	//virtual GEvec3 getTransformedRotation() const;
-
-	/**
-		getTransformedScale()
-		Returns the combined result of the scale controllers.
-	*/
-	//virtual GEvec3 getTransformedScale() const;
-
-	//virtual void addPositionController( GEControllerv3* positionController );
-	//virtual void addRotationController( GEControllerv3* rotationController );	
-	//virtual void addScaleController( GEControllerv3* scaleController);
-
-	//virtual void removePositionController( const unsigned int index );
-	//virtual void removeRotationController( const unsigned int index );	
-	//virtual void removeScaleController( const unsigned int index);
+	virtual GEObject* clone() const;
 
 	/**
 		setControllerGameEntitiesPointer()
@@ -131,7 +110,7 @@ public:
 		@ param gameEntities - pointer to the gameEntities
 		@ return void
 	*/
-	virtual void setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities);
+	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 };
 

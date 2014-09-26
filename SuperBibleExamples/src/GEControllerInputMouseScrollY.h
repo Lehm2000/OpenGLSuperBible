@@ -27,7 +27,7 @@ public:
 	virtual ~GEControllerInputMouseScrollY();
 
 	// Setters
-	virtual void setGameEntities( const std::map< std::string, GEObject* >* gameEntities );  // override from GEController
+	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -85,7 +85,7 @@ GEControllerInputMouseScrollY<T>::GEControllerInputMouseScrollY( const GEControl
 // Setters
 
 template <class T>
-void GEControllerInputMouseScrollY<T>::setGameEntities( const std::map< std::string, GEObject* >* gameEntities )
+void GEControllerInputMouseScrollY<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
 	// Overloaded from GEController so that this controller grabs the current mouse position from SYS_Input_State
 	
@@ -117,11 +117,13 @@ void GEControllerInputMouseScrollY<T>::Control( T initialValue, double gameTime,
 	
 
 	// get the new mouse position
-	std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+
+	const GEObject* isObject = gameEntities->GetObjectConst( "SYS_Input_State" );
 	
-	if ( isIt != gameEntities->end() )
+	if ( isObject != nullptr )
 	{
-		GEInputState* inputState = (GEInputState*)isIt->second;
+		const GEInputState* inputState = (GEInputState*)isObject;
 		mouseScrollYDelta = inputState->getMouseScrollOffset().y;
 	}
 

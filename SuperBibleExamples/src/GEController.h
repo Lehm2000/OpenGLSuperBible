@@ -19,6 +19,7 @@
 
 #include "GEObject.h"
 #include "TypeDefinitions.h"
+#include "GEObjectContainer.h"
 
 class GEObject;
 
@@ -34,7 +35,7 @@ protected:
 		// GEproperty.  The function that returns the GEProperty can't return a
 		// const version of the property so that it can be modified.  
 		// Controllers need to be added to it for example.
-	const std::map< std::string, GEObject* >* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
+	const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
 
 	T transformedValue;	// the transformed data.
 
@@ -42,19 +43,19 @@ public:
 	// Structors
 	
 	GEController();
-	GEController( GEObject* parent, const std::map< std::string, GEObject* >* gameEntities );
+	GEController( GEObject* parent, const GEObjectContainer* gameEntities );
 	GEController( const GEController& source);
 	virtual ~GEController();
 
 	// Setters
 
 	virtual void setParent( GEObject* parent );
-	virtual void setGameEntities( const std::map< std::string, GEObject* >* gameEntities );
+	virtual void setGameEntities( const GEObjectContainer* gameEntities );
 
 	// Getters
 
 	virtual const GEObject* getParent() const;
-	virtual const std::map< std::string, GEObject* >* getGameEntities() const;
+	virtual const GEObjectContainer* getGameEntities() const;
 
 	// Functions 
 
@@ -96,7 +97,7 @@ GEController<T>::GEController()
 }
 
 template <class T>
-GEController<T>::GEController( GEObject* parent, const std::map< std::string, GEObject* >* gameEntities )
+GEController<T>::GEController( GEObject* parent, const GEObjectContainer* gameEntities )
 {
 	this->transformedValue = T();
 
@@ -127,7 +128,7 @@ void GEController<T>::setParent( GEObject* parent )
 }
 
 template <class T>
-void GEController<T>::setGameEntities( const std::map< std::string, GEObject* >* gameEntities )
+void GEController<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
 	this->gameEntities = gameEntities;
 }
@@ -142,7 +143,7 @@ const GEObject* GEController<T>::getParent() const
 }
 
 template <class T>
-const std::map< std::string, GEObject* >* GEController<T>::getGameEntities() const
+const GEObjectContainer* GEController<T>::getGameEntities() const
 {
 	return this->gameEntities;
 }

@@ -34,6 +34,7 @@ public:
 
 	// Structors
 	GEInputState();
+	GEInputState( const GEInputState& source );
 	GEInputState( GEvec2 mousePosition );
 
 	// Setters
@@ -49,6 +50,13 @@ public:
 	GEvec2 getMouseScrollOffset( ) const;
 
 	// Functions
+
+	/**
+		clone()
+		Creates a copy of the object and returns it.
+	*/
+	virtual GEInputState* clone() const;
+
 	virtual std::string getClassName();
 
 	void ResetMouseScrollOffset();

@@ -17,6 +17,12 @@ CameraObject::CameraObject( GEvec3 position, GEvec3 rotation )
 	this->setVisible( false );
 }
 
+CameraObject::CameraObject( const CameraObject& source )
+	:GEObject( source )
+{
+
+}
+
 CameraObject::~CameraObject()
 {
 }
@@ -43,4 +49,9 @@ glm::mat4 CameraObject::GetViewMatrix()
 	//}
 	
 	return viewMatrix;
+}
+
+CameraObject* CameraObject::clone() const
+{
+	return new CameraObject( *this );
 }

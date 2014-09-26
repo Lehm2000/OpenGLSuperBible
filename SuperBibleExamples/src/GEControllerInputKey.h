@@ -122,11 +122,12 @@ void GEControllerInputKey<T>::Control( T initialValue, double gameTime, double d
 
 	this->pressedPrev = this->pressed;
 
-	std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	const GEObject* isObject = gameEntities->GetObjectConst( "SYS_Input_State" );
 	
-	if ( isIt != gameEntities->end() )
+	if ( isObject != nullptr )
 	{
-		GEInputState* inputState = (GEInputState*)isIt->second;
+		const GEInputState* inputState = (GEInputState*)isObject;
 		this->pressed = inputState->getKeyboardKey( this->key );
 	}
 	else

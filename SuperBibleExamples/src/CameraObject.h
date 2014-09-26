@@ -34,13 +34,20 @@ private:
 public:
 	// Structors
 	CameraObject();
+	CameraObject( const CameraObject& source);
 	CameraObject( GEvec3 position, GEvec3 rotation );
 	~CameraObject();
 
 
 	// Functions
 	virtual std::string getClassName();
-	glm::mat4 GetViewMatrix();
+	virtual GEmat4 GetViewMatrix();
+
+	/**
+		clone()
+		Creates a copy of the object and returns it.
+	*/
+	virtual CameraObject* clone() const;
 
 };
 

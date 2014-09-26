@@ -12,6 +12,7 @@
 #include "TypeDefinitions.h"
 #include "GEObject.h"
 #include "GEController.h"
+#include "GEObjectContainer.h"
 
 template <class T>
 class GEController;
@@ -58,7 +59,7 @@ public:
 	// Functions
 	void addController( GEController<T>* controller, GEObject* parent );
 	void removeController( const unsigned int index );
-	void setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities);
+	void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 	void Update( const double gameTime, const double deltaTime);
 	
@@ -93,6 +94,13 @@ GEProperty<T>::GEProperty( GEProperty& source )
 	this->setMin( source.min );
 	this->setUseMin( source.useMin );
 	this->setValue( source.value ); // set the value last, after the validators have been set.
+
+	// need to duplicate the controllers too.
+	this->controllers.clear();
+	for ( unsigned int i = 0; i< source.controllers.size(); i++ )
+	{
+		this->addController( source.controllers[i].clone() );
+	}
 }
 
 template <class T>
@@ -262,7 +270,7 @@ void GEProperty<T>::removeController( const unsigned int index )
 
 
 template <class T>
-void GEProperty<T>::setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities )
+void GEProperty<T>::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities )
 {
 	for ( unsigned int i = 0; i < controllers.size(); i++)
 		controllers[i]->setGameEntities( gameEntities );

@@ -12,7 +12,7 @@
 typedef glm::vec2 GEvec2;
 typedef glm::vec3 GEvec3;
 
-
+typedef glm::mat4 GEmat4;
 
 
 

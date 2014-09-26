@@ -45,6 +45,22 @@ GEInputState::GEInputState( GEvec2 mousePosition )
 	this->setVisible( false );	// this is not a visible game object.
 }
 
+GEInputState::GEInputState( const GEInputState& source )
+	:GEObject( source )
+{
+	for ( unsigned short i = 0; i< INPUTSTATE_MAX_KEY_BUTTONS; i++ )
+	{
+		this->setKeyboardKey( i, source.keyboardKeys[i] );
+	}
+
+	for ( unsigned short i = 0; i< INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
+	{
+		this->setMouseButton( i, source.mouseButtons[i] );
+	}
+
+	this->setMousePosition( source.mousePosition );
+}
+
 // Setters
 void GEInputState::setKeyboardKey( const unsigned short key, bool pressed )
 {
@@ -92,6 +108,12 @@ GEvec2 GEInputState::getMouseScrollOffset( ) const
 
 
 // Functions
+
+GEInputState* GEInputState::clone() const
+{
+	return new GEInputState(*this);
+}
+
 std::string GEInputState::getClassName()
 {
 	return "GEInputState";

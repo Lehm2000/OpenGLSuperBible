@@ -6,6 +6,7 @@
 #include <glm\gtc\matrix_transform.hpp>
 
 #include "GEObject.h"
+#include "GEObjectContainer.h"
 #include "TypeDefinitions.h"
 //#include "vmath.h"
 
@@ -27,6 +28,20 @@ GEObject::GEObject()
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
 	this->setMaterial( "" );		// Have a default material?
+}
+
+GEObject::GEObject( const GEObject& source )
+{
+	this->GenerateID();
+	this->setName( source.getName() );
+
+	this->position = source.position;
+	this->rotation = source.rotation;
+	this->scale = source.scale;
+
+	this->setVisible( source.isVisible() );
+	this->setMesh( source.getMesh() );
+	this->setMaterial( source.getMaterial() );
 }
 
 GEObject::GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string name )
@@ -225,53 +240,12 @@ void GEObject::Update( const double gameTime, const double deltaTime)
 	scale.Update( gameTime, deltaTime);
 }
 
-/*
-GEvec3 GEObject::getTransformedPosition() const
+GEObject* GEObject::clone() const
 {
-	return position.getFinalValue();
+	return new GEObject(*this);
 }
 
-GEvec3 GEObject::getTransformedRotation() const
-{
-	return rotation.getFinalValue();
-}
-
-GEvec3 GEObject::getTransformedScale() const
-{
-	return scale.getFinalValue();
-}
-*/
-/*
-void GEObject::addPositionController( GEControllerv3* positionController )
-{
-	position.addController( positionController, this );
-}
-
-void GEObject::addRotationController( GEControllerv3* rotationController )
-{
-	rotation.addController( rotationController, this );
-}
-
-void GEObject::addScaleController( GEControllerv3* scaleController)
-{
-	scale.addController( scaleController, this );
-}
-
-void GEObject::removePositionController( const unsigned int index )
-{
-	this->position.removeController( index );
-}
-
-void GEObject::removeRotationController( const unsigned int index )
-{
-	this->rotation.removeController( index );
-}
-void GEObject::removeScaleController( const unsigned int index)
-{
-	this->scale.removeController( index );
-}
-*/
-void GEObject::setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities)
+void GEObject::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities)
 {
 	// give all the transform controllers a pointer to the gameEntities
 

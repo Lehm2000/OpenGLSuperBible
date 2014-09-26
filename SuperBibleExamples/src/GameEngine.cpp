@@ -94,11 +94,6 @@ void GameEngine::CreateGameCam( const char camType, GEvec3 position, GEvec3 rota
 	}
 }
 
-void GameEngine::DestroyGameCam()
-{
-	gameEntities.erase( "gameCam" );
-}
-
 bool GameEngine::Initialize()
 {
 	// Engine Setup Here.
@@ -140,8 +135,8 @@ void GameEngine::Update()
 	// Do input--------------------------------------------------------------------------------------------
 
 	// Get a reference to the input state
-	std::map< std::string, GEObject* >::iterator isIt = gameEntities.find("SYS_Input_State");
-	GEInputState* inputState = static_cast<GEInputState*>(isIt->second);
+
+	GEInputState* inputState = (GEInputState*)gameEntities.GetObject( "SYS_Input_State" );
 
 	// Get pointer to the input queue in the graphics engine.
 	std::queue< InputItem >* inputList = graphics->getInputList();
@@ -196,8 +191,7 @@ void GameEngine::Update()
 	// Update game variables------------------------------------------------------------------------------
 	
 	// get a reference to the game vars.
-	std::map< std::string, GEObject* >::iterator vpIt = gameEntities.find("SYS_Game_Vars");
-	InfoGameVars* gameVars = static_cast<InfoGameVars*>(vpIt->second);
+	InfoGameVars* gameVars = (InfoGameVars*)gameEntities.GetObject( "SYS_Game_Vars" );
 	
 	//update the game time
 	gameVars->setCurrentFrameTime( getGameTime() );
@@ -205,10 +199,7 @@ void GameEngine::Update()
 	//double timeDelta = getGameTime() - lastFrameTime;
 
 	// Update entities--------------------------------------------------------------------------------------
-	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.begin(); it != gameEntities.end(); it++ )
-	{
-		it->second->Update( getGameTime(), gameVars->getDeltaFrameTime() );
-	}
+	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime() );
 
 	// Update the last frametime
 	this->lastFrameTime = getGameTime();
@@ -239,14 +230,14 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 	if ( !entityName.empty() )
 	{
 		// Confirm that the entityName is not taken.
-		if (gameEntities.find( entityName ) == gameEntities.end() )
+		if ( !gameEntities.ContainsObject( entityName ) )
 		{
 			// if it is not, add it.
 
 			// pass the gameEntities pointer to the entity here... which it will pass to the controllers.
 			entity->setControllerGameEntitiesPointer( &gameEntities );
 
-			gameEntities.insert( std::pair< std::string, GEObject* >( entityName, entity ) );
+			success = gameEntities.AddObject( entityName, entity );
 
 			// if entity has a mesh specified load it.
 			if ( !entity->getMesh().empty() )
@@ -260,7 +251,6 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 				LoadMaterial( entity->getMaterial() );
 			}
 
-			success = true;
 		}
 	}
 
@@ -269,21 +259,12 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 
 void GameEngine::RemoveEntity( const std::string entityName)
 {
-	gameEntities.erase ( entityName );
+	gameEntities.RemoveObject( entityName );
 }
 
 GEObject* GameEngine::GetEntity( const std::string entityName )
 {
-	GEObject* returnObject = nullptr;
-
-	std::map< std::string, GEObject*>::iterator entityI = gameEntities.find( entityName );
-
-	if( entityI != gameEntities.end() );
-	{
-		returnObject = entityI->second;
-	}
-
-	return returnObject;
+	return gameEntities.GetObject( entityName );
 }
 
 bool GameEngine::LoadMesh( std::string meshPath )
