@@ -16,8 +16,9 @@
 
 #include <glm\glm.hpp>
 
+
 #include "GEObject.h"
-//#include "vmath.h"
+#include "TypeDefinitions.h"
 
 #define CAMTYPE_PERSPECTIVE				1
 #define CAMTYPE_ORTHO					2
@@ -33,7 +34,7 @@ private:
 public:
 	// Structors
 	CameraObject();
-	CameraObject( glm::vec3 position, glm::vec3 rotation );
+	CameraObject( GEvec3 position, GEvec3 rotation );
 	~CameraObject();
 
 

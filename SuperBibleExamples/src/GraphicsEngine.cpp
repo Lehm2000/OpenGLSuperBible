@@ -84,7 +84,7 @@ void GraphicsEngine::Render(const double currentTime)
 	glClearBufferfv(GL_COLOR, 0, bkColor);
 	glClearBufferfv(GL_DEPTH,0, &one);
 
-	std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("beziersphere");
+	std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("sphere");
 
 	GEMesh renderMesh = meshIt->second;
 
@@ -92,35 +92,49 @@ void GraphicsEngine::Render(const double currentTime)
 	
 	GEMaterial renderMaterial;
 			
-	renderMaterial = materialMap.find("tessellation_testBezier")->second;
+	renderMaterial = materialMap.find("geometry_testNormals")->second;
 
 	glUseProgram ( renderMaterial.getProgram() );
 			
-	GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "world_matrix" );
-	GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "view_matrix" );
-	GLint tessLevelLocation = glGetUniformLocation( renderMaterial.getProgram(), "tessLevel" );
-	GLint displaceTextureLoc = glGetUniformLocation( renderMaterial.getProgram(), "displaceTexture");
+	GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "worldMatrix" );
+	GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "viewMatrix" );
+	//GLint tessLevelLocation = glGetUniformLocation( renderMaterial.getProgram(), "tessLevel" );
+	//GLint displaceTextureLoc = glGetUniformLocation( renderMaterial.getProgram(), "displaceTexture");
 
 	//bind the displace texture
 	//glBindTexture( GL_TEXTURE_2D, textureMap.find("DisplaceTest")->second );
 
 	//glm::mat4 worldMatrix = it->second->GetTransformMatrix();
-	glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 4.0f,glm::vec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), glm::vec3(0.5f, 0.5f, 0.5f));
+	glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 4.0f,GEvec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
 
 	glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
 	glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
-	//glUniform1f( tessLevelLocation, (sin((float)currentTime / 3.0) +1.0f)*10.0);
-	glUniform1f( tessLevelLocation, (sin((float)currentTime / 2.0) * 5.0f ) + 6.0 );
-	//glUniform1f( tessLevelLocation, 5.0);
-    glUniform1i( displaceTextureLoc, 0 );
-	glPatchParameteri( GL_PATCH_VERTICES, 4);
-	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	//glDrawArrays(GL_PATCHES, 0 , 4);
+	
+	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
 	glEnable( GL_PRIMITIVE_RESTART );
 	glPrimitiveRestartIndex( 0xFFFF );
-	glDrawElements( GL_PATCHES,renderMesh.getNumIndices(),GL_UNSIGNED_SHORT, 0 );
+	glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_SHORT, 0 );
 	glDisable( GL_PRIMITIVE_RESTART );
-	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	
+	// switch materials and render again to visualize normals.
+
+	renderMaterial = materialMap.find("geometry_testNormalsRay")->second;
+
+	glUseProgram ( renderMaterial.getProgram() );
+
+	worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "worldMatrix" );
+	viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "viewMatrix" );
+
+	glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
+	glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
+	
+	glEnable( GL_PRIMITIVE_RESTART );
+	glPrimitiveRestartIndex( 0xFFFF );
+	//glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_SHORT, 0 );
+	glDisable( GL_PRIMITIVE_RESTART );
+
+	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
 	RenderFPS( currentTime );
 
@@ -240,7 +254,7 @@ void GraphicsEngine::RenderFPS(const double currentTime)
 	GLuint fontColorLoc = glGetUniformLocation( fontMaterial.getProgram(), "fontColor" );
 	
 	glUniform1f( charSizeLoc, 0.015f );
-	glUniform2f( startPosLoc, 0.0075, 0.0075 );
+	glUniform2f( startPosLoc, 0.0075f, 0.0075f );
 	glUniform4f( fontColorLoc, 1.0f, 0.0f, 0.0f, 1.0f );
 
 	glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)viewportInfo->getViewportHeight()/(float)viewportInfo->getViewportWidth(), 0.0f );
@@ -281,7 +295,7 @@ void GraphicsEngine::RenderFPS(const double currentTime)
 		}
 	}
 
-	glUniform2f( startPosLoc, 0.0075, 0.04 );
+	glUniform2f( startPosLoc, 0.0075f, 0.04f );
 	glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
 	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
 	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
@@ -294,7 +308,42 @@ void GraphicsEngine::RenderFPS(const double currentTime)
 	
 	inputString = std::to_string( (int)inputState->getMousePosition().x ) + ", " + std::to_string( (int)inputState->getMousePosition().y );
 
-	glUniform2f( startPosLoc, 0.0075, 0.0275 );
+	glUniform2f( startPosLoc, 0.0075f, 0.0275f );
+	glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+	glVertexAttribDivisor(0, 1);
+	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+	glVertexAttribDivisor(0, 0);
+
+	// now the mouse buttons
+
+	inputString = "";
+	
+	for ( unsigned int i = 0; i < INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
+	{
+		if (inputState->getMouseButton( i ) )  // if key pressed
+		{
+			inputString.append( inputState->ButtonToString( i ) );  // get the string representation of it
+			inputString.append( " " );
+		}
+	}
+
+	glUniform2f( startPosLoc, 0.0075f, 0.05f );
+	glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+	glVertexAttribDivisor(0, 1);
+	glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+	glVertexAttribDivisor(0, 0);
+
+	// now the mouse scroll
+
+	inputString = "";
+	
+	inputString = std::to_string( (int)inputState->getMouseScrollOffset().x ) + ", " + std::to_string( (int)inputState->getMouseScrollOffset().y );
+
+	glUniform2f( startPosLoc, 0.0075f, 0.06f );
 	glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
 	glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
 	glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
@@ -364,6 +413,9 @@ bool GraphicsEngine::Init()
 	glfwSetWindowSizeCallback( window, window_size_callback );
 	glfwSetCursorPos( window, viewportInfo->getViewportWidth() / 2, viewportInfo->getViewportHeight() / 2 );
 	glfwSetCursorPosCallback( window, mouse_position_callback );
+	glfwSetMouseButtonCallback( window, mouse_button_callback );
+	glfwSetScrollCallback( window, mouse_scroll_callback );
+
 
 	// set the window pointer to this graphics engine so the callback functions have access to it.
 	glfwSetWindowUserPointer( window, this ); 	

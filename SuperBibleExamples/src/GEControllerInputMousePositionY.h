@@ -150,9 +150,10 @@ T GEControllerInputMousePositionY<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
+
 typedef GEControllerInputMousePositionY<float> GEControllerInputMousePositionYf1;
-typedef GEControllerInputMousePositionY<glm::vec2> GEControllerInputMousePositionYv2;
-typedef GEControllerInputMousePositionY<glm::vec3> GEControllerInputMousePositionYv3;
+typedef GEControllerInputMousePositionY<GEvec2> GEControllerInputMousePositionYv2;
+typedef GEControllerInputMousePositionY<GEvec3> GEControllerInputMousePositionYv3;
 
 
 #endif /* GECONTROLLERINPUTMOUSEPOSITIONY_H */

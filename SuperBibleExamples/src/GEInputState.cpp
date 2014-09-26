@@ -19,13 +19,13 @@ GEInputState::GEInputState()
 		this->setMouseButton( i, false );
 	}
 
-	this->setMousePosition( glm::vec2( 0.0f, 0.0f ) );
+	this->setMousePosition( GEvec2( 0.0f, 0.0f ) );
 
 	// set other parameters
 	this->setVisible( false );	// this is not a visible game object.
 }
 
-GEInputState::GEInputState( glm::vec2 mousePosition )
+GEInputState::GEInputState( GEvec2 mousePosition )
 {
 	// initialize the inputstate members
 
@@ -56,12 +56,17 @@ void GEInputState::setMouseButton( const unsigned short button, bool pressed )
 	this->mouseButtons[button] = pressed;
 }
 
-void GEInputState::setMousePosition( const glm::vec2 mousePosition )
+void GEInputState::setMousePosition( const GEvec2 mousePosition )
 {
 	this->mousePosition = mousePosition;
 }
 
-// mouseScroll?
+void GEInputState::setMouseScrollOffset( const GEvec2 mouseScrollOffset )
+{
+	this->mouseScrollOffset +=  mouseScrollOffset;
+}
+
+
 
 // Getters
 bool GEInputState::getKeyboardKey( const unsigned short key ) const
@@ -74,17 +79,27 @@ bool GEInputState::getMouseButton( const unsigned short button ) const
 	return this->mouseButtons[ button ];
 }
 
-glm::vec2 GEInputState::getMousePosition( ) const
+GEvec2 GEInputState::getMousePosition( ) const
 {
 	return this->mousePosition;
 }
 
-// mouseScroll?
+GEvec2 GEInputState::getMouseScrollOffset( ) const
+{
+	return this->mouseScrollOffset;
+}
+
+
 
 // Functions
 std::string GEInputState::getClassName()
 {
 	return "GEInputState";
+}
+
+void GEInputState::ResetMouseScrollOffset()
+{
+	this->mouseScrollOffset = GEvec2( 0.0f, 0.0f );
 }
 
 std::string GEInputState::KeyToString( unsigned int keyIndex )
@@ -460,4 +475,39 @@ std::string GEInputState::KeyToString( unsigned int keyIndex )
 
 	return returnString;
 
+}
+
+std::string GEInputState::ButtonToString( unsigned int buttonIndex )
+{
+	std::string returnString = "";
+
+	switch ( buttonIndex )
+	{
+	case GE_MOUSE_BUTTON_1:
+		returnString = "MB1";
+		break;
+	case GE_MOUSE_BUTTON_2:
+		returnString = "MB2";
+		break;
+	case GE_MOUSE_BUTTON_3:
+		returnString = "MB3";
+		break;
+	case GE_MOUSE_BUTTON_4:
+		returnString = "MB4";
+		break;
+	case GE_MOUSE_BUTTON_5:
+		returnString = "MB5";
+		break;
+	case GE_MOUSE_BUTTON_6:
+		returnString = "MB6";
+		break;
+	case GE_MOUSE_BUTTON_7:
+		returnString = "MB7";
+		break;
+	case GE_MOUSE_BUTTON_8:
+		returnString = "MB8";
+		break;
+	}
+
+	return returnString;
 }

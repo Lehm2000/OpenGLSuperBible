@@ -8,6 +8,7 @@
 */
 
 #include <glm\glm.hpp>
+#include "TypeDefinitions.h"
 
 
 // #definitions
@@ -175,25 +176,25 @@ private:
 	int inputType;		// GE_INPUT_*, must be int to allow -1.
 	int inputIndex;	// Key number, mouse button etc
 	int inputAction;	// Up/down etc GE_ACTION_*
-	glm::vec2 inputPosition;	// either screen position (mouse), or offset (mouse scroll) 
+	GEvec2 inputPosition;	// either screen position (mouse), or offset (mouse scroll) 
 
 public:
 
 	// Structors
 	InputItem();
-	InputItem( int inputType, int inputIndex, int inputAction, glm::vec2 inputPosition );
+	InputItem( int inputType, int inputIndex, int inputAction, GEvec2 inputPosition );
 
 	// Setters
 	void setInputType( const int inputType );
 	void setInputIndex( const int inputIndex );
 	void setInputAction( const int inputAction );
-	void setInputPosition( const glm::vec2 inputPosition );
+	void setInputPosition( const GEvec2 inputPosition );
 
 	// Getters
 	int getInputType() const;
 	int getInputIndex() const;
 	int getInputAction() const;
-	glm::vec2 getInputPosition() const;
+	GEvec2 getInputPosition() const;
 
 	
 	

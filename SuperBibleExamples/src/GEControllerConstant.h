@@ -9,7 +9,9 @@
 
 #include <glm\glm.hpp>
 
+#include "TypeDefinitions.h"
 #include "GEController.h"
+
 
 template <class T>
 class GEControllerConstant: public GEController<T>
@@ -124,8 +126,9 @@ T GEControllerConstant<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
+
 typedef GEControllerConstant<float> GEControllerConstantf1;
-typedef GEControllerConstant<glm::vec2> GEControllerConstantv2;
-typedef GEControllerConstant<glm::vec3> GEControllerConstantv3;
+typedef GEControllerConstant<GEvec2> GEControllerConstantv2;
+typedef GEControllerConstant<GEvec3> GEControllerConstantv3;
 
 #endif /* GECONTROLLERCONSTANT_H */

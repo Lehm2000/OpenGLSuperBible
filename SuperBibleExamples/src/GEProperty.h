@@ -9,6 +9,7 @@
 
 #include <memory>  
 
+#include "TypeDefinitions.h"
 #include "GEObject.h"
 #include "GEController.h"
 
@@ -22,22 +23,34 @@ class GEProperty
 {
 private:
 	T value;										// Initial value of the property
+	T max;											// What is the max value of this property
+	T min;											// What is the minimum value of this property
+	bool useMax;									// limit the value to max
+	bool useMin;									// limit the value to min
 	std::vector< GEController<T>* > controllers;	// These modify value.  They don't actually change the value of value.  Controllers either hold a change (delta) to the value or simply override it... depending on the controller type.
 
 public:
 
 	// Structors
 	GEProperty();
-	GEProperty( T value );
+	GEProperty( T value, T max, bool useMax, T min, bool useMin );
 	GEProperty( GEProperty& source );
 	~GEProperty();
 
 	// Setters
 	void setValue( const T value );
+	void setMax( const T max );
+	void setMin( const T min );
+	void setUseMax( const bool useMax );
+	void setUseMin( const bool useMin );
 
 	// Getters
 	T getBaseValue() const;
 	T getFinalValue() const;
+	T getMaxValue() const;
+	T getMinValue() const;
+	bool getUseMax() const;
+	bool getUseMin() const;
 
 	// Operators
 	//GEProperty& operator=( const GEProperty& source );
@@ -56,18 +69,30 @@ public:
 template <class T>
 GEProperty<T>::GEProperty()
 {
+	this->setUseMax( false );
+	this->setUseMin( false );
 }
 
 template <class T>
-GEProperty<T>::GEProperty( T value )
+GEProperty<T>::GEProperty( T value, T max, bool useMax, T min, bool useMin )
 {
-	this->setValue( value );
+	
+	this->setMax( max );
+	this->setUseMax( useMax );
+	this->setMin( min );
+	this->setUseMin( useMin );
+	this->setValue( value ); // set the value last, after the validators have been set.
 }
 
 template <class T>
 GEProperty<T>::GEProperty( GEProperty& source )
 {
-	this->setValue( source.value );
+	
+	this->setMax( source.max );
+	this->setUseMax( source.useMax );
+	this->setMin( source.min );
+	this->setUseMin( source.useMin );
+	this->setValue( source.value ); // set the value last, after the validators have been set.
 }
 
 template <class T>
@@ -89,12 +114,65 @@ GEProperty<T>::~GEProperty()
 template <class T>
 void GEProperty<T>::setValue( const T value )
 {
-	this->value = value;
+	// validate the range
+
+	T modValue = value;
+
+	if ( useMin )
+		modValue = glm::max( modValue, getMinValue() );
+	if ( useMax )
+		modValue = glm::min( modValue, getMaxValue() );
+
+	this->value = modValue;
+}
+
+template <class T>
+void GEProperty<T>::setMax( const T max )
+{
+	this->max = max;
+
+	// since the max changed... need to revalidate value
+
+	if ( useMax )
+		this->value = glm::min( this->value, getMaxValue() );
+}
+
+template <class T>
+void GEProperty<T>::setMin( const T min )
+{
+	this->min = min;
+
+	// since the min chnaged... revalidate the value
+
+	if ( useMin )
+		this->value = glm::max( value, getMinValue() );
+}
+
+template <class T>
+void GEProperty<T>::setUseMax( const bool useMax )
+{
+	this->useMax = useMax;
+
+	// check if existing value in range
+
+	if ( useMax )
+		this->value = glm::min( this->value, getMaxValue() );
+
+}
+
+template <class T>
+void GEProperty<T>::setUseMin( const bool useMin )
+{
+	this->useMin = useMin;
+
+	// check if existing value in range
+
+	if ( useMin )
+		this->value = glm::max( this->value, getMinValue() );
 }
 
 
 // Getters
-
 
 template <class T>
 T GEProperty<T>::getBaseValue() const
@@ -111,7 +189,38 @@ T GEProperty<T>::getFinalValue() const
 	for ( unsigned int i = 0; i < controllers.size(); i++)
 		finalValue = controllers[i]->CalcTransform( finalValue );
 
+	// clamp the range if necessary.
+
+	if ( useMin )
+		finalValue = glm::max( finalValue, getMinValue() );
+	if ( useMax )
+		finalValue = glm::min( finalValue, getMaxValue() );
+
 	return finalValue;
+}
+
+template <class T>
+T GEProperty<T>::getMaxValue() const
+{
+	return this->max;
+}
+
+template <class T>
+T GEProperty<T>::getMinValue() const
+{
+	return this->min;
+}
+
+template <class T>
+bool GEProperty<T>::getUseMax() const
+{
+	return this->useMax;
+}
+
+template <class T>
+bool GEProperty<T>::getUseMin() const
+{
+	return this->useMin;
 }
 
 
@@ -167,8 +276,10 @@ void GEProperty<T>::Update( const double gameTime, const double deltaTime)
 		controllers[i]->Control( this->getBaseValue(), gameTime, deltaTime );
 }
 
+
 typedef GEProperty<float> GEPropertyf1;
-typedef GEProperty<glm::vec2> GEPropertyv2;
-typedef GEProperty<glm::vec3> GEPropertyv3;
+typedef GEProperty<GEvec2> GEPropertyv2;
+typedef GEProperty<GEvec3> GEPropertyv3;
+
 
 #endif /* GEPROPERTY_H */

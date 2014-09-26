@@ -18,6 +18,7 @@
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
+#include "TypeDefinitions.h"
 
 class GEObject;
 
@@ -27,7 +28,12 @@ class GEController
 protected:
 	// Members
 	
-	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example.
+	GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example. 
+		// TODO: parent should be const.  However we also need to get the final 
+		// position of the object... the only way to do that is to return the 
+		// GEproperty.  The function that returns the GEProperty can't return a
+		// const version of the property so that it can be modified.  
+		// Controllers need to be added to it for example.
 	const std::map< std::string, GEObject* >* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
 
 	T transformedValue;	// the transformed data.
@@ -36,13 +42,13 @@ public:
 	// Structors
 	
 	GEController();
-	GEController( const GEObject* parent, const std::map< std::string, GEObject* >* gameEntities );
+	GEController( GEObject* parent, const std::map< std::string, GEObject* >* gameEntities );
 	GEController( const GEController& source);
 	virtual ~GEController();
 
 	// Setters
 
-	virtual void setParent( const GEObject* parent );
+	virtual void setParent( GEObject* parent );
 	virtual void setGameEntities( const std::map< std::string, GEObject* >* gameEntities );
 
 	// Getters
@@ -83,16 +89,16 @@ public:
 template <class T>
 GEController<T>::GEController()
 {
-	//this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
+	this->transformedValue = T();
 
 	this->setParent( nullptr );
 	this->setGameEntities( nullptr );
 }
 
 template <class T>
-GEController<T>::GEController( const GEObject* parent, const std::map< std::string, GEObject* >* gameEntities )
+GEController<T>::GEController( GEObject* parent, const std::map< std::string, GEObject* >* gameEntities )
 {
-	//this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
+	this->transformedValue = T();
 
 	this->setParent( parent );
 	this->setGameEntities( gameEntities );
@@ -115,7 +121,7 @@ GEController<T>::~GEController()
 // Setters
 
 template <class T>
-void GEController<T>::setParent( const GEObject* parent )
+void GEController<T>::setParent( GEObject* parent )
 {
 	this->parent = parent;
 }
@@ -164,8 +170,8 @@ T GEController<T>::CalcTransform( T sourceValue )
 }
 
 typedef GEController<float> GEControllerf1;
-typedef GEController<glm::vec2> GEControllerv2;
-typedef GEController<glm::vec3> GEControllerv3;
+typedef GEController<GEvec2> GEControllerv2;
+typedef GEController<GEvec3> GEControllerv3;
 
 
 #endif /* GECONTROLLER_H */

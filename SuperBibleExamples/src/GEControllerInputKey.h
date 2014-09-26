@@ -10,6 +10,7 @@
 
 #include "GEControllerConstant.h"
 #include "GEInputState.h"
+#include "TypeDefinitions.h"
 
 template <class T>
 class GEControllerInputKey: public GEControllerConstant<T>
@@ -147,8 +148,10 @@ T GEControllerInputKey<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
+
+
 typedef GEControllerInputKey<float> GEControllerInputKeyf1;
-typedef GEControllerInputKey<glm::vec2> GEControllerInputKeyv2;
-typedef GEControllerInputKey<glm::vec3> GEControllerInputKeyv3;
+typedef GEControllerInputKey<GEvec2> GEControllerInputKeyv2;
+typedef GEControllerInputKey<GEvec3> GEControllerInputKeyv3;
 
 #endif /* GECONTROLLERINPUTKEY_H */

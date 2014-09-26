@@ -12,8 +12,10 @@
 #include <vector>
 #include <glm\glm.hpp>
 
+#include "TypeDefinitions.h"
 #include "GEController.h"
 #include "GEProperty.h"
+
 
 template <class T>
 class GEController;
@@ -43,15 +45,15 @@ protected:
 public:
 	// Structors
 	GEObject();
-	GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std::string name = std::string( "" ) );
+	GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string name = std::string( "" ) );
 	virtual ~GEObject();
 
 	// Setters
 	void setName( const std::string name );
 	
-	virtual void setPosition(const glm::vec3 position);
-	virtual void setRotation(const glm::vec3 rotation);  // in Radians!
-	virtual void setScale(const glm::vec3 scale);
+	//virtual void setPosition(const GEvec3 position);
+	//virtual void setRotation(const GEvec3 rotation);  // in Radians!
+	//virtual void setScale(const GEvec3 scale);
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );
@@ -62,9 +64,9 @@ public:
 	std::string getID() const;
 	std::string getName() const;
 	
-	glm::vec3 getBasePosition() const;
-	glm::vec3 getBaseRotation() const;
-	glm::vec3 getBaseScale() const;
+	GEPropertyv3* getPosition();
+	GEPropertyv3* getRotation();
+	GEPropertyv3* getScale();
 	
 	/*  // these might be irrelevant now
 	const GEController* getPositionController() const;
@@ -101,27 +103,27 @@ public:
 		getTransformedPosition()
 		Returns the combined result of the position controllers.
 	*/
-	virtual glm::vec3 getTransformedPosition() const;
+	//virtual GEvec3 getTransformedPosition() const;
 
 	/**
 		getTransformedRotation()
 		Returns the combined result of the rotation controllers.
 	*/
-	virtual glm::vec3 getTransformedRotation() const;
+	//virtual GEvec3 getTransformedRotation() const;
 
 	/**
 		getTransformedScale()
 		Returns the combined result of the scale controllers.
 	*/
-	virtual glm::vec3 getTransformedScale() const;
+	//virtual GEvec3 getTransformedScale() const;
 
-	virtual void addPositionController( GEControllerv3* positionController );
-	virtual void addRotationController( GEControllerv3* rotationController );	
-	virtual void addScaleController( GEControllerv3* scaleController);
+	//virtual void addPositionController( GEControllerv3* positionController );
+	//virtual void addRotationController( GEControllerv3* rotationController );	
+	//virtual void addScaleController( GEControllerv3* scaleController);
 
-	virtual void removePositionController( const unsigned int index );
-	virtual void removeRotationController( const unsigned int index );	
-	virtual void removeScaleController( const unsigned int index);
+	//virtual void removePositionController( const unsigned int index );
+	//virtual void removeRotationController( const unsigned int index );	
+	//virtual void removeScaleController( const unsigned int index);
 
 	/**
 		setControllerGameEntitiesPointer()

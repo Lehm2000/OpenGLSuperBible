@@ -9,9 +9,11 @@
 //#include "GEControllerLookAt.h"
 #include "GEControllerInputMousePositionX.h"
 #include "GEControllerInputMousePositionY.h"
+#include "GEControllerInputMouseScrollY.h"
 #include "InfoGameVars.h"
 #include "GEConstants.h"
 #include "GEInputState.h"
+#include "TypeDefinitions.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -59,7 +61,7 @@ double GameEngine::getGameTime() const
 
 
 //Functions
-void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec3 rotation, float fov, glm::vec3 targetPosition )
+void GameEngine::CreateGameCam( const char camType, GEvec3 position, GEvec3 rotation, float fov, GEvec3 targetPosition )
 {
 	CameraObject* gameCam = nullptr;
 
@@ -79,10 +81,15 @@ void GameEngine::CreateGameCam( const char camType, glm::vec3 position, glm::vec
 	if( gameCam != nullptr )
 	{
 		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
-		//gameCam->addPositionController( new GEControllerOscillator( glm::vec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
+		//gameCam->addPositionController( new GEControllerOscillator( GEvec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
 		//gameCam->addRotationController( new GEControllerLookAtv3( "testObject") );
-		gameCam->addRotationController( new GEControllerInputMousePositionXv3( glm::vec3( 0.0f, -0.005f, 0.0f ) ) );
-		gameCam->addRotationController( new GEControllerInputMousePositionYv3( glm::vec3( -0.005f, 0.0f, 0.0f ) ) );
+		gameCam->getRotation()->addController( new GEControllerInputMousePositionXv3( GEvec3( 0.0f, -0.0025f, 0.0f ) ), gameCam );
+		gameCam->getRotation()->addController( new GEControllerInputMousePositionYv3( GEvec3( -0.0025f, 0.0f, 0.0f ) ), gameCam );
+		gameCam->getRotation()->setMax( GEvec3( 0.5f, 0.5f, 0.05f ) );
+		gameCam->getRotation()->setUseMax( true );
+		gameCam->getRotation()->setMin( GEvec3( -0.5f, -0.5f, 0.05f ) );
+		gameCam->getRotation()->setUseMin( true );
+		((CameraPerspective*)gameCam)->getFOV()->addController( new GEControllerInputMouseScrollYf1( -0.10f ), gameCam );
 		AddEntity( "gameCam", gameCam );
 	}
 }
@@ -108,7 +115,7 @@ bool GameEngine::Initialize()
 	AddEntity( "SYS_Game_Vars", gameVars );
 
 	// Add the input state object... keeps track of current inputs.
-	GEObject* inputState = new GEInputState( glm::vec2( ((InfoViewport*)viewportOptions)->getViewportWidth()/2, ((InfoViewport*)viewportOptions)->getViewportHeight()/2) );
+	GEObject* inputState = new GEInputState( GEvec2( ((InfoViewport*)viewportOptions)->getViewportWidth()/2, ((InfoViewport*)viewportOptions)->getViewportHeight()/2) );
 	AddEntity( "SYS_Input_State", inputState );
 
 	// create the graphics engine
@@ -117,6 +124,9 @@ bool GameEngine::Initialize()
 	// load some default materials TODO: Move somewhere else
 	LoadMaterial("tessellation_test");
 	LoadMaterial("tessellation_testBezier");
+	LoadMaterial("geometry_testNormals");
+	LoadMaterial("geometry_testNormalsRay");
+	LoadMaterial("default");
 
 	// Buffer the default meshes... TODO: Move somewhere else
 	LoadMesh( "beziersphere" );
@@ -137,6 +147,9 @@ void GameEngine::Update()
 	std::queue< InputItem >* inputList = graphics->getInputList();
 	
 	// do the input here.
+
+	inputState->ResetMouseScrollOffset();  // mouse offset needs to be reset at the beginning.
+
 	while (inputList->size() > 0 )
 	{
 		InputItem curInput= inputList->front();
@@ -146,11 +159,12 @@ void GameEngine::Update()
 
 		unsigned int inputType = curInput.getInputType();
 
+		inputState->ResetMouseScrollOffset();
+
 		switch ( inputType )
 		{
 		case GE_INPUT_KEY:
 
-			
 			// unless it tells us it was pressed
 			if ( curInput.getInputAction() == GE_ACTION_PRESS || curInput.getInputAction() == GE_ACTION_REPEAT)
 				pressed = true;
@@ -160,11 +174,17 @@ void GameEngine::Update()
 
 			break;
 		case GE_INPUT_MOUSEBUTTON:
+			if ( curInput.getInputAction() == GE_ACTION_PRESS )
+				pressed = true;
+			inputState->setMouseButton( curInput.getInputIndex(), pressed );
+
 			break;
 		case GE_INPUT_MOUSEPOSITION:
 			inputState->setMousePosition( curInput.getInputPosition() );
 			break;
 		case GE_INPUT_MOUSESCROLL:
+			inputState->setMouseScrollOffset( curInput.getInputPosition() );
+
 			break;
 		//default:
 		}
@@ -197,8 +217,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		//graphics->Render( getGameTime() );  // tutorial/test renderer
-		graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		graphics->Render( getGameTime() );  // tutorial/test renderer
+		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 
@@ -343,10 +363,10 @@ bool GameEngine::LoadMesh( std::string meshPath )
 				// next revolve it around the y-axis
 				for( unsigned int j = 0; j< numHSegments; j++ )
 				{
-					float finalx = cos( GE_PI * ( 2.0 * (float)j / (float)numHSegments) ) * x;
-					float z = sin( GE_PI * ( 2.0 * (float)j / (float)numHSegments) ) * x;
+					float finalx = cos( GE_PI * ( 2.0f * (float)j / (float)numHSegments) ) * x;
+					float z = sin( GE_PI * ( 2.0f * (float)j / (float)numHSegments) ) * x;
 					
-					FillGEVertex( &meshVerts[ ( i * numHSegments ) + j - ( numHSegments - 1 )], finalx, y, z,		(finalx+radius)/(2.0*radius),(y+radius)/(2.0*radius), (z+radius)/(2.0*radius), 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+					FillGEVertex( &meshVerts[ ( i * numHSegments ) + j - ( numHSegments - 1 )], finalx, y, z,		(finalx+radius)/(2.0f*radius),(y+radius)/(2.0f*radius), (z+radius)/(2.0*radius), 1.0f,		0.0f, 0.0f, 0.0f,	-0.0f, 1.0f );
 				}
 			}
 
@@ -462,7 +482,7 @@ void GameEngine::FillGEVertex( GEVertex* dest, float x, float y, float z, float 
 	dest->g = g;
 	dest->b = b;
 	dest->a = a;
-	glm::vec3 newNormal = glm::normalize( glm::vec3(nx, ny, nz) );
+	GEvec3 newNormal = glm::normalize( GEvec3(nx, ny, nz) );
 	dest->nx = newNormal.x;
 	dest->ny = newNormal.y;
 	dest->nz = newNormal.z;

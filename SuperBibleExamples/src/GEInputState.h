@@ -14,6 +14,7 @@
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
+#include "TypeDefinitions.h"
 
 #define INPUTSTATE_MAX_KEY_BUTTONS		512
 #define INPUTSTATE_MAX_MOUSE_BUTTONS	8
@@ -25,30 +26,32 @@ private:
 	// Members
 	bool keyboardKeys[ INPUTSTATE_MAX_KEY_BUTTONS ];
 	bool mouseButtons[ INPUTSTATE_MAX_MOUSE_BUTTONS ];
-	glm::vec2 mousePosition;
-	glm::vec2 mousePositionPrev;  // Is this one necessary or will the controllers be responsible for tracking the previous position?
-	glm::vec2 mouseScroll;
+	GEvec2 mousePosition;
+	GEvec2 mousePositionPrev;  // Is this one necessary or will the controllers be responsible for tracking the previous position?
+	GEvec2 mouseScrollOffset;	// how much the mouse scrolled, this needs to be reset at the beginning of each frame.
 
 public:
 
 	// Structors
 	GEInputState();
-	GEInputState( glm::vec2 mousePosition );
+	GEInputState( GEvec2 mousePosition );
 
 	// Setters
 	void setKeyboardKey( const unsigned short key, bool pressed );
 	void setMouseButton( const unsigned short button, bool pressed );
-	void setMousePosition( const glm::vec2 mousePosition );
-	// mouseScroll?
+	void setMousePosition( const GEvec2 mousePosition );
+	void setMouseScrollOffset( const GEvec2 mouseScrollOffset );  
 
 	// Getters
 	bool getKeyboardKey( const unsigned short key ) const;
 	bool getMouseButton( const unsigned short button ) const;
-	glm::vec2 getMousePosition( ) const;
-	// mouseScroll?
+	GEvec2 getMousePosition( ) const;
+	GEvec2 getMouseScrollOffset( ) const;
 
 	// Functions
 	virtual std::string getClassName();
+
+	void ResetMouseScrollOffset();
 	
 	/**
 		KeyToString()
@@ -58,6 +61,13 @@ public:
 	*/
 	std::string KeyToString( unsigned int keyIndex );
 
+	/**
+		ButtonToString()
+		Takes a mouse button index and returns the string equivelant. 
+		@param buttonIndex - which key to return string for
+		@return - the string representation of the key
+	*/
+	std::string ButtonToString( unsigned int buttonIndex );
 };
 
 #endif /* GEINPUTSTATE_H */

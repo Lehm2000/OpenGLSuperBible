@@ -6,6 +6,7 @@
 #include <glm\gtc\matrix_transform.hpp>
 
 #include "GEObject.h"
+#include "TypeDefinitions.h"
 //#include "vmath.h"
 
 // structors
@@ -14,33 +15,33 @@ GEObject::GEObject()
 	this->GenerateID();
 	this->setName( "" );
 	
-	this->setPosition( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setRotation( glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	this->setScale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
+	this->getPosition()->setValue( GEvec3( 0.0f, 0.0f, 0.0f ) );
+	this->getRotation()->setValue( GEvec3( 0.0f, 0.0f, 0.0f ) );
+	this->getScale()->setValue( GEvec3( 1.0f, 1.0f, 1.0f ) );
 
 	// Initialize the controller list... add base "static" controller to the as the first
-	this->addPositionController ( new GEControllerv3() );
-	this->addRotationController ( new GEControllerv3() );	
-	this->addScaleController ( new GEControllerv3() );
+	this->getPosition()->addController( new GEControllerv3(), this );
+	this->getRotation()->addController( new GEControllerv3(), this );	
+	this->getScale()->addController( new GEControllerv3(), this );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
 	this->setMaterial( "" );		// Have a default material?
 }
 
-GEObject::GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std::string name )
+GEObject::GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string name )
 {
 	this->GenerateID();
 	this->setName( name );
 	
-	this->setPosition( position );
-	this->setRotation( rotation );
-	this->setScale( scale );
+	this->getPosition()->setValue( position );
+	this->getRotation()->setValue( rotation );
+	this->getScale()->setValue( scale );
 
 	// Initialize the controller list... add base "static" controller as the first
-	this->addPositionController ( new GEControllerv3() );
-	this->addRotationController ( new GEControllerv3() );	
-	this->addScaleController ( new GEControllerv3() );
+	this->getPosition()->addController( new GEControllerv3(), this );
+	this->getRotation()->addController( new GEControllerv3(), this );	
+	this->getScale()->addController( new GEControllerv3(), this );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
@@ -58,20 +59,20 @@ void GEObject::setName( const std::string name )
 	this->name = name;
 }
 
-void GEObject::setPosition( const glm::vec3 position )
+/*void GEObject::setPosition( const GEvec3 position )
 {
-	this->position = position;
+	this->position.setValue( position);
 }
 
-void GEObject::setRotation( const glm::vec3 rotation )
+void GEObject::setRotation( const GEvec3 rotation )
 {
-	this->rotation = rotation;
+	this->rotation.setValue( rotation );
 }
 
-void GEObject::setScale(const glm::vec3 scale)
+void GEObject::setScale(const GEvec3 scale)
 {
-	this->scale = scale;
-}
+	this->scale.setValue( scale );
+}*/
 
 void GEObject::setVisible( const bool visible )
 {
@@ -99,19 +100,36 @@ std::string GEObject::getName() const
 	return this->name;
 }
 
-glm::vec3 GEObject::getBasePosition() const
+/*
+GEvec3 GEObject::getBasePosition() const
 {
 	return this->position.getBaseValue();
 }
 
-glm::vec3 GEObject::getBaseRotation() const
+GEvec3 GEObject::getBaseRotation() const
 {
 	return this->rotation.getBaseValue();
 }
 
-glm::vec3 GEObject::getBaseScale() const
+GEvec3 GEObject::getBaseScale() const
 {
 	return this->scale.getBaseValue();
+}
+*/
+
+GEPropertyv3* GEObject::getPosition()
+{
+	return &position;
+}
+
+GEPropertyv3* GEObject::getRotation()
+{
+	return &this->rotation;
+}
+
+GEPropertyv3* GEObject::getScale()
+{
+	return &this->scale;
 }
 
 bool GEObject::isVisible() const
@@ -181,18 +199,18 @@ std::string GEObject::getClassName()
 glm::mat4 GEObject::GetTransformMatrix()
 {
 	glm::mat4 transformMatrix;
-	glm::vec3 transformedPosition;
-	glm::vec3 transformedRotation;
-	glm::vec3 transformedScale;
+	GEvec3 transformedPosition;
+	GEvec3 transformedRotation;
+	GEvec3 transformedScale;
 
-	transformedPosition = getTransformedPosition();
-	transformedRotation = getTransformedRotation();
-	transformedScale = getTransformedScale();
+	transformedPosition = position.getFinalValue();		// get value after controllers applied
+	transformedRotation = rotation.getFinalValue();		// get value after controllers applied
+	transformedScale = scale.getFinalValue();			// get value after controllers applied
 
 	transformMatrix = glm::translate( glm::mat4(), transformedPosition ) * 
-		glm::rotate( glm::mat4(), transformedRotation.z, glm::vec3( 0.0f, 0.0f, 1.0f ) ) * 
-		glm::rotate( glm::mat4(), transformedRotation.y, glm::vec3( 0.0f, 1.0f, 0.0f ) ) * 
-		glm::rotate( glm::mat4(), transformedRotation.x, glm::vec3( 1.0f, 0.0f, 0.0f ) ) *
+		glm::rotate( glm::mat4(), transformedRotation.z, GEvec3( 0.0f, 0.0f, 1.0f ) ) * 
+		glm::rotate( glm::mat4(), transformedRotation.y, GEvec3( 0.0f, 1.0f, 0.0f ) ) * 
+		glm::rotate( glm::mat4(), transformedRotation.x, GEvec3( 1.0f, 0.0f, 0.0f ) ) *
 		glm::scale( glm::mat4(), transformedScale);
 
 	return transformMatrix;
@@ -207,21 +225,23 @@ void GEObject::Update( const double gameTime, const double deltaTime)
 	scale.Update( gameTime, deltaTime);
 }
 
-glm::vec3 GEObject::getTransformedPosition() const
+/*
+GEvec3 GEObject::getTransformedPosition() const
 {
 	return position.getFinalValue();
 }
 
-glm::vec3 GEObject::getTransformedRotation() const
+GEvec3 GEObject::getTransformedRotation() const
 {
 	return rotation.getFinalValue();
 }
 
-glm::vec3 GEObject::getTransformedScale() const
+GEvec3 GEObject::getTransformedScale() const
 {
 	return scale.getFinalValue();
 }
-
+*/
+/*
 void GEObject::addPositionController( GEControllerv3* positionController )
 {
 	position.addController( positionController, this );
@@ -250,7 +270,7 @@ void GEObject::removeScaleController( const unsigned int index)
 {
 	this->scale.removeController( index );
 }
-
+*/
 void GEObject::setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities)
 {
 	// give all the transform controllers a pointer to the gameEntities

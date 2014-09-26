@@ -150,7 +150,7 @@ T GEControllerOscillator<T>::CalcTransform( T sourceValue )
 }
 
 typedef GEControllerOscillator<float> GEControllerOscillatorf1;
-typedef GEControllerOscillator<glm::vec2> GEControllerOscillatorv2;
-typedef GEControllerOscillator<glm::vec3> GEControllerOscillatorv3;
+typedef GEControllerOscillator<GEvec2> GEControllerOscillatorv2;
+typedef GEControllerOscillator<GEvec3> GEControllerOscillatorv3;
 
 #endif /* GECONTROLLEROSCILLATOR_H */

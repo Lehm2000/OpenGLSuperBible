@@ -9,6 +9,7 @@
 #include <glm\glm.hpp>
 
 #include "GEControllerConstant.h"
+#include "TypeDefinitions.h"
 
 
 
@@ -152,9 +153,10 @@ T GEControllerInputMousePositionX<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
+
 typedef GEControllerInputMousePositionX<float> GEControllerInputMousePositionXf1;
-typedef GEControllerInputMousePositionX<glm::vec2> GEControllerInputMousePositionXv2;
-typedef GEControllerInputMousePositionX<glm::vec3> GEControllerInputMousePositionXv3;
+typedef GEControllerInputMousePositionX<GEvec2> GEControllerInputMousePositionXv2;
+typedef GEControllerInputMousePositionX<GEvec3> GEControllerInputMousePositionXv3;
 
 
 #endif /* GECONTROLLERINPUTMOUSEPOSITIONX_H */
