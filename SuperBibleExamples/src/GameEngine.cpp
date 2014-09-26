@@ -1,6 +1,6 @@
 
 
-
+#include "GraphicsEngineOpenGL.h"
 #include "GameEngine.h"
 #include "CameraObject.h"
 #include "CameraPerspective.h"
@@ -119,7 +119,7 @@ bool GameEngine::Initialize()
 	AddEntity( "SYS_Input_State", inputState );
 
 	// create the graphics engine
-	graphics = new GraphicsEngine( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
+	graphics = new GraphicsEngineOpenGL( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
 
 	// load some default materials TODO: Move somewhere else
 	LoadMaterial("tessellation_test");
@@ -296,7 +296,7 @@ bool GameEngine::LoadMesh( std::string meshPath )
 
 			// define the indexes
 
-			GLushort vertexIndecies[] =
+			unsigned int vertexIndecies[] =
 			{
 				0,1,2,3,4,5,6,7,0,1,0xFFFF,
 				0,2,6,4,0xFFFF,
@@ -320,7 +320,7 @@ bool GameEngine::LoadMesh( std::string meshPath )
 
 			// define the indexes
 
-			GLushort vertexIndecies[] =
+			unsigned int vertexIndecies[] =
 			{
 				0,1,2,0xFFFF,
 				0,2,3,0xFFFF,
@@ -381,7 +381,7 @@ bool GameEngine::LoadMesh( std::string meshPath )
 			const unsigned int numTotalIndicies = ( numIndiciesStrip ) * numHSegments;  //  * the number of H segments 
 
 
-			GLushort vertexIndicies[ numTotalIndicies ];
+			unsigned int vertexIndicies[ numTotalIndicies ];
 
 			// now fill in the indices
 
@@ -437,7 +437,7 @@ bool GameEngine::LoadMesh( std::string meshPath )
 
 			// define the indexes
 
-			GLushort vertexIndecies[] =
+			unsigned int vertexIndecies[] =
 			{
 				0,1,2,3,0xFFFF,
 				2,3,4,5,0xFFFF,
