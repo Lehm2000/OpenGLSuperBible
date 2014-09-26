@@ -13,6 +13,9 @@
 #include "GEControllerLookAt.h"
 #include "GEControllerInputKey.h"
 #include "GEControllerInputMousePositionX.h"
+#include "GEControllerInputMousePositionY.h"
+#include "GEControllerInputMouseScrollY.h"
+#include "InfoViewport.h"
 
 
 int main(void)
@@ -27,7 +30,28 @@ int main(void)
 	GameEngine gameEngine; //make pointer?... this will go inside the game class eventually
 
 	gameEngine.Initialize();
-	gameEngine.CreateGameCam(CAMTYPE_PERSPECTIVE,GEvec3( 0.0f, 0.0f, 2.5f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
+	
+	// create the main render camera
+
+	//gameEngine.CreateGameCam(CAMTYPE_PERSPECTIVE,GEvec3( 0.0f, 0.0f, 2.5f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
+	CameraPerspective* camObject = new CameraPerspective( GEvec3( 0.0f, 0.0f, 2.5f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
+	camObject->getRotation()->addController( new GEControllerInputMousePositionXv3( GEvec3( 0.0f, -0.0025f, 0.0f ) ), camObject );
+	camObject->getRotation()->addController( new GEControllerInputMousePositionYv3( GEvec3( -0.0025f, 0.0f, 0.0f ) ), camObject );
+	camObject->getRotation()->setMax( GEvec3( 0.5f, 0.5f, 0.05f ) );
+	camObject->getRotation()->setUseMax( true );
+	camObject->getRotation()->setMin( GEvec3( -0.5f, -0.5f, 0.05f ) );
+	camObject->getRotation()->setUseMin( true );
+	camObject->getFOV()->addController( new GEControllerInputMouseScrollYf1( -0.10f ), camObject );
+	gameEngine.AddEntity( "gameCam01", camObject );
+
+	// tell the game to use it.
+
+	InfoViewport* viewportOptions = (InfoViewport*)gameEngine.GetEntity( "SYS_Viewport_Options" );
+
+	if( viewportOptions != nullptr )
+	{
+		viewportOptions->setRenderCam( "gameCam01" );
+	}
 
 	// Create a test object
 

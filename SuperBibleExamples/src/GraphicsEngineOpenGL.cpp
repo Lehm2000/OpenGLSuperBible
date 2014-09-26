@@ -60,12 +60,18 @@ GraphicsEngineOpenGL::~GraphicsEngineOpenGL()
 void GraphicsEngineOpenGL::Render(const double currentTime)
 {
 	// get the viewport info out of the game entities
-	std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
-	InfoViewport* viewportInfo = (InfoViewport*)vpIt->second;
+	//std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
+	InfoViewport* viewportInfo = (InfoViewport*);
+	gameEntities->get
 
 	// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 	glm::mat4 viewMatrix;
+	
+	
+
 	std::map< std::string, GEObject* >::const_iterator camIt = gameEntities->find("gameCam");
+	
+	
 	CameraObject* gameCam = (CameraObject*)camIt->second;
 	if (gameCam->getClassName() == "CameraPerspective" )
 	{
@@ -125,7 +131,7 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 	
 	glEnable( GL_PRIMITIVE_RESTART );
 	glPrimitiveRestartIndex( 0xFFFF );
-	//glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
+	glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
 	glDisable( GL_PRIMITIVE_RESTART );
 
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );

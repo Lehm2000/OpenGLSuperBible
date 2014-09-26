@@ -16,6 +16,10 @@ private:
 	// Members
 	unsigned short viewportWidth;
 	unsigned short viewportHeight;
+	std::string renderCam;				// Name of the camera object we are 
+		//rendering from.  TODO might want to move somewhere else.  This isn't
+		//explicitly a viewport setting.  Also might need to allow more than
+		//one render cam.
 
 public:
 	// Structors
@@ -26,10 +30,12 @@ public:
 	// Setters
 	void setViewportWidth( const unsigned short viewportWidth );
 	void setViewportHeight( const unsigned short viewportHeight );
+	void setRenderCam( const std::string renderCam );
 
 	// Getters
 	unsigned short getViewportWidth() const;
 	unsigned short getViewportHeight() const;
+	std::string getRenderCam() const;
 
 	// Functions
 	virtual std::string getClassName();

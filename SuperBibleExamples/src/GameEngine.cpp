@@ -272,6 +272,20 @@ void GameEngine::RemoveEntity( const std::string entityName)
 	gameEntities.erase ( entityName );
 }
 
+GEObject* GameEngine::GetEntity( const std::string entityName )
+{
+	GEObject* returnObject = nullptr;
+
+	std::map< std::string, GEObject*>::iterator entityI = gameEntities.find( entityName );
+
+	if( entityI != gameEntities.end() );
+	{
+		returnObject = entityI->second;
+	}
+
+	return returnObject;
+}
+
 bool GameEngine::LoadMesh( std::string meshPath )
 {
 	// Check if mesh already loaded
