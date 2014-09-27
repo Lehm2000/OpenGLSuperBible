@@ -105,7 +105,7 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 					if ( !resourcePath.empty() ) 
 					{
 						printf( "%s: %s\n", mParameter.c_str(), mValue.c_str() );
-						shader = CompileShaderFromSource( resourcePath.c_str(), shaderType );
+						shader = CompileShaderFromFile( resourcePath.c_str(), shaderType );
 						if ( shader != 0 )
 						{
 							AttachShaderToProgram( shader, program );  //TODO: how do we error check this?
@@ -232,14 +232,9 @@ std::string MaterialManager::LoadShaderSource(const char* filename)
 	return shader;
 }
 
-/**
-	Create a shader from an array of char strings
 
-	@param source - Array of null terminated source strings.  Currently only makes use of first
-	@param shaderType - Type of shader we are making
-	@return - created shader
-*/
-GLuint MaterialManager::CreateShaderFromSource(const GLchar** source, GLenum shaderType )
+
+GLuint MaterialManager::CreateShaderFromSource( const GLchar** source, GLenum shaderType )
 {
 	GLuint shader = 0;
 
@@ -255,12 +250,50 @@ GLuint MaterialManager::CreateShaderFromSource(const GLchar** source, GLenum sha
 	return shader;
 }
 
-GLuint MaterialManager::CompileShaderFromSource(const char* filename, GLenum shaderType )
+GLuint MaterialManager::CompileShaderFromSource(  const GLchar** source, GLenum shaderType )
+{
+	GLuint shader = 0;
+	GLint return_code;
+
+	shader = CreateShaderFromSource( source, shaderType );  // TODO error check this.
+	
+	printf ( "\tCompiling..." );
+
+	glCompileShader(shader);
+
+	//check success
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &return_code);
+	if (return_code == GL_TRUE)  
+	{
+		printf("Success\n");
+	}
+	else
+	{
+		printf("Failed\n");
+
+		GLint logLength;
+
+		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &logLength );
+
+		GLchar* log = new GLchar[logLength + 1];
+		glGetShaderInfoLog( shader, logLength, NULL, log );
+
+		printf(log);
+
+		//clean up.
+		glDeleteShader( shader );
+		shader = 0;
+	}
+
+	return shader;
+}
+
+GLuint MaterialManager::CompileShaderFromFile( const char* filename, GLenum shaderType )
 {
 	//vars
 	GLuint shader = 0;
 	std::string shaderSource;
-	GLint return_code;
+	
 
 	shaderSource = LoadShaderSource(filename);
 
@@ -269,35 +302,7 @@ GLuint MaterialManager::CompileShaderFromSource(const char* filename, GLenum sha
 
 		const GLchar* shaderSourceArray[]={ shaderSource.c_str() };
 
-		shader = CreateShaderFromSource( shaderSourceArray, shaderType );  // TODO error check this.
-	
-		printf ( "\tCompiling..." );
-
-		glCompileShader(shader);
-
-		//check success
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &return_code);
-		if (return_code == GL_TRUE)  
-		{
-			printf("Success\n");
-		}
-		else
-		{
-			printf("Failed\n");
-
-			GLint logLength;
-
-			glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &logLength );
-
-			GLchar* log = new GLchar[logLength + 1];
-			glGetShaderInfoLog( shader, logLength, NULL, log );
-
-			printf(log);
-
-			//clean up.
-			glDeleteShader( shader );
-			shader = 0;
-		}
+		shader = CompileShaderFromSource( shaderSourceArray, shaderType );
 	}
 	
 

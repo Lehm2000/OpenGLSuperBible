@@ -151,6 +151,39 @@ public:
 	*/
 	bool BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, unsigned int* vertIndices, unsigned int numIndices );
 	bool BufferMaterial( std::string materialPath );
+
+	/**
+		GetMaterial()
+		Takes a material name and searches the materialMap for it.  Returns
+		the material if it is found.  If not returns the default missing
+		material
+		@param materialName - name of the material to return
+		@return - the material
+	*/
+	GEMaterial GetMaterial( std::string materialName ) const
+	{
+		GEMaterial returnMat;
+
+		std::map< std::string, GEMaterial>::const_iterator matI = materialMap.find( materialName );
+
+		if( matI != materialMap.end() )
+		{
+			returnMat = matI->second;
+		}
+		else
+		{
+			std::map< std::string, GEMaterial>::const_iterator matI = materialMap.find( "GE_MISSING" );
+			
+			if( matI != materialMap.end() )
+			{
+				returnMat = matI->second;
+			}
+			// TODO: else we're screwed... something really went wrong... what do we do?
+
+		}
+
+		return returnMat;
+	}
 	
 	// Callback Functions
 

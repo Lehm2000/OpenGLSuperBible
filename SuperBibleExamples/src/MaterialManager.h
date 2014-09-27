@@ -28,9 +28,14 @@ public:
 	//Functions
 	GEMaterial LoadMaterial( const std::string matName );
 	
-	std::string LoadShaderSource(const char* filename);
-	GLuint CreateShaderFromSource(const GLchar** source, GLenum shaderType );
+	std::string LoadShaderSource( const char* filename);
+	GLuint CreateShaderFromSource( const GLchar** source, GLenum shaderType );
 	
+	/**
+		
+	*/
+	GLuint CompileShaderFromSource(  const GLchar** source, GLenum shaderType );
+
 	/**
 		Load, Create and then Compile a shader from a file.
 
@@ -38,7 +43,7 @@ public:
 		@param shaderType - Type of shader we are making
 		@return - compiled shader ( 0 if failed )
 	*/
-	GLuint CompileShaderFromSource(const char* filename, GLenum shaderType );
+	GLuint CompileShaderFromFile(const char* filename, GLenum shaderType );
 
 	/**
 		@param shader - shader that will be attached to the program

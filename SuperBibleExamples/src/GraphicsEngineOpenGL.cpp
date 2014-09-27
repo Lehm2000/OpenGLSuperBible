@@ -98,8 +98,12 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 		glBindVertexArray( renderMesh.getVertexArrayObject() );
 	
 		GEMaterial renderMaterial;
-			
-		renderMaterial = materialMap.find("geometry_testNormals")->second;
+		
+		renderMaterial = GetMaterial( "geometry_testNormals" );
+
+		//renderMaterial = materialMap.find("geometry_testNormals")->second;
+
+
 
 		glUseProgram ( renderMaterial.getProgram() );
 			
@@ -126,7 +130,7 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 	
 		// switch materials and render again to visualize normals.
 
-		renderMaterial = materialMap.find("geometry_testNormalsRay")->second;
+		renderMaterial = GetMaterial( "geometry_testNormalsRay" );
 
 		glUseProgram ( renderMaterial.getProgram() );
 
@@ -502,56 +506,102 @@ bool GraphicsEngineOpenGL::InitShaders(void)
 	BufferMaterial( "SolidRGB_Subroutine" );
 	BufferMaterial( "SystemFont01" );
 
-	/*GLuint vertex_shader;
-	GLuint fragment_shader;
-	GLuint tess_control_shader;
-	GLuint tess_eval_shader;
-	GLuint geometry_shader;
+	// Manual buffer some default shaders
 	GLuint program;
+	GLuint vertexShader;
+	GLuint fragmentShader;
 
-	std::string tempString;
-	GLint return_code;
-
-	//Create vertex shader
-	vertex_shader = materialMan.CompileShaderFromSource("alien_rain_vert.glsl", GL_VERTEX_SHADER );
-	
-	//Create tess control shader
-	tess_control_shader = materialMan.CompileShaderFromSource("tess_control_shader_source.txt", GL_TESS_CONTROL_SHADER);
-
-	//Create tess eval shader
-	tess_eval_shader = materialMan.CompileShaderFromSource("tess_eval_shader_source.txt", GL_TESS_EVALUATION_SHADER);
-
-	//Create geometry shader
-	geometry_shader = materialMan.CompileShaderFromSource("geometry_shader_source.txt", GL_GEOMETRY_SHADER);
-
-	//Create fragment shader
-	fragment_shader = materialMan.CompileShaderFromSource("alien_rain_frag.glsl", GL_FRAGMENT_SHADER);
-	
-
-	
-	//Create program, attach shaders to it, and link it... need to put this code inside the shader manager
-	//TODO: Error handling.
 	program = glCreateProgram();
-	glAttachShader(program, vertex_shader);
-	//glAttachShader(program, tess_control_shader);
-	//glAttachShader(program, tess_eval_shader);
-	//glAttachShader(program, geometry_shader);
-	glAttachShader(program, fragment_shader);
+
+	const char* vsCode[] = 
+	{
+		"#version 430\n"
+
+		"layout (location = 0) in vec4 position;\n"
+		"layout (location = 1) in vec4 color;\n"
+		"layout (location = 2) in vec3 normal;\n"
+		"layout (location = 3) in vec2 tc;\n"
+
+
+		"out VS_OUT\n"
+		"{"
+		"	vec4 color; \n"
+		"	vec3 normal;\n"
+		"	vec2 tc;\n"
+		"} vs_out;\n"
+
+		"uniform mat4 worldMatrix;\n"
+		"uniform mat4 viewMatrix;\n"
+
+		"void main(void)"
+		"{"
+		"	gl_Position =  viewMatrix * worldMatrix * position;\n"
+		"	vs_out.color = color;\n"
+		"	vs_out.normal = normal;\n"
+		"	vs_out.tc = tc;\n"
+		"}"
+	};
+
+	vertexShader = materialMan.CompileShaderFromSource( vsCode, GL_VERTEX_SHADER );
+
+	const char* fsCode[] = 
+	{
+		"#version 430  \n"
+                                                                            
+        "layout (location = 0) out vec4 color;\n"
+        "                                                                       \n"
+        "in VS_OUT                                                              \n"
+        "{                                                                      \n"
+        "	vec4 color; \n"
+		"	vec3 normal;\n"
+		"	vec2 tc;\n"
+        "} fs_in;                                                               \n"
+        
+        "void main(void)                                                        \n"
+        "{                                                                      \n"
+		"    color = vec4(1.0,1.0,0.0,1.0);   \n"
+        "}\n"      
+	};
+
+	fragmentShader = materialMan.CompileShaderFromSource( fsCode, GL_FRAGMENT_SHADER );
+
+	glAttachShader(program, vertexShader);
+	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
 
-	// Delete the shaders as the program has them now
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
+	glLinkProgram( program ); // TODO: create a link program function in material man.
 
-	rendering_program = program;
-	
-	
+	GLint return_code;
 
-	// Delete the shaders as the program has them now
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
+	//check success
+	glGetProgramiv(program, GL_LINK_STATUS, &return_code);
+	if (return_code == GL_TRUE)  
+	{
+		printf("Success\n");
+	}
+	else
+	{
+		printf("Failed\n");
 
-	*/
+		GLint logLength;
+
+		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &logLength );
+
+		GLchar* log = new GLchar[logLength + 1];
+		glGetProgramInfoLog( program, logLength, NULL, log );
+
+		printf(log);
+
+		//success = false;
+	}
+
+	GEMaterial missingMat;
+	missingMat.setProgram( program );
+
+	materialMap.insert( std::pair<std::string, GEMaterial>( "GE_MISSING", missingMat ) );
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
 	return true;
 }
