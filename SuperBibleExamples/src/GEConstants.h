@@ -2,6 +2,7 @@
 #define GECONSTANTS_H
 
 #define GE_PI 3.1415926535f
+#define GE_MAX_TEXTURES 32
 
 
 #endif /* GECONSTANTS_H */

@@ -658,6 +658,7 @@ void GraphicsEngineOpenGL::InitTextures(void)
 	GLenum glError = 0;
 	unsigned char returnType = 0;
 
+	/*
 	IUImage<unsigned char> testImage1 = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP, returnType );
 	IUImage<unsigned char> testImage2 = texMan.LoadTexture( "test2r.bmp", GE_TEXTYPE_BMP, returnType );
 	
@@ -734,24 +735,20 @@ void GraphicsEngineOpenGL::InitTextures(void)
 	delete [] data[0];
 	delete [] data[1];
 
+	*/
 
 	// Load the font Texture
-	IUImage<unsigned char> fontTex = texMan.LoadTexture( "font01.bmp", GE_TEXTYPE_BMP, returnType );
+	GLuint fontTexture = texMan.LoadTexture( "font01.bmp" );
 	
-	unsigned char* fontTexData;
-	fontTexData = (unsigned char*)malloc( fontTex.getDataSize() );
-	fontTex.getData( fontTexData );
+	if( fontTexture != 0 )
+		textureMap.insert( std::pair< std::string, GLuint >( "SYS_Font01", fontTexture ) );
+	
 
-	GLuint fontTexture;
-	glGenTextures(1, &fontTexture);
-	glBindTexture(GL_TEXTURE_2D, fontTexture);
-
-	glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, fontTex.getWidth(), fontTex.getHeight() );
-	glTexSubImage2D( GL_TEXTURE_2D,0,0,0, fontTex.getWidth(), fontTex.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, fontTexData );
-
-	glGenerateMipmap( GL_TEXTURE_2D );
-
-	textureMap.insert( std::pair< std::string, GLuint >( "SYS_Font01", fontTexture ) );
+	// Load the displace Texture (testing)
+	GLuint displaceTexture = texMan.LoadTexture( "displace_test.bmp" );
+	
+	if( displaceTexture != 0 )
+		textureMap.insert( std::pair< std::string, GLuint >( "DisplaceTest", displaceTexture ) );
 
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
 	GLuint sampler;
@@ -763,28 +760,6 @@ void GraphicsEngineOpenGL::InitTextures(void)
 
 	//	now bind it to a texture unit
 	glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
-
-	
-	
-	// Load the displace Texture
-	IUImage<unsigned char> displaceTex = texMan.LoadTexture( "displace_test.bmp", GE_TEXTYPE_BMP, returnType );
-	
-	unsigned char* displaceTexData;
-	displaceTexData = (unsigned char*)malloc( displaceTex.getDataSize() );
-	displaceTex.getData( displaceTexData );
-
-	GLuint displaceTexture;
-	glGenTextures(1, &displaceTexture);
-	glBindTexture(GL_TEXTURE_2D, displaceTexture);
-
-	glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, displaceTex.getWidth(), displaceTex.getHeight() );
-	glTexSubImage2D( GL_TEXTURE_2D,0,0,0, displaceTex.getWidth(), displaceTex.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, displaceTexData );
-
-	glGenerateMipmap( GL_TEXTURE_2D );
-
-	textureMap.insert( std::pair< std::string, GLuint >( "DisplaceTest", displaceTexture ) );
-
-	
 
 }
 
@@ -810,11 +785,25 @@ bool GraphicsEngineOpenGL::isMeshBuffered( std::string meshPath)
 
 bool GraphicsEngineOpenGL::isMaterialBuffered( std::string materialPath )
 {
-	// check if mesh already loaded
+	// check if material already loaded
 	bool buffered = true;
 
 	// if find == the end... its not in the map
 	if ( materialMap.find( materialPath ) == materialMap.end() )
+	{
+		buffered = false;
+	}
+
+	return buffered;
+}
+
+bool GraphicsEngineOpenGL::isTextureBuffered( std::string texturePath )
+{
+	// check if texture already loaded
+	bool buffered = true;
+
+	// if find == the end... its not in the map
+	if ( textureMap.find( texturePath ) == textureMap.end() )
 	{
 		buffered = false;
 	}
@@ -904,6 +893,24 @@ bool GraphicsEngineOpenGL::BufferMaterial( std::string materialPath )
 	 
 		materialMap.insert( std::pair< std::string, GEMaterial >( materialPath, newMaterial ) );
 
+		// Next load the textures.
+		for( unsigned int i = 0; i < newMaterial.getTextures().size(); i++ )
+		{
+			bool buffered;
+
+			printf( "Loading Texture: %s...", newMaterial.getTextures()[i].c_str() );
+
+			buffered = BufferTexture( newMaterial.getTextures()[i] );
+
+			// check if texture loaded.  don't change success as its not the 
+			// the end of the world if the texture does not load.  
+			if (buffered)
+				printf( "Success\n" );
+			else
+				printf( "Failed\n" );
+
+		}
+
 		success = true;
 
 		printf ( "Buffering Complete\n");
@@ -913,6 +920,27 @@ bool GraphicsEngineOpenGL::BufferMaterial( std::string materialPath )
 		printf ( "Buffering Failed\n");
 	}
 
+
+	return success;
+}
+
+bool GraphicsEngineOpenGL::BufferTexture( std::string texturePath )
+{
+	bool success = false;
+
+	TextureManager texMan;	// for texture operations
+
+	if( !isTextureBuffered( texturePath ) )
+	{
+		// load the texture
+		GLuint texture = texMan.LoadTexture( texturePath );
+
+		// then put that texture into the textureMap.
+		if ( texture != 0 )
+			textureMap.insert( std::pair< std::string, GLuint >( texturePath, texture ) );
+	}
+	else
+		success = true;
 
 	return success;
 }

@@ -138,6 +138,7 @@ public:
 
 	bool isMeshBuffered( std::string meshPath );
 	bool isMaterialBuffered( std::string materialPath );
+	bool isTextureBuffered( std::string texturePath );
 
 	/**
 		BufferMesh()
@@ -151,6 +152,7 @@ public:
 	*/
 	bool BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, unsigned int* vertIndices, unsigned int numIndices );
 	bool BufferMaterial( std::string materialPath );
+	bool BufferTexture( std::string texturePath );
 
 	/**
 		GetMaterial()

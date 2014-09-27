@@ -10,7 +10,7 @@
 
 #include "MaterialManager.h"
 #include "GEUtilities.h"
-
+#include "GEConstants.h"
 
 /**
 	Default Constructor
@@ -48,6 +48,9 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 	
 
 	GLenum shaderType;
+	std::string resourceType = "";
+
+	std::vector< std::string> textureList;
 
 
 	// create the program object
@@ -76,6 +79,10 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 				std::string mParameter = LRTrim( fBuffer.substr( 0, equalPos ) );
 				std::string mValue = LRTrim( fBuffer.substr( equalPos + 1, std::string::npos ) );
 
+				resourceType = "";
+
+				std::string texturePaths[ GE_MAX_TEXTURES ];
+
 				if ( !mValue.empty() && success)
 				{
 					resourcePath = mValue;
@@ -83,27 +90,41 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 					if ( mParameter == "vertex_shader" )
 					{
 						shaderType = GL_VERTEX_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "tess_control_shader")
 					{
 						shaderType = GL_TESS_CONTROL_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "tess_eval_shader")
 					{
 						shaderType = GL_TESS_EVALUATION_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "geometry_shader")
 					{
 						shaderType = GL_GEOMETRY_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "fragment_shader")
 					{
 						shaderType = GL_FRAGMENT_SHADER;
+						resourceType = "shader";
+					}
+					else if ( mParameter.find ("texture") != std::string::npos )
+					{
+						// we've got ourselves a texture.
+
+						// They should be in the right order so I'm going to ignore the number for now.
+						resourceType = "texture";
+						
 					}
 
-					// load the resource.... this doesn't work with textures yet.
-					if ( !resourcePath.empty() ) 
+					// load the resource
+					if ( !resourcePath.empty() && resourceType == "shader" ) 
 					{
+						// load a shader
 						printf( "%s: %s\n", mParameter.c_str(), mValue.c_str() );
 						shader = CompileShaderFromFile( resourcePath.c_str(), shaderType );
 						if ( shader != 0 )
@@ -113,6 +134,13 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 						}
 						else
 							success = false;
+					}
+					else if( !resourcePath.empty() && resourceType == "texture" )
+					{
+						// add texture to the texture list
+						printf( "Adding Texture Ref: %s\n", resourcePath.c_str() );
+						textureList.push_back( resourcePath );
+
 					}
 				}
 
@@ -171,6 +199,7 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 	if (success)
 	{
 		returnMaterial.setProgram( program );
+		returnMaterial.setTextures( textureList );
 		printf( "Succeeded creating material.\n\n" );
 	}
 	else

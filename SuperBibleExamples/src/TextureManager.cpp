@@ -22,43 +22,74 @@ TextureManager::TextureManager()
 }
 
 
-/*
-GEImage TextureManager::ConvertTexture(const IUImage<unsigned char>* sourceTexture)
+
+GLuint TextureManager::LoadTexture( std::string filename )
 {
-	GEImage outputTexture;
+	GLuint loadedTexture = 0;
+	
+	ImageUtilities imageUtilities;
 
-	outputTexture.setWidth( sourceTexture->getWidth() );
-	outputTexture.setHeight( sourceTexture->getHeight() );
-	outputTexture.setNumChannels( sourceTexture->getNumChannels() );
+	// first determine what kind of texture it is.  For now we'll use the 
+	// extension.  May need more robust method later.
 
-	// allocate a buffer for the converted data
-	float* outputTextureDataBuffer = nullptr;
-	unsigned int outputTextureDataBufferSize = sourceTexture->getWidth() * sourceTexture->getHeight() * sourceTexture->getNumChannels() * sizeof(float);
-	outputTextureDataBuffer = (float*)malloc( outputTextureDataBufferSize );
-
-	// allocate a buffer for the loaded data
-	unsigned char* loadedTextureDataBuffer = nullptr;
-	loadedTextureDataBuffer = (unsigned char*)malloc( sourceTexture->getDataSize() );
-
-	// copy the loaded data into the buffer.
-	sourceTexture->getData( loadedTextureDataBuffer );
-
-	for (unsigned int i = 0; i < sourceTexture->getWidth() * sourceTexture->getHeight() * sourceTexture->getNumChannels() ; i++)
+	if ( filename != "" )
 	{
-		//printf("%d ",i);
-		outputTextureDataBuffer[i] = loadedTextureDataBuffer[i] / 255.0f;
+		unsigned int lastDot = filename.find_last_of(".");
+		unsigned int texType = 0;
+
+		if ( lastDot != std::string::npos )
+		{
+			std::string ext = filename.substr( lastDot + 1, filename.length() - lastDot );
+
+			std::string fullFileName = texturePath;
+			fullFileName.append( filename );
+
+			if( ext == "bmp" )
+			{
+				IUImage<unsigned char> image = imageUtilities.LoadBitmap( fullFileName.c_str() );
+
+				unsigned char* imageTexData = nullptr;
+
+				imageTexData = (unsigned char*)malloc( image.getDataSize() );
+				image.getData( imageTexData );
+
+				glGenTextures(1, &loadedTexture);
+				glBindTexture(GL_TEXTURE_2D, loadedTexture);
+
+				glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, image.getWidth(), image.getHeight() );
+				glTexSubImage2D( GL_TEXTURE_2D,0,0,0, image.getWidth(), image.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
+
+				glGenerateMipmap( GL_TEXTURE_2D );
+
+				delete[] imageTexData;
+				imageTexData = nullptr;
+			}
+		}
+
+		/*
+		if ( filename != nullptr && texType != 0 )
+		{
+
+			char fullFilename[1024];	//TODO: deal with magic number here.
+	
+			//combine filepath for shaders with supplied filename.
+			strcpy( fullFilename, texturePath.c_str() );
+			strcat( fullFilename, filename );
+
+			switch (texType)
+			{
+			case GE_TEXTYPE_BMP:
+				loadedTexture = imageUtilities.LoadBitmap( fullFilename );
+				break;
+			case GE_TEXTYPE_TARGA:
+				break;
+			default:
+				break;
+			}
+		}*/
 	}
 
-	outputTexture.setData( outputTextureDataBufferSize, outputTextureDataBuffer );
-
-	//do some cleanup
-	delete[] outputTextureDataBuffer;
-	outputTextureDataBuffer = nullptr;
-
-	delete[] loadedTextureDataBuffer;
-	loadedTextureDataBuffer = nullptr;
-
-	return outputTexture;
+	return loadedTexture;
 }
-*/
+
 
