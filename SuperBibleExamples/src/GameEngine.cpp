@@ -30,7 +30,6 @@ GameEngine::GameEngine(const GameEngine& source)
 GameEngine::~GameEngine()
 {
 	// Any shutdown stuff goes here
-	DestroyGameCam();
 
 	if (graphics != nullptr)
 	{
@@ -61,38 +60,6 @@ double GameEngine::getGameTime() const
 
 
 //Functions
-void GameEngine::CreateGameCam( const char camType, GEvec3 position, GEvec3 rotation, float fov, GEvec3 targetPosition )
-{
-	CameraObject* gameCam = nullptr;
-
-	switch (camType)
-	{
-	case CAMTYPE_PERSPECTIVE:
-		gameCam = new CameraPerspective( position, rotation, fov );
-		break;
-	case CAMTYPE_ORTHO:
-		break;
-	case CAMTYPE_2D:
-		break;
-	default:
-		break;
-	}
-
-	if( gameCam != nullptr )
-	{
-		DestroyGameCam();  // Destroy an existing cam as we only support one camera presently.
-		//gameCam->addPositionController( new GEControllerOscillator( GEvec3( 0.0f, 1.0f, 0.0f ), 5.0f ) );
-		//gameCam->addRotationController( new GEControllerLookAtv3( "testObject") );
-		gameCam->getRotation()->addController( new GEControllerInputMousePositionXv3( GEvec3( 0.0f, -0.0025f, 0.0f ) ), gameCam );
-		gameCam->getRotation()->addController( new GEControllerInputMousePositionYv3( GEvec3( -0.0025f, 0.0f, 0.0f ) ), gameCam );
-		gameCam->getRotation()->setMax( GEvec3( 0.5f, 0.5f, 0.05f ) );
-		gameCam->getRotation()->setUseMax( true );
-		gameCam->getRotation()->setMin( GEvec3( -0.5f, -0.5f, 0.05f ) );
-		gameCam->getRotation()->setUseMin( true );
-		((CameraPerspective*)gameCam)->getFOV()->addController( new GEControllerInputMouseScrollYf1( -0.10f ), gameCam );
-		AddEntity( "gameCam", gameCam );
-	}
-}
 
 bool GameEngine::Initialize()
 {
@@ -208,8 +175,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // tutorial/test renderer
-		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		//graphics->Render( getGameTime() );  // tutorial/test renderer
+		graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 

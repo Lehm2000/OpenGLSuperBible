@@ -114,7 +114,7 @@ GEInputState* GEInputState::clone() const
 	return new GEInputState(*this);
 }
 
-std::string GEInputState::getClassName()
+std::string GEInputState::getClassName() const
 {
 	return "GEInputState";
 }
@@ -124,7 +124,7 @@ void GEInputState::ResetMouseScrollOffset()
 	this->mouseScrollOffset = GEvec2( 0.0f, 0.0f );
 }
 
-std::string GEInputState::KeyToString( unsigned int keyIndex )
+std::string GEInputState::KeyToString( unsigned int keyIndex ) const
 {
 	std::string returnString = "";
 
@@ -499,7 +499,7 @@ std::string GEInputState::KeyToString( unsigned int keyIndex )
 
 }
 
-std::string GEInputState::ButtonToString( unsigned int buttonIndex )
+std::string GEInputState::ButtonToString( unsigned int buttonIndex ) const
 {
 	std::string returnString = "";
 

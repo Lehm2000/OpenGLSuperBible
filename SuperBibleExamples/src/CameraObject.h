@@ -40,8 +40,8 @@ public:
 
 
 	// Functions
-	virtual std::string getClassName();
-	virtual GEmat4 GetViewMatrix();
+	virtual std::string getClassName() const;
+	virtual GEmat4 GetViewMatrix() const;
 
 	/**
 		clone()

@@ -56,8 +56,20 @@ public:
 		@param entityName - name of object to return
 		@return - the pointer to the object, or nullptr if not found
 	*/
-	const GEObject* GetObjectConst( const std::string entityName ) const;
+	const GEObject* GetObject( const std::string entityName ) const;
 	GEObject* GetObject( const std::string entityName );
+
+	/**
+		First()
+		Returns a const iterator to the first object
+	*/
+	std::map< std::string, GEObject*>::const_iterator First() const;
+
+	/**
+		Last()
+		REturns a const iterator to the last object
+	*/
+	std::map< std::string, GEObject*>::const_iterator Last() const;
 
 	/**
 		UpdateObjects()

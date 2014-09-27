@@ -50,7 +50,7 @@ GEPropertyf1* CameraPerspective::getFOV()
 }
 
 // Functions
-std::string CameraPerspective::getClassName()
+std::string CameraPerspective::getClassName() const
 {
 	return "CameraPerspective";
 }

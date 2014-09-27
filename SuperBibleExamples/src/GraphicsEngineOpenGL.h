@@ -107,7 +107,7 @@ public:
 		@param currentTime - the time since the program started.
 		@param gameEntities - pointer to the game Engine entities.
 	*/
-	void Render(const double currentTime, const std::map< std::string, GEObject* >* gameEntities);
+	void Render(const double currentTime, const GEObjectContainer* gameEntities);
 
 	/**
 		Renders the FPS counter. 

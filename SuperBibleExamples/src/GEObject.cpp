@@ -115,26 +115,14 @@ std::string GEObject::getName() const
 	return this->name;
 }
 
-/*
-GEvec3 GEObject::getBasePosition() const
-{
-	return this->position.getBaseValue();
-}
-
-GEvec3 GEObject::getBaseRotation() const
-{
-	return this->rotation.getBaseValue();
-}
-
-GEvec3 GEObject::getBaseScale() const
-{
-	return this->scale.getBaseValue();
-}
-*/
-
 GEPropertyv3* GEObject::getPosition()
 {
-	return &position;
+	return &this->position;
+}
+
+const GEPropertyv3* GEObject::getPosition() const
+{
+	return &this->position;
 }
 
 GEPropertyv3* GEObject::getRotation()
@@ -142,7 +130,17 @@ GEPropertyv3* GEObject::getRotation()
 	return &this->rotation;
 }
 
+const GEPropertyv3* GEObject::getRotation() const
+{
+	return &this->rotation;
+}
+
 GEPropertyv3* GEObject::getScale()
+{
+	return &this->scale;
+}
+
+const GEPropertyv3* GEObject::getScale() const
 {
 	return &this->scale;
 }
@@ -206,7 +204,7 @@ void GEObject::GenerateID()
 	id = std::string( tString );
 }
 
-std::string GEObject::getClassName()
+std::string GEObject::getClassName() const
 {
 	return "GEObject";
 }

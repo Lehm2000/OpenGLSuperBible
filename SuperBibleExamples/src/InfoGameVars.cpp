@@ -4,9 +4,16 @@
 // Structors
 InfoGameVars::InfoGameVars()
 {
-	lastFrameTime = 0.0 ;
+	this->lastFrameTime = 0.0 ;
 	this->setCurrentFrameTime( 0.0 );
 	this->setVisible(false);
+}
+
+InfoGameVars::InfoGameVars( const InfoGameVars& source )
+	:GEObject( source )
+{
+	this->lastFrameTime = source.lastFrameTime;
+	this->currentFrameTime = currentFrameTime;
 }
 
 // Setters
@@ -33,12 +40,17 @@ double InfoGameVars::getCurrentFrameTime() const
 
 // Functions
 
+InfoGameVars* InfoGameVars::clone() const
+{
+	return new InfoGameVars( *this );
+}
+
 double InfoGameVars::getDeltaFrameTime() const
 {
 	return currentFrameTime - lastFrameTime;
 }
 
-std::string InfoGameVars::getClassName()
+std::string InfoGameVars::getClassName() const
 {
 	return "InfoGameVars";
 }

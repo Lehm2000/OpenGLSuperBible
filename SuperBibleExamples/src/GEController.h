@@ -29,7 +29,7 @@ class GEController
 protected:
 	// Members
 	
-	GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example. 
+	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example. 
 		// TODO: parent should be const.  However we also need to get the final 
 		// position of the object... the only way to do that is to return the 
 		// GEproperty.  The function that returns the GEProperty can't return a
@@ -43,13 +43,13 @@ public:
 	// Structors
 	
 	GEController();
-	GEController( GEObject* parent, const GEObjectContainer* gameEntities );
+	GEController( const GEObject* parent, const GEObjectContainer* gameEntities );
 	GEController( const GEController& source);
 	virtual ~GEController();
 
 	// Setters
 
-	virtual void setParent( GEObject* parent );
+	virtual void setParent( const GEObject* parent );
 	virtual void setGameEntities( const GEObjectContainer* gameEntities );
 
 	// Getters
@@ -97,7 +97,7 @@ GEController<T>::GEController()
 }
 
 template <class T>
-GEController<T>::GEController( GEObject* parent, const GEObjectContainer* gameEntities )
+GEController<T>::GEController( const GEObject* parent, const GEObjectContainer* gameEntities )
 {
 	this->transformedValue = T();
 
@@ -122,7 +122,7 @@ GEController<T>::~GEController()
 // Setters
 
 template <class T>
-void GEController<T>::setParent( GEObject* parent )
+void GEController<T>::setParent( const GEObject* parent )
 {
 	this->parent = parent;
 }

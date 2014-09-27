@@ -117,7 +117,7 @@ void GEControllerLookAt::Control( GEvec3 objectVector, double gameTime, double d
 	// Get the delta of the camera and target positions
 	//GEvec3 deltaVec = getTargetPosition() - getPosition();
 	//std::map< std::string, GEObject* >::const_iterator targetIt = gameEntities->find( this->targetName );
-	const GEObject* targetObject = gameEntities->GetObjectConst( this->targetName );
+	const GEObject* targetObject = gameEntities->GetObject( this->targetName );
 	
 	if ( targetObject != nullptr && parent != nullptr )
 	{

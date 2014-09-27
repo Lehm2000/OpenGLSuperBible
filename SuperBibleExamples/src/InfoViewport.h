@@ -25,6 +25,7 @@ public:
 	// Structors
 	InfoViewport();
 	InfoViewport( unsigned short viewportWidth, unsigned short viewportHeight );
+	InfoViewport( const InfoViewport& source );
 	// destructor not needed yet
 
 	// Setters
@@ -38,7 +39,14 @@ public:
 	std::string getRenderCam() const;
 
 	// Functions
-	virtual std::string getClassName();
+
+	/**
+		clone()
+		Creates a copy of the object and returns it.
+	*/
+	virtual InfoViewport* clone() const;
+
+	virtual std::string getClassName() const;
 };
 
 

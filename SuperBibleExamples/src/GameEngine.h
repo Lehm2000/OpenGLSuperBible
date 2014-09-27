@@ -43,8 +43,6 @@ public:
 	double getGameTime() const;
 
 	//Functions
-	void CreateGameCam( const char camType, GEvec3 position, GEvec3 rotation, float fov, GEvec3 targetPosition = GEvec3( 0.0f, 0.0f, 0.0f ) );
-	void DestroyGameCam();
 	bool Initialize();
 	void Update();
 	void Render();

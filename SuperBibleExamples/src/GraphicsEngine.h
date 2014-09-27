@@ -118,7 +118,7 @@ public:
 		@param currentTime - the time since the program started.
 		@param gameEntities - pointer to the game Engine entities.
 	*/
-	virtual void Render(const double currentTime, const std::map< std::string, GEObject* >* gameEntities) = 0;
+	virtual void Render(const double currentTime, const GEObjectContainer* gameEntities) = 0;
 
 	/**
 		Updates the window size.  

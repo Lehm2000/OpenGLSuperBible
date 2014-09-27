@@ -28,12 +28,12 @@ CameraObject::~CameraObject()
 }
 
 // Functions
-std::string CameraObject::getClassName()
+std::string CameraObject::getClassName() const
 {
 	return "CameraObject";
 }
 
-glm::mat4 CameraObject::GetViewMatrix()
+glm::mat4 CameraObject::GetViewMatrix() const
 {
 	glm::mat4 viewMatrix;
 

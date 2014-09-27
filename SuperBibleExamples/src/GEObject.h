@@ -64,8 +64,11 @@ public:
 	std::string getName() const;
 	
 	GEPropertyv3* getPosition();
+	const GEPropertyv3* getPosition() const;
 	GEPropertyv3* getRotation();
+	const GEPropertyv3* getRotation() const;
 	GEPropertyv3* getScale();
+	const GEPropertyv3* getScale() const;
 	
 	/*  // these might be irrelevant now
 	const GEController* getPositionController() const;
@@ -87,7 +90,7 @@ public:
 
 	// Functions
 	void GenerateID();
-	virtual std::string getClassName();
+	virtual std::string getClassName() const;
 
 	glm::mat4 GetTransformMatrix();
 

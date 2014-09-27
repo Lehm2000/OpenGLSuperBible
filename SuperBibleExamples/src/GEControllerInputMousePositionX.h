@@ -101,7 +101,7 @@ void GEControllerInputMousePositionX<T>::setGameEntities( const GEObjectContaine
 	// once the gameEntities is set... now we can get the mouse position from the input state object.
 	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
 
-	const GEObject* isObject = gameEntities->GetObjectConst( "SYS_Input_State" );
+	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
 	if ( isObject != nullptr )
 	{
@@ -135,7 +135,7 @@ void GEControllerInputMousePositionX<T>::Control( T initialValue, double gameTim
 	// get the new mouse position
 	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
 
-	const GEObject* isObject = gameEntities->GetObjectConst( "SYS_Input_State" );
+	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
 	if ( isObject != nullptr )
 	{

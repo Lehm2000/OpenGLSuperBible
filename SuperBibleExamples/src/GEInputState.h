@@ -57,7 +57,7 @@ public:
 	*/
 	virtual GEInputState* clone() const;
 
-	virtual std::string getClassName();
+	virtual std::string getClassName() const;
 
 	void ResetMouseScrollOffset();
 	
@@ -67,7 +67,7 @@ public:
 		@param keyIndex - which key to return string for
 		@return - the string representation of the key
 	*/
-	std::string KeyToString( unsigned int keyIndex );
+	std::string KeyToString( unsigned int keyIndex ) const;
 
 	/**
 		ButtonToString()
@@ -75,7 +75,7 @@ public:
 		@param buttonIndex - which key to return string for
 		@return - the string representation of the key
 	*/
-	std::string ButtonToString( unsigned int buttonIndex );
+	std::string ButtonToString( unsigned int buttonIndex ) const;
 };
 
 #endif /* GEINPUTSTATE_H */

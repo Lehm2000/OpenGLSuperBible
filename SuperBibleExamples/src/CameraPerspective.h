@@ -42,7 +42,7 @@ public:
 	GEPropertyf1* getFOV();
 
 	// Functions
-	virtual std::string getClassName();
+	virtual std::string getClassName() const;
 
 	/**
 		Update()

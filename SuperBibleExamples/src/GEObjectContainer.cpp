@@ -55,7 +55,7 @@ GEObject* GEObjectContainer::GetObject( const std::string entityName )
 	return returnObject;
 }
 
-const GEObject* GEObjectContainer::GetObjectConst( const std::string entityName ) const
+const GEObject* GEObjectContainer::GetObject( const std::string entityName ) const
 {
 	GEObject* returnObject = nullptr;
 
@@ -67,6 +67,16 @@ const GEObject* GEObjectContainer::GetObjectConst( const std::string entityName 
 	}
 
 	return returnObject;
+}
+
+std::map< std::string, GEObject*>::const_iterator GEObjectContainer::First() const
+{
+	return objects.begin();
+}
+
+std::map< std::string, GEObject*>::const_iterator GEObjectContainer::Last() const
+{
+	return objects.end();
 }
 
 void GEObjectContainer::UpdateObjects( double gameTime, double deltaTime )

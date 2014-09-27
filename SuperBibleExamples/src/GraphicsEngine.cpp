@@ -18,7 +18,8 @@
 GraphicsEngine::GraphicsEngine()
 {
 	this->gameEntities = nullptr;
-	while (!this->inputList.empty() );
+	
+	while ( !this->inputList.empty() )
 		this->inputList.pop();
 
 }
@@ -29,7 +30,7 @@ GraphicsEngine::GraphicsEngine( const GEObjectContainer* gameEntities )
 
 	this->gameEntities = gameEntities;
 
-	while (!this->inputList.empty() );
+	while (!this->inputList.empty() )
 		this->inputList.pop();
 }
 
