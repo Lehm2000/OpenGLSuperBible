@@ -70,9 +70,6 @@ int main(void)
 	GEObject* testObject2 = new GEObject( GEvec3( 1.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ), "test_object2");
 	testObject2->setMesh( "cube" );
 	testObject2->setMaterial( "default" );
-	GEControllerInputMousePositionXv3 testController( GEvec3( 1.0f, 1.0f, 0.0f ) );
-	GEControllerInputKeyv3 testController2( GEvec3( 0.0f, 1.0f, 0.0f ), GE_KEY_W );
-	GEControllerOscillatorv3 testController3( GEvec3( 0.25f, 0.25f, 0.25f ) , 3.0f );
 	//testObject2->addRotationController( new GEControllerInputMousePosition( GEvec3( 0.01f, 0.01f, 0.0f ) ) );
 	testObject2->getScale()->addController( new GEControllerOscillatorv3( GEvec3( 0.25f, 0.25f, 0.25f ) , 3.0f ), testObject2 );
 	

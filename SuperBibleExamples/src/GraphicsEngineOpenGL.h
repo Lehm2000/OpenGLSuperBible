@@ -23,23 +23,28 @@
 
 #include "GraphicsEngine.h"
 #include "MaterialManager.h"
+#include "TextureManager.h"
 #include "GEObject.h"
 #include "GEObjectContainer.h"
+#include "GEResourceContainer.h"
 #include "GEMesh.h"
 #include "GEMaterial.h"
 #include "InputItem.h"
+#include "GEConstants.h"
 
 
 class GraphicsEngineOpenGL: public GraphicsEngine
 {
 private:
 	GLFWwindow* window;
+				
+	GEResourceContainer< GEMesh> resMesh;				// Holds all the mesh information for the Graphics Engine.
+	GEResourceContainer< GEMaterial> resMaterial;		// Holds all materials for the game.  Materials hold the shader plus references to the textures used.
+	//std::map< std::string, GLuint > textureMap;			
+	GEResourceContainer< GLuint > resTexture;			// Holds textures for the game.
 	
-	std::map< std::string, GEMesh > meshMap;	// Holds all the mesh information for the Graphics Engine.
-	std::map< std::string, GEMaterial > materialMap;	// Holds all materials for the game.  Materials hold the shader plus references to the textures used.
-	std::map< std::string, GLuint > textureMap;			// Holds textures for the game.
-	
-	MaterialManager materialMan;	//for material operations
+	MaterialManager materialMan;	// for material operations
+	TextureManager textureMan;		// for texture operations
 
 public:
 
@@ -154,38 +159,6 @@ public:
 	bool BufferMaterial( std::string materialPath );
 	bool BufferTexture( std::string texturePath );
 
-	/**
-		GetMaterial()
-		Takes a material name and searches the materialMap for it.  Returns
-		the material if it is found.  If not returns the default missing
-		material
-		@param materialName - name of the material to return
-		@return - the material
-	*/
-	GEMaterial GetMaterial( std::string materialName ) const
-	{
-		GEMaterial returnMat;
-
-		std::map< std::string, GEMaterial>::const_iterator matI = materialMap.find( materialName );
-
-		if( matI != materialMap.end() )
-		{
-			returnMat = matI->second;
-		}
-		else
-		{
-			std::map< std::string, GEMaterial>::const_iterator matI = materialMap.find( "GE_MISSING" );
-			
-			if( matI != materialMap.end() )
-			{
-				returnMat = matI->second;
-			}
-			// TODO: else we're screwed... something really went wrong... what do we do?
-
-		}
-
-		return returnMat;
-	}
 	
 	// Callback Functions
 

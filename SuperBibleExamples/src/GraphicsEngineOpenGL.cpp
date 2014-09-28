@@ -91,15 +91,16 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 		glClearBufferfv(GL_COLOR, 0, bkColor);
 		glClearBufferfv(GL_DEPTH,0, &one);
 
-		std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("sphere");
+		//std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("sphere");
 
-		GEMesh renderMesh = meshIt->second;
+		//GEMesh renderMesh = meshIt->second;
+		GEMesh renderMesh = resMesh.GetResource( "sphere" );
 
 		glBindVertexArray( renderMesh.getVertexArrayObject() );
 	
 		GEMaterial renderMaterial;
 		
-		renderMaterial = GetMaterial( "geometry_testNormals" );
+		renderMaterial = resMaterial.GetResource( "geometry_testNormals" );
 
 		//renderMaterial = materialMap.find("geometry_testNormals")->second;
 
@@ -130,7 +131,7 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 	
 		// switch materials and render again to visualize normals.
 
-		renderMaterial = GetMaterial( "geometry_testNormalsRay" );
+		renderMaterial = resMaterial.GetResource( "geometry_testNormalsRay" );
 
 		glUseProgram ( renderMaterial.getProgram() );
 
@@ -198,25 +199,14 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 				GEMaterial renderMaterial;
 				std::string renderMaterialName = it->second->getMaterial();
 
-				std::map< std::string, GEMaterial>::iterator mapIt = materialMap.find( renderMaterialName );
-			
-				if ( mapIt != materialMap.end() )
-				{
-					renderMaterial = materialMap[ renderMaterialName ];
-				}
-				else
-				{
-					// if the material specified for this object is not found use the default
-					renderMaterial = materialMap[ "default" ];
-				}
+				renderMaterial = resMaterial.GetResource( renderMaterialName );
 			
 				glUseProgram ( renderMaterial.getProgram() );
 			
 				GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "worldMatrix" );
 				GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "viewMatrix" );
 
-				// DO NOT ACCESS MAP THIS WAY!!!!!!!.  CHANGE ASAP
-				GEMesh renderMesh = meshMap[ it->second->getMesh() ];
+				GEMesh renderMesh = resMesh.GetResource( it->second->getMesh() );
 
 				glBindVertexArray( renderMesh.getVertexArrayObject() );
 			
@@ -229,13 +219,8 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 				for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
 				{
 					glActiveTexture( GL_TEXTURE0 + i );
-
-					std::map< std::string, GLuint>::iterator texI =  textureMap.find( renderMaterial.getTextures()[i] );
-
-					if ( texI != textureMap.end() )
-					{
-						glBindTexture( GL_TEXTURE_2D, texI->second );
-					}
+					GLuint renderTex = resTexture.GetResource( renderMaterial.getTextures()[i] );
+					glBindTexture( GL_TEXTURE_2D, renderTex );
 
 					std::string textureString = "texture";
 					textureString.append( std::to_string(i) );
@@ -282,11 +267,14 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 	{
 	
 		//std::map< std::string, GEObject* >::const_iterator fontIt = gameEntities->find("SYS_FONT");
-		GEMesh fontMesh = meshMap[ "SYS_FONT" ];
+		//GEMesh fontMesh = meshMap[ "SYS_FONT" ];
+		GEMesh fontMesh = resMesh.GetResource( "SYS_FONT" );
 	
 		glBindVertexArray( fontMesh.getVertexArrayObject() );
 
-		GEMaterial fontMaterial = materialMap[ "SystemFont01" ];
+		//GEMaterial fontMaterial = materialMap[ "SystemFont01" ];
+		GEMaterial fontMaterial = resMaterial.GetResource( "SystemFont01" );
+
 		glUseProgram( fontMaterial.getProgram() );
 		glActiveTexture( GL_TEXTURE0 );
 
@@ -306,7 +294,7 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 	
 		glUniform1i(fontTextureLoc, 0);
 
-		glBindTexture( GL_TEXTURE_2D, textureMap.find("SYS_Font01")->second );
+		glBindTexture( GL_TEXTURE_2D, resTexture.GetResource( "SYS_Font01" ) );
 		
 		const InfoGameVars* gameVars = (InfoGameVars*)gameEntities->GetObject( "SYS_Game_Vars" );
 
@@ -517,14 +505,8 @@ double GraphicsEngineOpenGL::getCurrentTime() const
 
 bool GraphicsEngineOpenGL::InitShaders(void)
 {
-	// Temp tutorial code.
+	// start by adding the "GE_MISSING" shader
 
-	BufferMaterial( "alien_rain" );
-	BufferMaterial( "SolidRGB_Subroutine" );
-	BufferMaterial( "SystemFont01" );
-	BufferMaterial( "texture_test" );
-
-	// Manual buffer some default shaders
 	GLuint program;
 	GLuint vertexShader;
 	GLuint fragmentShader;
@@ -616,10 +598,18 @@ bool GraphicsEngineOpenGL::InitShaders(void)
 	GEMaterial missingMat;
 	missingMat.setProgram( program );
 
-	materialMap.insert( std::pair<std::string, GEMaterial>( "GE_MISSING", missingMat ) );
+	resMaterial.AddResource( GE_MISSING, missingMat );
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+
+	BufferMaterial( "alien_rain" );
+	BufferMaterial( "SolidRGB_Subroutine" );
+	BufferMaterial( "SystemFont01" );
+	BufferMaterial( "texture_test" );
+
+	// Manual buffer some default shaders
+	
 
 	return true;
 }
@@ -661,8 +651,8 @@ void GraphicsEngineOpenGL::InitBuffers(void)
 	glEnableVertexAttribArray(0);
 
 	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0);  // the font mesh doesn't really fit the GEMesh type... new type?
-	meshMap["SYS_FONT"] = newMesh;
-	
+	//meshMap["SYS_FONT"] = newMesh;
+	resMesh.AddResource( "SYS_FONT", newMesh );
 	
 
 }
@@ -670,103 +660,26 @@ void GraphicsEngineOpenGL::InitBuffers(void)
 void GraphicsEngineOpenGL::InitTextures(void)
 {
 	
-	//	testing loading textures here
+	// create the GE_MISSING texture
+	GLuint missingTexture = textureMan.LoadTexture( GE_MISSING );
+	
+	if( missingTexture != 0 )
+		resTexture.AddResource( GE_MISSING, missingTexture );
 
-	TextureManager texMan;
 	GLenum glError = 0;
 	unsigned char returnType = 0;
 
-	/*
-	IUImage<unsigned char> testImage1 = texMan.LoadTexture( "test2.bmp", GE_TEXTYPE_BMP, returnType );
-	IUImage<unsigned char> testImage2 = texMan.LoadTexture( "test2r.bmp", GE_TEXTYPE_BMP, returnType );
-	
-	unsigned char* data[2];
-	data[0] = (unsigned char*)malloc( testImage1.getDataSize() );
-	data[1] = (unsigned char*)malloc( testImage2.getDataSize() );
-	
-	testImage1.getData(data[0]);
-	testImage2.getData(data[1]);
-
-	GLuint texture;
-
-	GLenum internalFormat;
-	GLenum imageFormat;
-
-	if (testImage1.getNumChannels() == 3)
-	{
-		internalFormat = GL_RGB32F;
-		imageFormat = GL_RGB;
-	}
-	else
-	{
-		internalFormat = GL_RGBA32F;
-		imageFormat = GL_RGBA;
-	}
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D_ARRAY ,texture);
-
-	glError = glGetError();
-	if (glError != GL_NO_ERROR)
-	{
-		printf( "Error binding texture: %d\n", glError );
-	}
-
-	//glTexStorage3D(GL_TEXTURE_2D_ARRAY, 4, GL_RGB8, 256, 256, 2);
-	glTexStorage3D( GL_TEXTURE_2D_ARRAY, 5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, 256, 256, 2 );
-
-	glError = glGetError();
-	if (glError != GL_NO_ERROR)
-	{
-		printf( "Error generating texture buffer: %d\n", glError );
-	}
-
-	for (int i = 0; i < 2; i++)
-	{
-		glTexSubImage3D( GL_TEXTURE_2D_ARRAY,0,0,0,i,256,256,1, GL_RGB, GL_UNSIGNED_BYTE, data[i] );
-		
-		glError = glGetError();
-		if (glError != GL_NO_ERROR)
-		{
-			printf( "Error copying texture to buffer: %d\n", glError );
-		}
-	}
-
-	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-
-	//	create the mipmaps.
-	glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-
-	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
-	//GLuint sampler;
-	//glGenSamplers(1, &sampler);
-
-	//	set some sampler options
-	//glSamplerParameteri(sampler,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
-	//glSamplerParameteri(sampler,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-
-	//	now bind it to a texture unit
-	//glBindSampler(0, sampler);	//bind it to texture unit 0... the only one we are using currently.
-	
-	//	clean up
-	delete [] data[0];
-	delete [] data[1];
-
-	*/
-
 	// Load the font Texture
-	GLuint fontTexture = texMan.LoadTexture( "font01.bmp" );
+	GLuint fontTexture = textureMan.LoadTexture( "font01.bmp" );
 	
 	if( fontTexture != 0 )
-		textureMap.insert( std::pair< std::string, GLuint >( "SYS_Font01", fontTexture ) );
+		resTexture.AddResource( "SYS_Font01", fontTexture );
 	
-
 	// Load the displace Texture (testing)
-	GLuint displaceTexture = texMan.LoadTexture( "displace_test.bmp" );
+	GLuint displaceTexture = textureMan.LoadTexture( "displace_test.bmp" );
 	
 	if( displaceTexture != 0 )
-		textureMap.insert( std::pair< std::string, GLuint >( "DisplaceTest", displaceTexture ) );
+		resTexture.AddResource( "DisplaceTest", displaceTexture );
 
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
 	GLuint sampler;
@@ -790,43 +703,19 @@ void GraphicsEngineOpenGL::UpdateWindowSize(int x, int y, int width, int height)
 bool GraphicsEngineOpenGL::isMeshBuffered( std::string meshPath)
 {
 	// check if mesh already loaded
-	bool buffered = true;
-
-	// if find == the end... its not in the map
-	if ( meshMap.find( meshPath ) == meshMap.end() )
-	{
-		buffered = false;
-	}
-
-	return buffered;
+	return resMesh.ContainsResource( meshPath );
 }
 
 bool GraphicsEngineOpenGL::isMaterialBuffered( std::string materialPath )
 {
 	// check if material already loaded
-	bool buffered = true;
-
-	// if find == the end... its not in the map
-	if ( materialMap.find( materialPath ) == materialMap.end() )
-	{
-		buffered = false;
-	}
-
-	return buffered;
+	return resMaterial.ContainsResource( materialPath );
 }
 
 bool GraphicsEngineOpenGL::isTextureBuffered( std::string texturePath )
 {
 	// check if texture already loaded
-	bool buffered = true;
-
-	// if find == the end... its not in the map
-	if ( textureMap.find( texturePath ) == textureMap.end() )
-	{
-		buffered = false;
-	}
-
-	return buffered;
+	return resTexture.ContainsResource( texturePath );
 }
 
 bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, unsigned int* vertIndices, unsigned int numIndices )
@@ -889,7 +778,8 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, uns
 	// Next put mesh into the map
 
 	GEMesh newMesh( GL_TRIANGLE_STRIP, numVerts, numIndices, newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );  // TODO: where does GL_TRIAnGLES come from?
-	meshMap[meshPath] = newMesh;
+	//meshMap[meshPath] = newMesh;
+	resMesh.AddResource( meshPath, newMesh );
 
 	// Unbind voa??  Don't for now.
 
@@ -910,7 +800,8 @@ bool GraphicsEngineOpenGL::BufferMaterial( std::string materialPath )
 	{
 		// Add it to the shader map
 	 
-		materialMap.insert( std::pair< std::string, GEMaterial >( materialPath, newMaterial ) );
+		//materialMap.insert( std::pair< std::string, GEMaterial >( materialPath, newMaterial ) );
+		resMaterial.AddResource( materialPath, newMaterial );
 
 		// Next load the textures.
 		for( unsigned int i = 0; i < newMaterial.getTextures().size(); i++ )
@@ -947,17 +838,15 @@ bool GraphicsEngineOpenGL::BufferTexture( std::string texturePath )
 {
 	bool success = false;
 
-	TextureManager texMan;	// for texture operations
-
 	if( !isTextureBuffered( texturePath ) )
 	{
 		// load the texture
-		GLuint texture = texMan.LoadTexture( texturePath );
+		GLuint texture = textureMan.LoadTexture( texturePath );
 
 		// then put that texture into the textureMap.
 		if ( texture != 0 )
 		{
-			textureMap.insert( std::pair< std::string, GLuint >( texturePath, texture ) );
+			resTexture.AddResource( texturePath, texture);
 			success = true;
 		}
 	}

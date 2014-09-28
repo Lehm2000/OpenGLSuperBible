@@ -8,6 +8,7 @@
 
 
 #include "TextureManager.h"
+#include "GEConstants.h"
 
 
 #include "ImageUtilities\IUImage.h"
@@ -32,7 +33,33 @@ GLuint TextureManager::LoadTexture( std::string filename )
 	// first determine what kind of texture it is.  For now we'll use the 
 	// extension.  May need more robust method later.
 
-	if ( filename != "" )
+	if ( filename == GE_MISSING )
+	{
+		// create the 'missing' texture.  Texture that is returned if the specified one is not found.
+		// it will be completely purple.
+		unsigned char* imageTexData = (unsigned char*)malloc( 64 * 64 * 3 );
+
+		for ( unsigned int i = 0; i < 64 * 64; i++ )
+		{
+			imageTexData[ i * 3 ] = 255;
+			imageTexData[ ( i * 3 ) + 1] = 0;
+			imageTexData[ ( i * 3 ) + 2] = 255;
+			
+		}
+
+		glGenTextures(1, &loadedTexture);
+		glBindTexture(GL_TEXTURE_2D, loadedTexture);
+
+		glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, 64, 64);
+		glTexSubImage2D( GL_TEXTURE_2D,0,0,0, 64, 64, GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
+
+		glGenerateMipmap( GL_TEXTURE_2D );
+
+		delete[] imageTexData;
+		imageTexData = nullptr;
+
+	}
+	else if ( filename != "" )
 	{
 		unsigned int lastDot = filename.find_last_of(".");
 		unsigned int texType = 0;
@@ -44,49 +71,35 @@ GLuint TextureManager::LoadTexture( std::string filename )
 			std::string fullFileName = texturePath;
 			fullFileName.append( filename );
 
-			if( ext == "bmp" )
+
+
+			if( ext == "bmp" )  // bitmap
 			{
 				IUImage<unsigned char> image = imageUtilities.LoadBitmap( fullFileName.c_str() );
 
-				unsigned char* imageTexData = nullptr;
+				// verify that the texture was loaded
 
-				imageTexData = (unsigned char*)malloc( image.getDataSize() );
-				image.getData( imageTexData );
+				if( image.getDataSize() > 0 )  // is this the best check?
+				{
+					unsigned char* imageTexData = nullptr;
 
-				glGenTextures(1, &loadedTexture);
-				glBindTexture(GL_TEXTURE_2D, loadedTexture);
+					imageTexData = (unsigned char*)malloc( image.getDataSize() );
+					image.getData( imageTexData );
 
-				glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, image.getWidth(), image.getHeight() );
-				glTexSubImage2D( GL_TEXTURE_2D,0,0,0, image.getWidth(), image.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
+					glGenTextures(1, &loadedTexture);
+					glBindTexture(GL_TEXTURE_2D, loadedTexture);
 
-				glGenerateMipmap( GL_TEXTURE_2D );
+					glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, image.getWidth(), image.getHeight() );
+					glTexSubImage2D( GL_TEXTURE_2D,0,0,0, image.getWidth(), image.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
 
-				delete[] imageTexData;
-				imageTexData = nullptr;
+					glGenerateMipmap( GL_TEXTURE_2D );
+
+					delete[] imageTexData;
+					imageTexData = nullptr;
+				}
 			}
 		}
 
-		/*
-		if ( filename != nullptr && texType != 0 )
-		{
-
-			char fullFilename[1024];	//TODO: deal with magic number here.
-	
-			//combine filepath for shaders with supplied filename.
-			strcpy( fullFilename, texturePath.c_str() );
-			strcat( fullFilename, filename );
-
-			switch (texType)
-			{
-			case GE_TEXTYPE_BMP:
-				loadedTexture = imageUtilities.LoadBitmap( fullFilename );
-				break;
-			case GE_TEXTYPE_TARGA:
-				break;
-			default:
-				break;
-			}
-		}*/
 	}
 
 	return loadedTexture;
