@@ -411,6 +411,22 @@ bool GameEngine::LoadMesh( std::string meshPath )
 
 			graphics->BufferMesh( meshPath, meshVerts, 8, vertexIndecies, 30 );
 		}
+		else if ( meshPath == "plane" )
+		{
+			GEVertex meshVerts[4];
+
+			FillGEVertex( &meshVerts[0], -1.00f, 1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		0.0f, 0.0f );
+			FillGEVertex( &meshVerts[1], 1.00f, 1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		1.0f, 0.0f );
+			FillGEVertex( &meshVerts[2], -1.00f, -1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		0.0f, 1.0f );
+			FillGEVertex( &meshVerts[3], 1.00f, -1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		1.0f, 1.0f );
+
+			unsigned int vertexIndecies[] =
+			{
+				0,1,2,3
+			};
+
+			graphics->BufferMesh( meshPath, meshVerts, 4, vertexIndecies, 4 );
+		}
 
 	}
 

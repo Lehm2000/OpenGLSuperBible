@@ -1,0 +1,6 @@
+vertex_shader = texture_test.vert.glsl
+tess_control_shader = 
+tess_eval_shader = 
+geometry_shader = 
+fragment_shader = texture_test.frag.glsl
+texture1 = RGB_Radial_Gradient.bmp

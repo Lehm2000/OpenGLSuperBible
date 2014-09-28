@@ -225,8 +225,28 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 				glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
             
-				//glDrawArrays( renderMesh.getMeshType() , 0, renderMesh.getNumIndices() );
-				//glDrawElements( renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0);
+				// bind the required textures
+				for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
+				{
+					glActiveTexture( GL_TEXTURE0 + i );
+
+					std::map< std::string, GLuint>::iterator texI =  textureMap.find( renderMaterial.getTextures()[i] );
+
+					if ( texI != textureMap.end() )
+					{
+						glBindTexture( GL_TEXTURE_2D, texI->second );
+					}
+
+					std::string textureString = "texture";
+					textureString.append( std::to_string(i) );
+
+					GLint texLoc = glGetUniformLocation( renderMaterial.getProgram(), textureString.c_str() );
+					glUniform1i( texLoc, i );
+
+				}
+
+
+
 				glEnable( GL_PRIMITIVE_RESTART );
 				glPrimitiveRestartIndex( 0xFFFF );
 				for (int j = 0; j<1; j++ )  // just to test performance
@@ -237,10 +257,7 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 					//glDrawElementsInstanced(  renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0, 10000);
 				}
 				glDisable( GL_PRIMITIVE_RESTART );
-				/*for (int i = 0; i<6; i++)
-				{
-					glDrawElements( GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (void*)(4*i*sizeof(GLushort) ) );
-				};*/
+				
 			}
 	
 		}
@@ -505,6 +522,7 @@ bool GraphicsEngineOpenGL::InitShaders(void)
 	BufferMaterial( "alien_rain" );
 	BufferMaterial( "SolidRGB_Subroutine" );
 	BufferMaterial( "SystemFont01" );
+	BufferMaterial( "texture_test" );
 
 	// Manual buffer some default shaders
 	GLuint program;
@@ -843,7 +861,8 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, uns
 	glEnableVertexAttribArray(2);
 	
 	// Texture Coords.
-
+	glVertexAttribPointer( 3, 2, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, u ));
+	glEnableVertexAttribArray(3);
 	
 	
 
@@ -937,7 +956,10 @@ bool GraphicsEngineOpenGL::BufferTexture( std::string texturePath )
 
 		// then put that texture into the textureMap.
 		if ( texture != 0 )
+		{
 			textureMap.insert( std::pair< std::string, GLuint >( texturePath, texture ) );
+			success = true;
+		}
 	}
 	else
 		success = true;

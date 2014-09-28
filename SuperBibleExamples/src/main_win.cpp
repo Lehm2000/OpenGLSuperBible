@@ -79,8 +79,8 @@ int main(void)
 	gameEngine.AddEntity( "testObject2", testObject2 );
 
 	GEObject* testObject3 = new GEObject( GEvec3( -1.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( .25f, .25f, .25f ), "test_object3");
-	testObject3->setMesh( "diamond" );
-	testObject3->setMaterial( "default" );
+	testObject3->setMesh( "plane" );
+	testObject3->setMaterial( "texture_test" );
 	//testObject3->addPositionController( new GEControllerOscillator( GEvec3( 0.5f, 0.5f, 0.5f), 5.0f ) );
 	testObject3->getPosition()->addController( new GEControllerInputKeyv3( GEvec3( 0.0f, 1.0f, 0.0f ), GE_KEY_W ), testObject3 );
 	testObject3->getPosition()->addController( new GEControllerInputKeyv3( GEvec3( 0.0f, -1.0f, 0.0f ), GE_KEY_S ), testObject3 );

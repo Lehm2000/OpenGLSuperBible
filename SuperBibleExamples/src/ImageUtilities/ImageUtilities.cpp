@@ -115,6 +115,18 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 							// No need to reverse the source as well.
 							unsigned int locSource = (i * paddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k;
 
+							// R & B channels are reversed.  Endianness
+							if (k == 0)
+							{
+								locSource += 2;
+								
+							}
+							else if (k == 2)
+							{
+								locSource -= 2;
+								
+							}
+
 							// read and place in destination.
 							tempData[locDest] = imageFileData[locSource];
 						}
