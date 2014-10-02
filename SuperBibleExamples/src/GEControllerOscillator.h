@@ -55,7 +55,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime);
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -63,7 +63,7 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue );
+	virtual T CalcTransform( const T sourceValue );
 
 };
 
@@ -136,10 +136,15 @@ GEControllerOscillator<T>* GEControllerOscillator<T>::clone() const
 }
 
 template <class T>
-void GEControllerOscillator<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEControllerOscillator<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	float newFeq = frequency / ( 2.0f * GE_PI ); // convert the frequence to terms of PI
 	transformedValue = sin( (float)gameTime / newFeq ) * amplitude;
+
+	// validate
+	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
+
+	return transformedValue + prevValue;
 }
 
 

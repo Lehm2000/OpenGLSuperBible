@@ -174,7 +174,7 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 		{
 			if (renderCam->getClassName() == "CameraPerspective" )
 			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
+				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
 			}
 		}
 		else
@@ -718,12 +718,12 @@ bool GraphicsEngineOpenGL::isTextureBuffered( std::string texturePath )
 	return resTexture.ContainsResource( texturePath );
 }
 
-bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, unsigned int* vertIndices, unsigned int numIndices )
+bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, MUMesh* mesh )
 {
 	// Create GLuint to hold new voa.  Each Mesh gets its own voa.
 	GLuint newVertexArrayObject;
 	
-	// Create a new buffers
+	// Create new buffers
 	GLuint newVertexBuffer;
 	GLuint newIndexBuffer;
 	GLuint newIndirectBuffer;
@@ -735,7 +735,7 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, uns
 
 	glGenBuffers( 1, &newVertexBuffer );
 	glBindBuffer( GL_ARRAY_BUFFER, newVertexBuffer );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( GEVertex ) * numVerts, mesh, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( GEVertex ) * mesh->getNumVerts(), mesh->getVerticies(), GL_STATIC_DRAW );
 
 	// Position
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( GEVertex ), ( void* )offsetof( GEVertex, x ));
@@ -759,7 +759,7 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, uns
 	
 	glGenBuffers( 1, &newIndexBuffer );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, newIndexBuffer );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * numIndices, vertIndices, GL_STATIC_DRAW ); 
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * mesh->getNumIndicies(), mesh->getIndicies(), GL_STATIC_DRAW ); 
 
 	// create the indirect buffer
 	DrawElementsIndirectCommand indirectBufferData;
@@ -768,7 +768,7 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, uns
 	indirectBufferData.baseVertex = 0;
 	indirectBufferData.firstIndex = 0;
 	indirectBufferData.instanceCount = 1;
-	indirectBufferData.elemCount = numIndices; 
+	indirectBufferData.elemCount = mesh->getNumIndicies(); 
 
 	glGenBuffers( 1, &newIndirectBuffer );
 	glBindBuffer( GL_DRAW_INDIRECT_BUFFER, newIndirectBuffer );
@@ -777,7 +777,16 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, GEVertex* mesh, uns
 
 	// Next put mesh into the map
 
-	GEMesh newMesh( GL_TRIANGLE_STRIP, numVerts, numIndices, newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );  // TODO: where does GL_TRIAnGLES come from?
+	unsigned int meshType;
+
+	if( mesh->getMeshType() == GE_MESH_TRIANGLE_LIST )
+		meshType = GL_TRIANGLES;
+	else if( mesh->getMeshType() == GE_MESH_TRIANGLE_STRIP )
+		meshType = GL_TRIANGLE_STRIP;
+	else
+		meshType = GL_TRIANGLES;
+
+	GEMesh newMesh( meshType, mesh->getNumVerts(), mesh->getNumIndicies(), newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );
 	//meshMap[meshPath] = newMesh;
 	resMesh.AddResource( meshPath, newMesh );
 

@@ -21,6 +21,7 @@
 #include "GEMesh.h"
 #include "GEMaterial.h"
 #include "InputItem.h"
+#include "MUMesh.h"
 
 //temporary place to define vertex structs
 struct vertex
@@ -39,29 +40,7 @@ struct vertex
 
 };
 
-struct GEVertex
-{
-	// Position
-	float x;
-	float y;
-	float z;
-	//float w; // needed?
 
-	// Color
-	float r;
-	float g;
-	float b;
-	float a;
-
-	// Normal
-	float nx;
-	float ny;
-	float nz;
-
-	// Texture  // how do we do more than one texture channel.
-	float u;
-	float v;
-};
 
 class GraphicsEngine
 {
@@ -151,7 +130,7 @@ public:
 		@param vertIndices - pointer to vertex indices
 		@param numIndices
 	*/
-	virtual bool BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, unsigned int* vertIndices, unsigned int numIndices ) = 0;
+	virtual bool BufferMesh( std::string meshPath, MUMesh* mesh ) = 0;
 	virtual bool BufferMaterial( std::string materialPath ) = 0;
 	
 	virtual void QueueInputItem( InputItem input );

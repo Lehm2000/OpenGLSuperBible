@@ -155,7 +155,7 @@ public:
 		@param vertIndices - pointer to vertex indices
 		@param numIndices
 	*/
-	bool BufferMesh( std::string meshPath, GEVertex* mesh, unsigned int numVerts, unsigned int* vertIndices, unsigned int numIndices );
+	bool BufferMesh( std::string meshPath, MUMesh* mesh );
 	bool BufferMaterial( std::string materialPath );
 	bool BufferTexture( std::string texturePath );
 

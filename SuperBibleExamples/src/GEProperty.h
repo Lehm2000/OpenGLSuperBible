@@ -197,13 +197,6 @@ T GEProperty<T>::getFinalValue() const
 	for ( unsigned int i = 0; i < controllers.size(); i++)
 		finalValue = controllers[i]->CalcTransform( finalValue );
 
-	// clamp the range if necessary.
-
-	if ( useMin )
-		finalValue = glm::max( finalValue, getMinValue() );
-	if ( useMax )
-		finalValue = glm::min( finalValue, getMaxValue() );
-
 	return finalValue;
 }
 
@@ -279,9 +272,11 @@ void GEProperty<T>::setControllerGameEntitiesPointer( const GEObjectContainer* g
 template <class T>
 void GEProperty<T>::Update( const double gameTime, const double deltaTime)
 {
+	T totalValue = this->getBaseValue();
+
 	// go through list of controllers and tell them to do their calculations.
 	for ( unsigned int i = 0; i < controllers.size(); i++)
-		controllers[i]->Control( this->getBaseValue(), gameTime, deltaTime );
+		totalValue = controllers[i]->Control( totalValue, gameTime, deltaTime, max, useMax, min, useMin );
 }
 
 

@@ -58,7 +58,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( GEvec3 objectVector, double gameTime, double deltaTime);
+	virtual GEvec3 Control( const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -106,7 +106,7 @@ GEControllerLookAt* GEControllerLookAt::clone() const
 	return new GEControllerLookAt( *this );
 }
 
-void GEControllerLookAt::Control( GEvec3 objectVector, double gameTime, double deltaTime)
+GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin )
 {
 
 	// We need to calculate the x and y rotations.  The z rotation is left alone to allow tilt/roll.
@@ -161,8 +161,13 @@ void GEControllerLookAt::Control( GEvec3 objectVector, double gameTime, double d
 	else
 	{
 		// just return what we were given
-		transformedValue = objectVector;
+		transformedValue = prevValue;
 	}
+
+	// this control function ignores all incoming values... so pass a new vec3 for the prevValue
+	transformedValue = ValidateRange( transformedValue, GEvec3( 0.0f, 0.0f, 0.0f ), max, useMax, min, useMin );
+
+	return transformedValue;
 }
 
 

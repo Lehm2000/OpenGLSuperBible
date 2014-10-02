@@ -16,15 +16,19 @@
 #include "GEControllerInputMousePositionY.h"
 #include "GEControllerInputMouseScrollY.h"
 #include "InfoViewport.h"
+#include "MeshUtilities.h"
 
 
 int main(void)
 {
+	
 	bool gameRunning = true;
 
-	glm::vec3 testvec1( 1.0f, 1.0f, 1.0f );
-	glm::vec3 testvec2( 0.0f, 0.0f, 0.0f );
+	// testing mesh stuff here
 
+	MeshUtilities meshUtil;
+
+	meshUtil.LoadASE( "C:\\Programming\\OpenGLSuperBible\\SuperBibleExamples\\meshes\\testBox.ASE" );
 	
 	
 	GameEngine gameEngine; //make pointer?... this will go inside the game class eventually
@@ -55,14 +59,11 @@ int main(void)
 
 	// Create a test object
 
-	//GEController* tempPosCon;
-	//GEController* tempRotCon;
-	//GEController* tempScaCon;
 
 	GEObject* testObject = new GEObject( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( .5f, .5f, .5f ), "test_object");
-	testObject->setMesh( "sphere" );
+	testObject->setMesh( "testTube" );
 	testObject->setMaterial( "default" );
-	testObject->getRotation()->addController( new GEControllerConstantv3( GEvec3( 1.0f, 1.0f, 0.0f ) ), testObject );
+	testObject->getRotation()->addController( new GEControllerConstantv3( GEvec3( 1.0f, 0.0f, 0.0f ) ), testObject );
 	testObject->getPosition()->addController( new GEControllerOscillatorv3( GEvec3( 0.0f, 1.0f, 0.0f), 6.0f ), testObject );
 	testObject->getPosition()->addController( new GEControllerOscillatorv3( GEvec3( 2.0f, 0.0f, 1.0f), 7.0f ), testObject );
 	gameEngine.AddEntity( "testObject", testObject );
@@ -71,7 +72,8 @@ int main(void)
 	testObject2->setMesh( "cube" );
 	testObject2->setMaterial( "default" );
 	//testObject2->addRotationController( new GEControllerInputMousePosition( GEvec3( 0.01f, 0.01f, 0.0f ) ) );
-	testObject2->getScale()->addController( new GEControllerOscillatorv3( GEvec3( 0.25f, 0.25f, 0.25f ) , 3.0f ), testObject2 );
+	//testObject2->getRotation()->addController( new GEControllerConstantv3( GEvec3( 1.0f, 0.0f, 0.0f ) ), testObject2 );
+	testObject2->getScale()->addController( new GEControllerOscillatorv3( GEvec3( 0.2f, -0.5f, 0.5f ) , 3.0f ), testObject2 );
 	
 	gameEngine.AddEntity( "testObject2", testObject2 );
 

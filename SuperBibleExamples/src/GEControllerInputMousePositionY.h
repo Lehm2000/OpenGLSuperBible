@@ -45,7 +45,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime);
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -53,7 +53,7 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue );
+	virtual T CalcTransform( const T sourceValue );
 
 	
 };
@@ -124,7 +124,7 @@ GEControllerInputMousePositionY<T>* GEControllerInputMousePositionY<T>::clone() 
 
 
 template <class T>
-void GEControllerInputMousePositionY<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEControllerInputMousePositionY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	// Start by updating the mouse position
 	this->mousePositionYPrev = this->mousePositionY;
@@ -144,6 +144,10 @@ void GEControllerInputMousePositionY<T>::Control( T initialValue, double gameTim
 
 	// apply the change. x = y rotation, y = x rotation
 	transformedValue += valueDelta * mousePosXDelta;
+
+	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
+
+	return transformedValue + prevValue;
 }
 
 

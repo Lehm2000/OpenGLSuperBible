@@ -50,7 +50,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime);
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -58,7 +58,7 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue );
+	virtual T CalcTransform( const T sourceValue );
 };
 
 template <class T>
@@ -116,7 +116,7 @@ GEControllerInputKey<T>* GEControllerInputKey<T>::clone() const
 }
 
 template <class T>
-void GEControllerInputKey<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEControllerInputKey<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	// Update the key status
 
@@ -141,6 +141,10 @@ void GEControllerInputKey<T>::Control( T initialValue, double gameTime, double d
 	{
 		transformedValue = transformedValue + ( valueDelta * (float)deltaTime );
 	}
+
+	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
+
+	return transformedValue + prevValue;
 }
 
 template <class T>

@@ -70,12 +70,17 @@ public:
 	/**
 		Control()
 		Takes objectVector and passed it on without modification.
-		@param startVector - starting point of the object.  Could be position, rotation or scale
+		@param prevValue - the result of all the previous controllers.
 		@param gameTime - time since the game started
 		@param deltaTime - time since the last frame
-		@return
+		@param max - the max value
+		@param useMax
+		@param min
+		@param useMin
+		@return - the result transformedValue + prevValuer, mainly so it can be
+			passed to the next controller in the stack.
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime );
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -83,7 +88,14 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue ); 
+	virtual T CalcTransform( const T sourceValue ); 
+
+	/**
+		ValidateRange
+		Takes a value adds it to prevValue and sees if it is within max and min.
+		Returns a value that would stay within the confines if not.
+	*/
+	virtual T ValidateRange( T value, T prevValue , T max, bool useMax, T min, bool useMin );
 };
 
 // Structors
@@ -158,9 +170,12 @@ GEController<T>* GEController<T>::clone() const
 }
 
 template <class T>
-void GEController<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEController<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	this->transformedValue = ( *new T() );  // completely ignore incoming data.
+	// this version of the controller does nothing.  just pass the prevValue back
+	// shouldn't be a reason to check the max/min.
+
+	return prevValue;
 	
 }
 
@@ -170,9 +185,36 @@ T GEController<T>::CalcTransform( T sourceValue )
 	return sourceValue;  //return the source as the transformed.
 }
 
+template <class T>
+T GEController<T>::ValidateRange( T value, T prevValue , T max, bool useMax, T min, bool useMin )
+{
+	T totalValue;
+
+	// now see if the new value exceeds valid range
+	if( useMax )
+	{
+		// see how much it can change before hitting the max
+		T maxChange = max - prevValue;
+
+		// component by component pick the lesser
+		value = glm::min( maxChange, value );
+
+	}
+	if( useMin)
+	{
+		// see how much it can change before hitting the min
+		T maxChange = min - prevValue;
+		// component by component pick the greater
+		value = glm::max( maxChange, value );
+	}
+
+	return value;
+}
+
 typedef GEController<float> GEControllerf1;
 typedef GEController<GEvec2> GEControllerv2;
 typedef GEController<GEvec3> GEControllerv3;
+
 
 
 #endif /* GECONTROLLER_H */

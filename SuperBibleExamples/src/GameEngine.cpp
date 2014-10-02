@@ -14,6 +14,8 @@
 #include "GEConstants.h"
 #include "GEInputState.h"
 #include "TypeDefinitions.h"
+#include "MUMesh.h"
+#include "MeshUtilities.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -236,6 +238,8 @@ GEObject* GameEngine::GetEntity( const std::string entityName )
 
 bool GameEngine::LoadMesh( std::string meshPath )
 {
+	MeshUtilities meshUtil;
+
 	// Check if mesh already loaded
 
 	if (!graphics->isMeshBuffered( meshPath ))
@@ -247,14 +251,14 @@ bool GameEngine::LoadMesh( std::string meshPath )
 			GEVertex meshVerts[8];
 
 			//define a cube
-			FillGEVertex( &meshVerts[0], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-			FillGEVertex( &meshVerts[1], -0.25f, 0.25f, -0.25f,		0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-			FillGEVertex( &meshVerts[2], 0.25f, -0.25f, -0.25f,		1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-			FillGEVertex( &meshVerts[3], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-			FillGEVertex( &meshVerts[4], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-			FillGEVertex( &meshVerts[5], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-			FillGEVertex( &meshVerts[6], -0.25f, -0.25f, 0.25f,		0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-			FillGEVertex( &meshVerts[7], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[0], -0.25f, -0.25f, -0.25f,	0.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[1], -0.25f, 0.25f, -0.25f,		0.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[2], 0.25f, -0.25f, -0.25f,		1.0f, 0.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[3], 0.25f, 0.25f, -0.25f,		1.0f, 1.0f, 0.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[4], 0.25f, -0.25f, 0.25f,		1.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[5], 0.25f, 0.25f, 0.25f,		1.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[6], -0.25f, -0.25f, 0.25f,		0.0f, 0.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[7], -0.25f, 0.25f, 0.25f,		0.0f, 1.0f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
 
 			// define the indexes
 
@@ -266,19 +270,22 @@ bool GameEngine::LoadMesh( std::string meshPath )
 			};
 			
 			//pass to the engine here.
-			graphics->BufferMesh( meshPath, meshVerts, 8, vertexIndecies, 21 );
+
+			MUMesh newMesh( GE_MESH_TRIANGLE_STRIP, 8, meshVerts, 21, vertexIndecies );
+	
+			graphics->BufferMesh( meshPath, &newMesh );
 		}
 		else if ( meshPath == "diamond" )
 		{
 			GEVertex meshVerts[6];
 
 			//define a cube
-			FillGEVertex( &meshVerts[0], 0.0f, 1.0f, 0.0f,		0.5f, 1.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
-			FillGEVertex( &meshVerts[1], 0.0f, 0.0f, -1.0f,		0.5f, 0.5f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
-			FillGEVertex( &meshVerts[2], 1.0f, 0.0f, 0.0f,		1.0f, 0.5f, 0.5f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-			FillGEVertex( &meshVerts[3], 0.0f, 0.0f, 1.0f,		0.5f, 0.5f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
-			FillGEVertex( &meshVerts[4], -1.0f, 0.0f, 0.0f,		0.0f, 0.5f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
-			FillGEVertex( &meshVerts[5], 0.0f, -1.0f, 0.0f,		0.5f, 0.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[0], 0.0f, 1.0f, 0.0f,		0.5f, 1.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[1], 0.0f, 0.0f, -1.0f,		0.5f, 0.5f, 0.0f, 1.0f,		0, 0, 0,	-0.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[2], 1.0f, 0.0f, 0.0f,		1.0f, 0.5f, 0.5f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[3], 0.0f, 0.0f, 1.0f,		0.5f, 0.5f, 1.0f, 1.0f,		0, 0, 0,	1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[4], -1.0f, 0.0f, 0.0f,		0.0f, 0.5f, 0.0f, 1.0f,		0, 0, 0,	1.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[5], 0.0f, -1.0f, 0.0f,		0.5f, 0.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
 
 			// define the indexes
 
@@ -297,7 +304,10 @@ bool GameEngine::LoadMesh( std::string meshPath )
 			};
 			
 			//pass to the engine here.
-			graphics->BufferMesh( meshPath, meshVerts, 6, vertexIndecies, 31 );
+
+			MUMesh newMesh( GE_MESH_TRIANGLE_STRIP, 6, meshVerts, 31, vertexIndecies );
+
+			graphics->BufferMesh( meshPath, &newMesh );
 		}
 
 		else if ( meshPath == "sphere" )
@@ -313,7 +323,7 @@ bool GameEngine::LoadMesh( std::string meshPath )
 
 			// generate a sphere
 
-			FillGEVertex( &meshVerts[0], 0.0f, radius, 0.0f,		0.5f, 1.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[0], 0.0f, radius, 0.0f,		0.5f, 1.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
 
 			for( unsigned int i = 1; i < numVSegments; i++ )
 			{
@@ -328,11 +338,11 @@ bool GameEngine::LoadMesh( std::string meshPath )
 					float finalx = cos( GE_PI * ( 2.0f * (float)j / (float)numHSegments) ) * x;
 					float z = sin( GE_PI * ( 2.0f * (float)j / (float)numHSegments) ) * x;
 					
-					FillGEVertex( &meshVerts[ ( i * numHSegments ) + j - ( numHSegments - 1 )], finalx, y, z,		(finalx+radius)/(2.0f*radius),(y+radius)/(2.0f*radius), (z+radius)/(2.0*radius), 1.0f,		0.0f, 0.0f, 0.0f,	-0.0f, 1.0f );
+					meshUtil.FillGEVertex( &meshVerts[ ( i * numHSegments ) + j - ( numHSegments - 1 )], finalx, y, z,		(finalx+radius)/(2.0f*radius),(y+radius)/(2.0f*radius), (z+radius)/(2.0*radius), 1.0f,		0.0f, 0.0f, 0.0f,	-0.0f, 1.0f );
 				}
 			}
 
-			FillGEVertex( &meshVerts[ numVerts -1 ], 0.0f, radius * -1.0f, 0.0f,		0.5f, 0.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[ numVerts -1 ], 0.0f, radius * -1.0f, 0.0f,		0.5f, 0.0f, 0.5f, 1.0f,		0, 0, 0,	-0.0f, 1.0f );
 
 			// now deal with the indexes... We'll create strips that start from the top of the sphere and go down.  
 			// So we'll have the same number of strips as we do Horizontal segments
@@ -378,9 +388,9 @@ bool GameEngine::LoadMesh( std::string meshPath )
 				}
 			}
 		
+			MUMesh newMesh( GE_MESH_TRIANGLE_STRIP, numVerts, meshVerts, numTotalIndicies, vertexIndicies );
 
-
-			graphics->BufferMesh( meshPath, meshVerts, numVerts, vertexIndicies, numTotalIndicies);
+			graphics->BufferMesh( meshPath, &newMesh);
 
 		}
 		else if ( meshPath == "beziersphere" )
@@ -388,18 +398,18 @@ bool GameEngine::LoadMesh( std::string meshPath )
 			GEVertex meshVerts[8];
 
 			//define a cube
-			FillGEVertex( &meshVerts[0], -1.00f, -1.00f, -1.00f,	0.0f, 0.0f, 0.0f, 1.0f,		-1.00f, -1.00f, -1.00f,		-0.0f, 1.0f );
-			FillGEVertex( &meshVerts[1], -1.00f, 1.00f, -1.00f,		0.0f, 1.0f, 0.0f, 1.0f,		-1.00f, 1.00f, -1.00f,		-0.0f, -0.0f );
-			FillGEVertex( &meshVerts[2], 1.00f, -1.00f, -1.00f,		1.0f, 0.0f, 0.0f, 1.0f,		1.00f, -1.00f, -1.00f,		1.0f, -0.0f );
-			FillGEVertex( &meshVerts[3], 1.00f, 1.00f, -1.00f,		1.0f, 1.0f, 0.0f, 1.0f,		1.00f, 1.00f, -1.00f,		1.0f, -0.0f );
-			FillGEVertex( &meshVerts[4], 1.00f, -1.00f, 1.00f,		1.0f, 0.0f, 1.0f, 1.0f,		1.00f, -1.00f, 1.00f,		1.0f, 1.0f );
-			FillGEVertex( &meshVerts[5], 1.00f, 1.00f, 1.00f,		1.0f, 1.0f, 1.0f, 1.0f,		1.00f, 1.00f, 1.00f,		-0.0f, 1.0f );
-			FillGEVertex( &meshVerts[6], -1.00f, -1.00f, 1.00f,		0.0f, 0.0f, 1.0f, 1.0f,		-1.00f, -1.00f, 1.00f,		1.0f, -0.0f );
-			FillGEVertex( &meshVerts[7], -1.00f, 1.00f, 1.00f,		0.0f, 1.0f, 1.0f, 1.0f,		-1.00f, 1.00f, 1.00f,		1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[0], -1.00f, -1.00f, -1.00f,	0.0f, 0.0f, 0.0f, 1.0f,		-1.00f, -1.00f, -1.00f,		-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[1], -1.00f, 1.00f, -1.00f,		0.0f, 1.0f, 0.0f, 1.0f,		-1.00f, 1.00f, -1.00f,		-0.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[2], 1.00f, -1.00f, -1.00f,		1.0f, 0.0f, 0.0f, 1.0f,		1.00f, -1.00f, -1.00f,		1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[3], 1.00f, 1.00f, -1.00f,		1.0f, 1.0f, 0.0f, 1.0f,		1.00f, 1.00f, -1.00f,		1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[4], 1.00f, -1.00f, 1.00f,		1.0f, 0.0f, 1.0f, 1.0f,		1.00f, -1.00f, 1.00f,		1.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[5], 1.00f, 1.00f, 1.00f,		1.0f, 1.0f, 1.0f, 1.0f,		1.00f, 1.00f, 1.00f,		-0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[6], -1.00f, -1.00f, 1.00f,		0.0f, 0.0f, 1.0f, 1.0f,		-1.00f, -1.00f, 1.00f,		1.0f, -0.0f );
+			meshUtil.FillGEVertex( &meshVerts[7], -1.00f, 1.00f, 1.00f,		0.0f, 1.0f, 1.0f, 1.0f,		-1.00f, 1.00f, 1.00f,		1.0f, -0.0f );
 
 			// define the indexes
 
-			unsigned int vertexIndecies[] =
+			unsigned int vertexIndicies[] =
 			{
 				0,1,2,3,0xFFFF,
 				2,3,4,5,0xFFFF,
@@ -409,23 +419,38 @@ bool GameEngine::LoadMesh( std::string meshPath )
 				1,3,7,5,0xFFFF
 			};
 
-			graphics->BufferMesh( meshPath, meshVerts, 8, vertexIndecies, 30 );
+			MUMesh newMesh( GE_MESH_TRIANGLE_STRIP, 8, meshVerts, 30, vertexIndicies );
+
+			graphics->BufferMesh( meshPath, &newMesh );
 		}
 		else if ( meshPath == "plane" )
 		{
 			GEVertex meshVerts[4];
 
-			FillGEVertex( &meshVerts[0], -1.00f, 1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		0.0f, 0.0f );
-			FillGEVertex( &meshVerts[1], 1.00f, 1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		1.0f, 0.0f );
-			FillGEVertex( &meshVerts[2], -1.00f, -1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		0.0f, 1.0f );
-			FillGEVertex( &meshVerts[3], 1.00f, -1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		1.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[0], -1.00f, 1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		0.0f, 0.0f );
+			meshUtil.FillGEVertex( &meshVerts[1], 1.00f, 1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		1.0f, 0.0f );
+			meshUtil.FillGEVertex( &meshVerts[2], -1.00f, -1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		0.0f, 1.0f );
+			meshUtil.FillGEVertex( &meshVerts[3], 1.00f, -1.00f, 0.0f,		1.0f, 1.0f, 1.0f, 1.0f,		0.00f, 0.00f, -1.00f,		1.0f, 1.0f );
 
-			unsigned int vertexIndecies[] =
+			unsigned int vertexIndicies[] =
 			{
 				0,1,2,3
 			};
 
-			graphics->BufferMesh( meshPath, meshVerts, 4, vertexIndecies, 4 );
+			MUMesh newMesh( GE_MESH_TRIANGLE_STRIP, 4, meshVerts, 4, vertexIndicies );
+
+			graphics->BufferMesh( meshPath, &newMesh );
+		}
+
+		else
+		{
+			// its not one of our standard meshes.  let's try to load it.
+
+			std::string fullMeshPath = "./meshes/" + meshPath + ".ASE";
+
+			MUMesh loadedMesh = meshUtil.LoadASE( fullMeshPath );
+
+			graphics->BufferMesh( meshPath, &loadedMesh );
 		}
 
 	}
@@ -449,21 +474,4 @@ bool GameEngine::LoadMaterial( std::string materialPath )
 	}
 
 	return success;
-}
-
-void GameEngine::FillGEVertex( GEVertex* dest, float x, float y, float z, float r, float g, float b, float a, float nx, float ny, float nz, float u, float v )
-{
-	dest->x = x;
-	dest->y = y;
-	dest->z = z;
-	dest->r = r;
-	dest->g = g;
-	dest->b = b;
-	dest->a = a;
-	GEvec3 newNormal = glm::normalize( GEvec3(nx, ny, nz) );
-	dest->nx = newNormal.x;
-	dest->ny = newNormal.y;
-	dest->nz = newNormal.z;
-	dest->u = u;
-	dest->v = v;
 }
