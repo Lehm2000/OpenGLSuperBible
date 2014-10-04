@@ -16,6 +16,7 @@
 #include "CameraObject.h"
 #include "GEController.h"
 #include "GEProperty.h"
+#include "TypeDefinitions.h"
 
 class CameraPerspective: public CameraObject
 {
@@ -27,7 +28,8 @@ public:
 
 	// Structors
 	CameraPerspective();
-	CameraPerspective( glm::vec3 position, glm::vec3 rotation, float fov );
+	CameraPerspective( GEvec3 position, GEvec3 rotation, float fov );
+	CameraPerspective( const CameraPerspective& source );
 	~CameraPerspective();
 
 	// Setters
@@ -37,8 +39,10 @@ public:
 	float getBaseFov() const;
 	float getFinalFov() const;
 
+	GEPropertyf1* getFOV();
+
 	// Functions
-	virtual std::string getClassName();
+	virtual std::string getClassName() const;
 
 	/**
 		Update()
@@ -50,6 +54,19 @@ public:
 	virtual void addFOVController( GEControllerf1* fovController );
 	virtual void removeFOVController( const unsigned int index );
 	
+	/**
+		clone()
+		Creates a copy of the object and returns it.
+	*/
+	virtual CameraPerspective* clone() const;
+
+	/**
+		setControllerGameEntitiesPointer()
+		Sets the pointer to the gameEntities so the controller can access the properties of other game entities.
+		@ param gameEntities - pointer to the gameEntities
+		@ return void
+	*/
+	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 };
 

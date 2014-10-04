@@ -9,7 +9,9 @@
 
 #include <glm\glm.hpp>
 
+#include "TypeDefinitions.h"
 #include "GEController.h"
+
 
 template <class T>
 class GEControllerConstant: public GEController<T>
@@ -46,12 +48,16 @@ public:
 	/**
 		Control()
 		Takes objectVector and applies the deltaVec to it.
-		@param startVector - starting point of the object.  Could be position, rotation or scale
+		@param prevValue - combined transformed value of the previous controllers
 		@param gameTime - time since the game started
 		@param deltaTime - time since the last frame
+		@param max
+		@param useMax
+		@param min
+		@param useMin
 		@return
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime);
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -59,7 +65,7 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue );
+	virtual T CalcTransform( const T sourceValue );
 
 };
 
@@ -113,9 +119,16 @@ GEControllerConstant<T>* GEControllerConstant<T>::clone() const
 }
 
 template <class T>
-void GEControllerConstant<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEControllerConstant<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	transformedValue = transformedValue + ( initialValue * (float)deltaTime  );
+	T totalValue;
+
+	// apply a constant transform based on time to this controllers transformedValue
+	transformedValue = transformedValue + ( valueDelta * (float)deltaTime  );
+	
+	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
+
+	return prevValue + transformedValue;
 }
 
 template <class T>
@@ -124,8 +137,9 @@ T GEControllerConstant<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
+
 typedef GEControllerConstant<float> GEControllerConstantf1;
-typedef GEControllerConstant<glm::vec2> GEControllerConstantv2;
-typedef GEControllerConstant<glm::vec3> GEControllerConstantv3;
+typedef GEControllerConstant<GEvec2> GEControllerConstantv2;
+typedef GEControllerConstant<GEvec3> GEControllerConstantv3;
 
 #endif /* GECONTROLLERCONSTANT_H */

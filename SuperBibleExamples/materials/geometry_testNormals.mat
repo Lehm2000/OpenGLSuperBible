@@ -1,0 +1,6 @@
+vertex_shader = geometry_testNormals.vert.glsl
+tess_control_shader = 
+tess_eval_shader = 
+geometry_shader =  geometry_testNormals.gs.glsl 
+fragment_shader = geometry_testNormals.frag.glsl
+

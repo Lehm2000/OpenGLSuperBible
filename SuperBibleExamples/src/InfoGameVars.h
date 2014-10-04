@@ -21,6 +21,7 @@ public:
 
 	// Structors
 	InfoGameVars();
+	InfoGameVars( const InfoGameVars& source );
 
 	// Setters
 
@@ -34,8 +35,14 @@ public:
 
 	// Functions
 	
+	/**
+		clone()
+		Creates a copy of the object and returns it.
+	*/
+	virtual InfoGameVars* clone() const;
+
 	double getDeltaFrameTime() const;
-	virtual std::string getClassName();
+	virtual std::string getClassName() const;
 
 
 };

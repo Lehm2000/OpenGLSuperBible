@@ -14,12 +14,14 @@
 #include <string>
 #include <glm\glm.hpp>
 
+#include "TypeDefinitions.h"
 #include "GEController.h"
 #include "GEObject.h"
 
-class GEControllerLookAt: public GEController<glm::vec3>
+
+class GEControllerLookAt: public GEController<GEvec3>
 {
-private:
+protected:
 	// Members
 
 	std::string targetName;	// What are we looking at.
@@ -56,7 +58,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( glm::vec3 objectVector, double gameTime, double deltaTime);
+	virtual GEvec3 Control( const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -64,14 +66,10 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual glm::vec3 CalcTransform( glm::vec3 sourceVector );
+	virtual GEvec3 CalcTransform( const GEvec3 sourceVector );
 
 };
 
-
-
-#include "GEControllerLookAt.h"
-#include "GEConstants.h"
 
 //Structors
 
@@ -80,13 +78,13 @@ GEControllerLookAt::GEControllerLookAt()
 }
 
 GEControllerLookAt::GEControllerLookAt( const std::string targetName )
-	:GEController<glm::vec3>()
+	:GEController<GEvec3>()
 {
 	this->targetName = targetName;
 }
 
 GEControllerLookAt::GEControllerLookAt( const GEControllerLookAt& source )
-	:GEController<glm::vec3>( source.parent, source.gameEntities )
+	:GEController<GEvec3>( source.parent, source.gameEntities )
 {
 	this->targetName = source.targetName;
 }
@@ -104,48 +102,50 @@ GEControllerLookAt* GEControllerLookAt::clone() const
 	return new GEControllerLookAt( *this );
 }
 
-void GEControllerLookAt::Control( glm::vec3 objectVector, double gameTime, double deltaTime)
+GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin )
 {
 
 	// We need to calculate the x and y rotations.  The z rotation is left alone to allow tilt/roll.
 
 	// Grab the existing rotation
-	glm::vec3 newRot( 0.0f, 0.0f, 0.0f );
+	GEvec3 newRot( 0.0f, 0.0f, 0.0f );
 		
 	// Get the delta of the camera and target positions
-	//glm::vec3 deltaVec = getTargetPosition() - getPosition();
-	std::map< std::string, GEObject* >::const_iterator targetIt = gameEntities->find( this->targetName );
+	//GEvec3 deltaVec = getTargetPosition() - getPosition();
+	//std::map< std::string, GEObject* >::const_iterator targetIt = gameEntities->find( this->targetName );
+	const GEObject* targetObject = gameEntities->GetObject( this->targetName );
 	
-	if ( targetIt != gameEntities->end() && parent != nullptr )
+	if ( targetObject != nullptr && parent != nullptr )
 	{
 	
-		glm::vec3 targetPos = targetIt->second->getTransformedPosition();
-		glm::vec3 parentPos = parent->getTransformedPosition();
-		glm::vec3 deltaVec = targetPos - parentPos;
+		const GEvec3 targetPos = targetObject->getPosition()->getFinalValue();
+		const GEPropertyv3* tempPosProp = parent->getPosition();
+		GEvec3 parentPos = tempPosProp->getFinalValue();
+		GEvec3 deltaPos = targetPos - parentPos;
 
 		// get the distance in the xz plane
-		float dist = glm::distance( glm::vec3(targetPos.x, 0.0, targetPos.z), glm::vec3(parentPos.x, 0.0, parentPos.z) );
+		float dist = glm::distance( GEvec3(targetPos.x, 0.0, targetPos.z), GEvec3(parentPos.x, 0.0, parentPos.z) );
 
 		//newRot = glm::atan2(deltaVec);
 		
 		// first x (pitch) rotation
-		if ( deltaVec.y == 0.0f && dist == 0.0f )  // If points are the same.
+		if ( deltaPos.y == 0.0f && dist == 0.0f )  // If points are the same.
 		{
 			newRot.x = 0.0f;
 		}
 		else
 		{
-			newRot.x = atan2( deltaVec.y, dist );
+			newRot.x = atan2( deltaPos.y, dist );
 		}
 
 		// now y (yaw) rotation
-		if ( deltaVec.x == 0.0f && deltaVec.z == 0.0f )  // If points are the same.
+		if ( deltaPos.x == 0.0f && deltaPos.z == 0.0f )  // If points are the same.
 		{
 			newRot.y = 0.0f;
 		}
 		else
 		{
-			newRot.y = ( atan2( deltaVec.z * -1.0,  deltaVec.x  ) ) - ( GE_PI / 2.0 );  // this works... but the math looks ugly... replace atan2?
+			newRot.y = ( atan2( deltaPos.z * -1.0f,  deltaPos.x  ) ) - ( GE_PI / 2.0f );  // this works... but the math looks ugly... replace atan2?
 		
 		}
 
@@ -157,12 +157,17 @@ void GEControllerLookAt::Control( glm::vec3 objectVector, double gameTime, doubl
 	else
 	{
 		// just return what we were given
-		transformedValue = objectVector;
+		transformedValue = prevValue;
 	}
+
+	// this control function ignores all incoming values... so pass a new vec3 for the prevValue
+	transformedValue = ValidateRange( transformedValue, GEvec3( 0.0f, 0.0f, 0.0f ), max, useMax, min, useMin );
+
+	return transformedValue;
 }
 
 
-glm::vec3 GEControllerLookAt::CalcTransform( glm::vec3 sourceVector )
+GEvec3 GEControllerLookAt::CalcTransform( const GEvec3 sourceVector )
 {
 	return transformedValue;  // ignore the sourceVector
 }

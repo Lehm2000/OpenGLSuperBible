@@ -8,6 +8,7 @@
 
 
 #include "TextureManager.h"
+#include "GEConstants.h"
 
 
 #include "ImageUtilities\IUImage.h"
@@ -22,43 +23,86 @@ TextureManager::TextureManager()
 }
 
 
-/*
-GEImage TextureManager::ConvertTexture(const IUImage<unsigned char>* sourceTexture)
+
+GLuint TextureManager::LoadTexture( std::string filename )
 {
-	GEImage outputTexture;
+	GLuint loadedTexture = 0;
+	
+	ImageUtilities imageUtilities;
 
-	outputTexture.setWidth( sourceTexture->getWidth() );
-	outputTexture.setHeight( sourceTexture->getHeight() );
-	outputTexture.setNumChannels( sourceTexture->getNumChannels() );
+	// first determine what kind of texture it is.  For now we'll use the 
+	// extension.  May need more robust method later.
 
-	// allocate a buffer for the converted data
-	float* outputTextureDataBuffer = nullptr;
-	unsigned int outputTextureDataBufferSize = sourceTexture->getWidth() * sourceTexture->getHeight() * sourceTexture->getNumChannels() * sizeof(float);
-	outputTextureDataBuffer = (float*)malloc( outputTextureDataBufferSize );
-
-	// allocate a buffer for the loaded data
-	unsigned char* loadedTextureDataBuffer = nullptr;
-	loadedTextureDataBuffer = (unsigned char*)malloc( sourceTexture->getDataSize() );
-
-	// copy the loaded data into the buffer.
-	sourceTexture->getData( loadedTextureDataBuffer );
-
-	for (unsigned int i = 0; i < sourceTexture->getWidth() * sourceTexture->getHeight() * sourceTexture->getNumChannels() ; i++)
+	if ( filename == GE_MISSING )
 	{
-		//printf("%d ",i);
-		outputTextureDataBuffer[i] = loadedTextureDataBuffer[i] / 255.0f;
+		// create the 'missing' texture.  Texture that is returned if the specified one is not found.
+		// it will be completely purple.
+		unsigned char* imageTexData = (unsigned char*)malloc( 64 * 64 * 3 );
+
+		for ( unsigned int i = 0; i < 64 * 64; i++ )
+		{
+			imageTexData[ i * 3 ] = 255;
+			imageTexData[ ( i * 3 ) + 1] = 0;
+			imageTexData[ ( i * 3 ) + 2] = 255;
+			
+		}
+
+		glGenTextures(1, &loadedTexture);
+		glBindTexture(GL_TEXTURE_2D, loadedTexture);
+
+		glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, 64, 64);
+		glTexSubImage2D( GL_TEXTURE_2D,0,0,0, 64, 64, GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
+
+		glGenerateMipmap( GL_TEXTURE_2D );
+
+		free( imageTexData );  // allocated with malloc
+		imageTexData = nullptr;
+
+	}
+	else if ( filename != "" )
+	{
+		unsigned int lastDot = filename.find_last_of(".");
+		unsigned int texType = 0;
+
+		if ( lastDot != std::string::npos )
+		{
+			std::string ext = filename.substr( lastDot + 1, filename.length() - lastDot );
+
+			std::string fullFileName = texturePath;
+			fullFileName.append( filename );
+
+
+
+			if( ext == "bmp" )  // bitmap
+			{
+				IUImage<unsigned char> image = imageUtilities.LoadBitmap( fullFileName.c_str() );
+
+				// verify that the texture was loaded
+
+				if( image.getDataSize() > 0 )  // is this the best check?
+				{
+					unsigned char* imageTexData = nullptr;
+
+					imageTexData = (unsigned char*)malloc( image.getDataSize() );
+					image.getData( imageTexData );
+
+					glGenTextures(1, &loadedTexture);
+					glBindTexture(GL_TEXTURE_2D, loadedTexture);
+
+					glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, image.getWidth(), image.getHeight() );
+					glTexSubImage2D( GL_TEXTURE_2D,0,0,0, image.getWidth(), image.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
+
+					glGenerateMipmap( GL_TEXTURE_2D );
+
+					free( imageTexData );	// allocated with malloc
+					imageTexData = nullptr;
+				}
+			}
+		}
+
 	}
 
-	outputTexture.setData( outputTextureDataBufferSize, outputTextureDataBuffer );
-
-	//do some cleanup
-	delete[] outputTextureDataBuffer;
-	outputTextureDataBuffer = nullptr;
-
-	delete[] loadedTextureDataBuffer;
-	loadedTextureDataBuffer = nullptr;
-
-	return outputTexture;
+	return loadedTexture;
 }
-*/
+
 

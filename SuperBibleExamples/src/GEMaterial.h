@@ -2,7 +2,7 @@
 #define GEMATERIAL_H
 
 /**
-	GEShader
+	GEMaterial
 	Purpose: Class to hold the (OpenGL) program and texture references for a shader.
 	Author: Jeff Adams
 */

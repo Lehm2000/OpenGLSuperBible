@@ -2,8 +2,8 @@
 
 layout (quads, fractional_odd_spacing, ccw) in;
 
-uniform mat4 world_matrix;
-uniform mat4 view_matrix;
+uniform mat4 worldMatrix;
+uniform mat4 viewMatrix;
 
 in TCS_OUT
 {
@@ -95,5 +95,5 @@ void main(void)
 
 	//vec4 tempPos =  vec4( mix( p1, p2, gl_TessCoord.y ), 1.0 );
 
-	gl_Position = view_matrix * world_matrix * tempPos;
+	gl_Position = viewMatrix * worldMatrix * tempPos;
 }

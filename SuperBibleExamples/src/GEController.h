@@ -18,6 +18,8 @@
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
+#include "TypeDefinitions.h"
+#include "GEObjectContainer.h"
 
 class GEObject;
 
@@ -27,8 +29,13 @@ class GEController
 protected:
 	// Members
 	
-	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example.
-	const std::map< std::string, GEObject* >* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
+	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example. 
+		// TODO: parent should be const.  However we also need to get the final 
+		// position of the object... the only way to do that is to return the 
+		// GEproperty.  The function that returns the GEProperty can't return a
+		// const version of the property so that it can be modified.  
+		// Controllers need to be added to it for example.
+	const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
 
 	T transformedValue;	// the transformed data.
 
@@ -36,19 +43,19 @@ public:
 	// Structors
 	
 	GEController();
-	GEController( const GEObject* parent, const std::map< std::string, GEObject* >* gameEntities );
+	GEController( const GEObject* parent, const GEObjectContainer* gameEntities );
 	GEController( const GEController& source);
 	virtual ~GEController();
 
 	// Setters
 
 	virtual void setParent( const GEObject* parent );
-	virtual void setGameEntities( const std::map< std::string, GEObject* >* gameEntities );
+	virtual void setGameEntities( const GEObjectContainer* gameEntities );
 
 	// Getters
 
 	virtual const GEObject* getParent() const;
-	virtual const std::map< std::string, GEObject* >* getGameEntities() const;
+	virtual const GEObjectContainer* getGameEntities() const;
 
 	// Functions 
 
@@ -63,12 +70,17 @@ public:
 	/**
 		Control()
 		Takes objectVector and passed it on without modification.
-		@param startVector - starting point of the object.  Could be position, rotation or scale
+		@param prevValue - the result of all the previous controllers.
 		@param gameTime - time since the game started
 		@param deltaTime - time since the last frame
-		@return
+		@param max - the max value
+		@param useMax
+		@param min
+		@param useMin
+		@return - the result transformedValue + prevValuer, mainly so it can be
+			passed to the next controller in the stack.
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime );
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -76,23 +88,30 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue ); 
+	virtual T CalcTransform( const T sourceValue ); 
+
+	/**
+		ValidateRange
+		Takes a value adds it to prevValue and sees if it is within max and min.
+		Returns a value that would stay within the confines if not.
+	*/
+	virtual T ValidateRange( T value, T prevValue , T max, bool useMax, T min, bool useMin );
 };
 
 // Structors
 template <class T>
 GEController<T>::GEController()
 {
-	//this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
+	this->transformedValue = T();
 
 	this->setParent( nullptr );
 	this->setGameEntities( nullptr );
 }
 
 template <class T>
-GEController<T>::GEController( const GEObject* parent, const std::map< std::string, GEObject* >* gameEntities )
+GEController<T>::GEController( const GEObject* parent, const GEObjectContainer* gameEntities )
 {
-	//this->transformedVector = glm::vec3( 0.0f, 0.0f, 0.0f );
+	this->transformedValue = T();
 
 	this->setParent( parent );
 	this->setGameEntities( gameEntities );
@@ -121,7 +140,7 @@ void GEController<T>::setParent( const GEObject* parent )
 }
 
 template <class T>
-void GEController<T>::setGameEntities( const std::map< std::string, GEObject* >* gameEntities )
+void GEController<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
 	this->gameEntities = gameEntities;
 }
@@ -136,7 +155,7 @@ const GEObject* GEController<T>::getParent() const
 }
 
 template <class T>
-const std::map< std::string, GEObject* >* GEController<T>::getGameEntities() const
+const GEObjectContainer* GEController<T>::getGameEntities() const
 {
 	return this->gameEntities;
 }
@@ -151,9 +170,12 @@ GEController<T>* GEController<T>::clone() const
 }
 
 template <class T>
-void GEController<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEController<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	this->transformedValue = ( *new T() );  // completely ignore incoming data.
+	// this version of the controller does nothing.  just pass the prevValue back
+	// shouldn't be a reason to check the max/min.
+
+	return prevValue;
 	
 }
 
@@ -163,9 +185,36 @@ T GEController<T>::CalcTransform( T sourceValue )
 	return sourceValue;  //return the source as the transformed.
 }
 
+template <class T>
+T GEController<T>::ValidateRange( T value, T prevValue , T max, bool useMax, T min, bool useMin )
+{
+	T totalValue;
+
+	// now see if the new value exceeds valid range
+	if( useMax )
+	{
+		// see how much it can change before hitting the max
+		T maxChange = max - prevValue;
+
+		// component by component pick the lesser
+		value = glm::min( maxChange, value );
+
+	}
+	if( useMin)
+	{
+		// see how much it can change before hitting the min
+		T maxChange = min - prevValue;
+		// component by component pick the greater
+		value = glm::max( maxChange, value );
+	}
+
+	return value;
+}
+
 typedef GEController<float> GEControllerf1;
-typedef GEController<glm::vec2> GEControllerv2;
-typedef GEController<glm::vec3> GEControllerv3;
+typedef GEController<GEvec2> GEControllerv2;
+typedef GEController<GEvec3> GEControllerv3;
+
 
 
 #endif /* GECONTROLLER_H */

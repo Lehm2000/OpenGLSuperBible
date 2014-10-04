@@ -19,13 +19,13 @@ GEInputState::GEInputState()
 		this->setMouseButton( i, false );
 	}
 
-	this->setMousePosition( glm::vec2( 0.0f, 0.0f ) );
+	this->setMousePosition( GEvec2( 0.0f, 0.0f ) );
 
 	// set other parameters
 	this->setVisible( false );	// this is not a visible game object.
 }
 
-GEInputState::GEInputState( glm::vec2 mousePosition )
+GEInputState::GEInputState( GEvec2 mousePosition )
 {
 	// initialize the inputstate members
 
@@ -45,6 +45,22 @@ GEInputState::GEInputState( glm::vec2 mousePosition )
 	this->setVisible( false );	// this is not a visible game object.
 }
 
+GEInputState::GEInputState( const GEInputState& source )
+	:GEObject( source )
+{
+	for ( unsigned short i = 0; i< INPUTSTATE_MAX_KEY_BUTTONS; i++ )
+	{
+		this->setKeyboardKey( i, source.keyboardKeys[i] );
+	}
+
+	for ( unsigned short i = 0; i< INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
+	{
+		this->setMouseButton( i, source.mouseButtons[i] );
+	}
+
+	this->setMousePosition( source.mousePosition );
+}
+
 // Setters
 void GEInputState::setKeyboardKey( const unsigned short key, bool pressed )
 {
@@ -56,12 +72,17 @@ void GEInputState::setMouseButton( const unsigned short button, bool pressed )
 	this->mouseButtons[button] = pressed;
 }
 
-void GEInputState::setMousePosition( const glm::vec2 mousePosition )
+void GEInputState::setMousePosition( const GEvec2 mousePosition )
 {
 	this->mousePosition = mousePosition;
 }
 
-// mouseScroll?
+void GEInputState::setMouseScrollOffset( const GEvec2 mouseScrollOffset )
+{
+	this->mouseScrollOffset +=  mouseScrollOffset;
+}
+
+
 
 // Getters
 bool GEInputState::getKeyboardKey( const unsigned short key ) const
@@ -74,20 +95,36 @@ bool GEInputState::getMouseButton( const unsigned short button ) const
 	return this->mouseButtons[ button ];
 }
 
-glm::vec2 GEInputState::getMousePosition( ) const
+GEvec2 GEInputState::getMousePosition( ) const
 {
 	return this->mousePosition;
 }
 
-// mouseScroll?
+GEvec2 GEInputState::getMouseScrollOffset( ) const
+{
+	return this->mouseScrollOffset;
+}
+
+
 
 // Functions
-std::string GEInputState::getClassName()
+
+GEInputState* GEInputState::clone() const
+{
+	return new GEInputState(*this);
+}
+
+std::string GEInputState::getClassName() const
 {
 	return "GEInputState";
 }
 
-std::string GEInputState::KeyToString( unsigned int keyIndex )
+void GEInputState::ResetMouseScrollOffset()
+{
+	this->mouseScrollOffset = GEvec2( 0.0f, 0.0f );
+}
+
+std::string GEInputState::KeyToString( unsigned int keyIndex ) const
 {
 	std::string returnString = "";
 
@@ -460,4 +497,39 @@ std::string GEInputState::KeyToString( unsigned int keyIndex )
 
 	return returnString;
 
+}
+
+std::string GEInputState::ButtonToString( unsigned int buttonIndex ) const
+{
+	std::string returnString = "";
+
+	switch ( buttonIndex )
+	{
+	case GE_MOUSE_BUTTON_1:
+		returnString = "MB1";
+		break;
+	case GE_MOUSE_BUTTON_2:
+		returnString = "MB2";
+		break;
+	case GE_MOUSE_BUTTON_3:
+		returnString = "MB3";
+		break;
+	case GE_MOUSE_BUTTON_4:
+		returnString = "MB4";
+		break;
+	case GE_MOUSE_BUTTON_5:
+		returnString = "MB5";
+		break;
+	case GE_MOUSE_BUTTON_6:
+		returnString = "MB6";
+		break;
+	case GE_MOUSE_BUTTON_7:
+		returnString = "MB7";
+		break;
+	case GE_MOUSE_BUTTON_8:
+		returnString = "MB8";
+		break;
+	}
+
+	return returnString;
 }

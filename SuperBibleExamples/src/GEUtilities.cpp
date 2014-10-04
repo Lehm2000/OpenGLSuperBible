@@ -30,3 +30,5 @@ std::string LRTrim( std::string trimString )
 {
 	return LTrim( RTrim( trimString ) );
 }
+
+

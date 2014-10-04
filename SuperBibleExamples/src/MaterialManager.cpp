@@ -10,7 +10,7 @@
 
 #include "MaterialManager.h"
 #include "GEUtilities.h"
-
+#include "GEConstants.h"
 
 /**
 	Default Constructor
@@ -48,6 +48,9 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 	
 
 	GLenum shaderType;
+	std::string resourceType = "";
+
+	std::vector< std::string> textureList;
 
 
 	// create the program object
@@ -76,6 +79,10 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 				std::string mParameter = LRTrim( fBuffer.substr( 0, equalPos ) );
 				std::string mValue = LRTrim( fBuffer.substr( equalPos + 1, std::string::npos ) );
 
+				resourceType = "";
+
+				std::string texturePaths[ GE_MAX_TEXTURES ];
+
 				if ( !mValue.empty() && success)
 				{
 					resourcePath = mValue;
@@ -83,29 +90,43 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 					if ( mParameter == "vertex_shader" )
 					{
 						shaderType = GL_VERTEX_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "tess_control_shader")
 					{
 						shaderType = GL_TESS_CONTROL_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "tess_eval_shader")
 					{
 						shaderType = GL_TESS_EVALUATION_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "geometry_shader")
 					{
 						shaderType = GL_GEOMETRY_SHADER;
+						resourceType = "shader";
 					}
 					else if (mParameter == "fragment_shader")
 					{
 						shaderType = GL_FRAGMENT_SHADER;
+						resourceType = "shader";
+					}
+					else if ( mParameter.find ("texture") != std::string::npos )
+					{
+						// we've got ourselves a texture.
+
+						// They should be in the right order so I'm going to ignore the number for now.
+						resourceType = "texture";
+						
 					}
 
-					// load the resource.... this doesn't work with textures yet.
-					if ( !resourcePath.empty() ) 
+					// load the resource
+					if ( !resourcePath.empty() && resourceType == "shader" ) 
 					{
+						// load a shader
 						printf( "%s: %s\n", mParameter.c_str(), mValue.c_str() );
-						shader = CompileShaderFromSource( resourcePath.c_str(), shaderType );
+						shader = CompileShaderFromFile( resourcePath.c_str(), shaderType );
 						if ( shader != 0 )
 						{
 							AttachShaderToProgram( shader, program );  //TODO: how do we error check this?
@@ -113,6 +134,13 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 						}
 						else
 							success = false;
+					}
+					else if( !resourcePath.empty() && resourceType == "texture" )
+					{
+						// add texture to the texture list
+						printf( "Adding Texture Ref: %s\n", resourcePath.c_str() );
+						textureList.push_back( resourcePath );
+
 					}
 				}
 
@@ -171,6 +199,7 @@ GEMaterial MaterialManager::LoadMaterial( const std::string matName )
 	if (success)
 	{
 		returnMaterial.setProgram( program );
+		returnMaterial.setTextures( textureList );
 		printf( "Succeeded creating material.\n\n" );
 	}
 	else
@@ -232,14 +261,9 @@ std::string MaterialManager::LoadShaderSource(const char* filename)
 	return shader;
 }
 
-/**
-	Create a shader from an array of char strings
 
-	@param source - Array of null terminated source strings.  Currently only makes use of first
-	@param shaderType - Type of shader we are making
-	@return - created shader
-*/
-GLuint MaterialManager::CreateShaderFromSource(const GLchar** source, GLenum shaderType )
+
+GLuint MaterialManager::CreateShaderFromSource( const GLchar** source, GLenum shaderType )
 {
 	GLuint shader = 0;
 
@@ -255,12 +279,50 @@ GLuint MaterialManager::CreateShaderFromSource(const GLchar** source, GLenum sha
 	return shader;
 }
 
-GLuint MaterialManager::CompileShaderFromSource(const char* filename, GLenum shaderType )
+GLuint MaterialManager::CompileShaderFromSource(  const GLchar** source, GLenum shaderType )
+{
+	GLuint shader = 0;
+	GLint return_code;
+
+	shader = CreateShaderFromSource( source, shaderType );  // TODO error check this.
+	
+	printf ( "\tCompiling..." );
+
+	glCompileShader(shader);
+
+	//check success
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &return_code);
+	if (return_code == GL_TRUE)  
+	{
+		printf("Success\n");
+	}
+	else
+	{
+		printf("Failed\n");
+
+		GLint logLength;
+
+		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &logLength );
+
+		GLchar* log = new GLchar[logLength + 1];
+		glGetShaderInfoLog( shader, logLength, NULL, log );
+
+		printf(log);
+
+		//clean up.
+		glDeleteShader( shader );
+		shader = 0;
+	}
+
+	return shader;
+}
+
+GLuint MaterialManager::CompileShaderFromFile( const char* filename, GLenum shaderType )
 {
 	//vars
 	GLuint shader = 0;
 	std::string shaderSource;
-	GLint return_code;
+	
 
 	shaderSource = LoadShaderSource(filename);
 
@@ -269,35 +331,7 @@ GLuint MaterialManager::CompileShaderFromSource(const char* filename, GLenum sha
 
 		const GLchar* shaderSourceArray[]={ shaderSource.c_str() };
 
-		shader = CreateShaderFromSource( shaderSourceArray, shaderType );  // TODO error check this.
-	
-		printf ( "\tCompiling..." );
-
-		glCompileShader(shader);
-
-		//check success
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &return_code);
-		if (return_code == GL_TRUE)  
-		{
-			printf("Success\n");
-		}
-		else
-		{
-			printf("Failed\n");
-
-			GLint logLength;
-
-			glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &logLength );
-
-			GLchar* log = new GLchar[logLength + 1];
-			glGetShaderInfoLog( shader, logLength, NULL, log );
-
-			printf(log);
-
-			//clean up.
-			glDeleteShader( shader );
-			shader = 0;
-		}
+		shader = CompileShaderFromSource( shaderSourceArray, shaderType );
 	}
 	
 

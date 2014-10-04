@@ -14,6 +14,7 @@
 #include "GraphicsEngine.h"
 #include "GEObject.h"
 #include "CameraObject.h"
+#include "GEObjectContainer.h"
 
 class GameEngine
 {
@@ -24,7 +25,7 @@ private:
 	double lastFrameTime;  
 
 	// Game Objects
-	std::map< std::string, GEObject* > gameEntities;		// Contains all objects in the game.  Uses the base object class to allow polymorphism.
+	GEObjectContainer gameEntities;		// Contains all objects in the game.
 
 	// System Objects
 	GraphicsEngine* graphics;	// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.
@@ -42,19 +43,37 @@ public:
 	double getGameTime() const;
 
 	//Functions
-	void CreateGameCam( const char camType, glm::vec3 position, glm::vec3 rotation, float fov, glm::vec3 targetPosition = glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	void DestroyGameCam();
 	bool Initialize();
 	void Update();
 	void Render();
 	bool isRunning() const;
 
+	/**
+		AddEntity()
+		Adds an object/entity to the gameEntities map
+		@param entityName - key for map so that the object can be referenced later.
+		@param entity - a pointer to the object itself.
+		@return - if successful
+	*/
 	bool AddEntity( const std::string entityName, GEObject* entity);
+
+	/**
+		RemoveEntity()
+		Removes an object/entity from the gameEntities map
+		@param entityName  - key for the object in the map to be removed
+	*/
 	void RemoveEntity( const std::string entityName);
+
+	/**
+		GetEntity()
+		Returns a pointer to object specified by entityName
+		@param entityName - name of object to return
+		@return - the pointer to the object, or nullptr if not found
+	*/
+	GEObject* GetEntity( const std::string entityName );
 
 	bool LoadMesh( std::string meshPath );
 	bool LoadMaterial( std::string materialPath );
-	void FillGEVertex( GEVertex* dest, float x, float y, float z, float r, float g, float b, float a, float nx, float ny, float nz, float u, float v );
 	
 };
 

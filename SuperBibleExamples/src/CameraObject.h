@@ -16,8 +16,9 @@
 
 #include <glm\glm.hpp>
 
+
 #include "GEObject.h"
-//#include "vmath.h"
+#include "TypeDefinitions.h"
 
 #define CAMTYPE_PERSPECTIVE				1
 #define CAMTYPE_ORTHO					2
@@ -33,13 +34,20 @@ private:
 public:
 	// Structors
 	CameraObject();
-	CameraObject( glm::vec3 position, glm::vec3 rotation );
+	CameraObject( const CameraObject& source);
+	CameraObject( GEvec3 position, GEvec3 rotation );
 	~CameraObject();
 
 
 	// Functions
-	virtual std::string getClassName();
-	glm::mat4 GetViewMatrix();
+	virtual std::string getClassName() const;
+	virtual GEmat4 GetViewMatrix() const;
+
+	/**
+		clone()
+		Creates a copy of the object and returns it.
+	*/
+	virtual CameraObject* clone() const;
 
 };
 

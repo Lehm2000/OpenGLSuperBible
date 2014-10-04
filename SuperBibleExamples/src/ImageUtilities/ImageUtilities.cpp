@@ -115,6 +115,18 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 							// No need to reverse the source as well.
 							unsigned int locSource = (i * paddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k;
 
+							// R & B channels are reversed.  Endianness
+							if (k == 0)
+							{
+								locSource += 2;
+								
+							}
+							else if (k == 2)
+							{
+								locSource -= 2;
+								
+							}
+
 							// read and place in destination.
 							tempData[locDest] = imageFileData[locSource];
 						}
@@ -126,7 +138,7 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 				returnImage.setData(dibHeader.width, dibHeader.height, dibHeader.bitDepth/8 , tempData);
 
 				//do some cleanup
-				delete[] tempData;
+				free (tempData );  // allocated with malloc
 				tempData = nullptr;
 			}
 			else
@@ -156,7 +168,7 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 
 
 			//Clean UP
-			delete[] imageFileData;
+			delete[] imageFileData; // allocated with new.
 			imageFileData = nullptr;
 			
 		}
@@ -257,7 +269,7 @@ IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 
 				if (imagePacketData!=nullptr)
 				{
-					delete[] imagePacketData;	//	delete existing Packet Data
+					free( imagePacketData );	//	delete existing Packet Data... allocated with malloc
 				}
 
 				//now check what kind of packet it is. check the first bit.
@@ -334,7 +346,7 @@ IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 		returnImage.setData( header.width, header.height, numChannels, tempData);
 			
 		//do some cleanup
-		delete[] tempData;
+		free( tempData );	// allocated with malloc
 		tempData = nullptr;
 
 		//close the open file.
@@ -364,17 +376,12 @@ IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 	}
 
 	//cleanup
-	if (imageID != nullptr)
-	{
-		delete[] imageID;
-		imageID = nullptr;
-	}
+	free( imageID );	// allocated with malloc
+	imageID = nullptr;
+	
 
-	if (imageData != nullptr)
-	{
-		delete[] imageData;
-		imageData = nullptr;
-	}
+	free( imageData );	// allocated with malloc
+	imageData = nullptr;
 
 	return returnImage;
 }

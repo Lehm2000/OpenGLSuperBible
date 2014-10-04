@@ -10,12 +10,12 @@ out VS_OUT
 	//color;			// debug version
 } vs_out;
 
-uniform mat4 world_matrix;
-uniform mat4 view_matrix;
+uniform mat4 worldMatrix;
+uniform mat4 viewMatrix;
 
 void main(void)
 {
-	gl_Position = view_matrix * world_matrix * position;
+	gl_Position = viewMatrix * worldMatrix * position;
 	vs_out.color = color;
 	//vs_out.tc = tc;
 }

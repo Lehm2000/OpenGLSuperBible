@@ -12,11 +12,16 @@
 #include <vector>
 #include <glm\glm.hpp>
 
+#include "TypeDefinitions.h"
 #include "GEController.h"
 #include "GEProperty.h"
+#include "GEObjectContainer.h"
+
 
 template <class T>
 class GEController;
+
+class GEObjectContainer;
 
 class GEObject
 {
@@ -30,11 +35,6 @@ protected:
 	GEPropertyv3 rotation;
 	GEPropertyv3 scale;
 
-	// Transform Controllers
-	//std::vector<GEController*> positionControllers;
-	//std::vector<GEController*> rotationControllers;
-	//std::vector<GEController*> scaleControllers;
-
 	// Display
 	bool visible;				// draw it?
 	std::string mesh;			// path to the mesh.
@@ -43,15 +43,16 @@ protected:
 public:
 	// Structors
 	GEObject();
-	GEObject( glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std::string name = std::string( "" ) );
+	GEObject( const GEObject& source );
+	GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string name = std::string( "" ) );
 	virtual ~GEObject();
 
 	// Setters
 	void setName( const std::string name );
 	
-	virtual void setPosition(const glm::vec3 position);
-	virtual void setRotation(const glm::vec3 rotation);  // in Radians!
-	virtual void setScale(const glm::vec3 scale);
+	//virtual void setPosition(const GEvec3 position);
+	//virtual void setRotation(const GEvec3 rotation);  // in Radians!
+	//virtual void setScale(const GEvec3 scale);
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );
@@ -62,9 +63,12 @@ public:
 	std::string getID() const;
 	std::string getName() const;
 	
-	glm::vec3 getBasePosition() const;
-	glm::vec3 getBaseRotation() const;
-	glm::vec3 getBaseScale() const;
+	GEPropertyv3* getPosition();
+	const GEPropertyv3* getPosition() const;
+	GEPropertyv3* getRotation();
+	const GEPropertyv3* getRotation() const;
+	GEPropertyv3* getScale();
+	const GEPropertyv3* getScale() const;
 	
 	/*  // these might be irrelevant now
 	const GEController* getPositionController() const;
@@ -86,7 +90,7 @@ public:
 
 	// Functions
 	void GenerateID();
-	virtual std::string getClassName();
+	virtual std::string getClassName() const;
 
 	glm::mat4 GetTransformMatrix();
 
@@ -98,30 +102,10 @@ public:
 	virtual void Update( const double gameTime, const double deltaTime);
 
 	/**
-		getTransformedPosition()
-		Returns the combined result of the position controllers.
+		clone()
+		Creates a copy of the object and returns it.
 	*/
-	virtual glm::vec3 getTransformedPosition() const;
-
-	/**
-		getTransformedRotation()
-		Returns the combined result of the rotation controllers.
-	*/
-	virtual glm::vec3 getTransformedRotation() const;
-
-	/**
-		getTransformedScale()
-		Returns the combined result of the scale controllers.
-	*/
-	virtual glm::vec3 getTransformedScale() const;
-
-	virtual void addPositionController( GEControllerv3* positionController );
-	virtual void addRotationController( GEControllerv3* rotationController );	
-	virtual void addScaleController( GEControllerv3* scaleController);
-
-	virtual void removePositionController( const unsigned int index );
-	virtual void removeRotationController( const unsigned int index );	
-	virtual void removeScaleController( const unsigned int index);
+	virtual GEObject* clone() const;
 
 	/**
 		setControllerGameEntitiesPointer()
@@ -129,7 +113,7 @@ public:
 		@ param gameEntities - pointer to the gameEntities
 		@ return void
 	*/
-	virtual void setControllerGameEntitiesPointer( const std::map< std::string, GEObject* >* gameEntities);
+	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 };
 

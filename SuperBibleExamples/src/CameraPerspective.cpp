@@ -2,6 +2,7 @@
 #include <glm\glm.hpp>
 
 #include "CameraPerspective.h"
+#include "TypeDefinitions.h"
 
 // Structors
 CameraPerspective::CameraPerspective()
@@ -9,10 +10,16 @@ CameraPerspective::CameraPerspective()
 	this->setFov( 45.0f );
 }
 
-CameraPerspective::CameraPerspective( glm::vec3 position, glm::vec3 rotation, float fov )
+CameraPerspective::CameraPerspective( GEvec3 position, GEvec3 rotation, float fov )
 	:CameraObject( position, rotation )
 {
 	this->setFov( fov );
+}
+
+CameraPerspective::CameraPerspective( const CameraPerspective& source )
+	:CameraObject( source )
+{
+	this->fov = source.fov;
 }
 
 CameraPerspective::~CameraPerspective()
@@ -22,7 +29,7 @@ CameraPerspective::~CameraPerspective()
 // Setters
 void CameraPerspective::setFov( const float fov )
 {
-	this->fov = fov;
+	this->fov.setValue( fov );
 }
 
 // Getters
@@ -33,11 +40,17 @@ float CameraPerspective::getBaseFov() const
 
 float CameraPerspective::getFinalFov() const
 {
+	float tempVal = fov.getFinalValue();
 	return fov.getFinalValue();
 }
 
+GEPropertyf1* CameraPerspective::getFOV()
+{
+	return &fov;
+}
+
 // Functions
-std::string CameraPerspective::getClassName()
+std::string CameraPerspective::getClassName() const
 {
 	return "CameraPerspective";
 }
@@ -60,4 +73,19 @@ void CameraPerspective::addFOVController( GEControllerf1* scaleController)
 void CameraPerspective::removeFOVController( const unsigned int index )
 {
 	this->fov.removeController( index );
+}
+
+CameraPerspective* CameraPerspective::clone() const
+{
+	return new CameraPerspective( *this );
+}
+
+void CameraPerspective::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities)
+{
+	// give all the transform controllers a pointer to the gameEntities
+
+	position.setControllerGameEntitiesPointer( gameEntities );
+	rotation.setControllerGameEntitiesPointer( gameEntities );
+	scale.setControllerGameEntitiesPointer( gameEntities );
+	fov.setControllerGameEntitiesPointer( gameEntities );
 }

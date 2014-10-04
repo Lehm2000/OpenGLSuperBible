@@ -25,7 +25,7 @@ public:
 	virtual ~GEControllerInputMousePositionY();
 
 	// Setters
-	virtual void setGameEntities( const std::map< std::string, GEObject* >* gameEntities );  // override from GEController
+	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -45,7 +45,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual void Control( T initialValue, double gameTime, double deltaTime);
+	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -53,7 +53,7 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual T CalcTransform( T sourceValue );
+	virtual T CalcTransform( const T sourceValue );
 
 	
 };
@@ -88,7 +88,7 @@ GEControllerInputMousePositionY<T>::GEControllerInputMousePositionY( const GECon
 // Setters
 
 template <class T>
-void GEControllerInputMousePositionY<T>::setGameEntities( const std::map< std::string, GEObject* >* gameEntities )
+void GEControllerInputMousePositionY<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
 	// Overloaded from GEController so that this controller grabs the current mouse position from SYS_Input_State
 	
@@ -96,11 +96,13 @@ void GEControllerInputMousePositionY<T>::setGameEntities( const std::map< std::s
 	this->gameEntities = gameEntities;
 
 	// once the gameEntities is set... now we can get the mouse position from the input state object.
-	std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+
+	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
-	if ( isIt != gameEntities->end() )
+	if ( isObject != nullptr )
 	{
-		GEInputState* inputState = (GEInputState*)isIt->second;
+		const GEInputState* inputState = (GEInputState*)isObject;
 		this->mousePositionY = inputState->getMousePosition().y;
 		this->mousePositionYPrev = this->mousePositionY;
 	}
@@ -122,17 +124,18 @@ GEControllerInputMousePositionY<T>* GEControllerInputMousePositionY<T>::clone() 
 
 
 template <class T>
-void GEControllerInputMousePositionY<T>::Control( T initialValue, double gameTime, double deltaTime)
+T GEControllerInputMousePositionY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	// Start by updating the mouse position
 	this->mousePositionYPrev = this->mousePositionY;
 
 	// get the new mouse position
-	std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
+	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
-	if ( isIt != gameEntities->end() )
+	if ( isObject != nullptr )
 	{
-		GEInputState* inputState = (GEInputState*)isIt->second;
+		const GEInputState* inputState = (GEInputState*)isObject;
 		this->mousePositionY = inputState->getMousePosition().y;
 	}
 
@@ -141,6 +144,10 @@ void GEControllerInputMousePositionY<T>::Control( T initialValue, double gameTim
 
 	// apply the change. x = y rotation, y = x rotation
 	transformedValue += valueDelta * mousePosXDelta;
+
+	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
+
+	return transformedValue + prevValue;
 }
 
 
@@ -150,9 +157,10 @@ T GEControllerInputMousePositionY<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
+
 typedef GEControllerInputMousePositionY<float> GEControllerInputMousePositionYf1;
-typedef GEControllerInputMousePositionY<glm::vec2> GEControllerInputMousePositionYv2;
-typedef GEControllerInputMousePositionY<glm::vec3> GEControllerInputMousePositionYv3;
+typedef GEControllerInputMousePositionY<GEvec2> GEControllerInputMousePositionYv2;
+typedef GEControllerInputMousePositionY<GEvec3> GEControllerInputMousePositionYv3;
 
 
 #endif /* GECONTROLLERINPUTMOUSEPOSITIONY_H */
