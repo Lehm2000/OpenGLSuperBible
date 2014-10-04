@@ -47,16 +47,12 @@ MUMesh::MUMesh( const MUMesh& source )
 
 MUMesh::~MUMesh()
 {
-	if ( this->getVerticies() != nullptr )
-	{
-		delete[] this->vertices;
-		this->vertices = nullptr;
-	}
-	if ( this->getIndicies() != nullptr )
-	{
-		delete[] this->indicies;
-		this->indicies = nullptr;
-	}
+	free( this->vertices );  // allocated with malloc
+	this->vertices = nullptr;
+	
+	free( this->indicies );	// allocated with malloc
+	this->indicies = nullptr;
+	
 }
 
 
@@ -88,8 +84,7 @@ void MUMesh::setVertices( const unsigned int numVerts, const GEVertex* vertices 
 {
 	this->numVerts = numVerts;
 
-	if (this->vertices != nullptr )
-		delete[] vertices;
+	free (this->vertices);	// free previous data;
 
 	if( numVerts == 0 )
 	{
@@ -109,8 +104,7 @@ void MUMesh::setIndicies( const unsigned int numIndicies, const unsigned int* in
 {
 	this->numIndicies = numIndicies;
 
-	if (this->indicies != nullptr )
-		delete[] indicies;
+	free( this->indicies );	// free previous data... if any there.
 
 	if( numIndicies == 0 )
 	{

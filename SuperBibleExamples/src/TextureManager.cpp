@@ -55,7 +55,7 @@ GLuint TextureManager::LoadTexture( std::string filename )
 
 		glGenerateMipmap( GL_TEXTURE_2D );
 
-		delete[] imageTexData;
+		free( imageTexData );  // allocated with malloc
 		imageTexData = nullptr;
 
 	}
@@ -94,7 +94,7 @@ GLuint TextureManager::LoadTexture( std::string filename )
 
 					glGenerateMipmap( GL_TEXTURE_2D );
 
-					delete[] imageTexData;
+					free( imageTexData );	// allocated with malloc
 					imageTexData = nullptr;
 				}
 			}

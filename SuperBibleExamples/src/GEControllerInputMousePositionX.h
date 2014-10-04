@@ -130,24 +130,28 @@ template <class T>
 T GEControllerInputMousePositionX<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	// Start by updating the mouse position
-	this->mousePositionXPrev = this->mousePositionX;
-
-	// get the new mouse position
-	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
-
-	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
-	
-	if ( isObject != nullptr )
+	if( gameEntities != nullptr )
 	{
-		const GEInputState* inputState = (GEInputState*)isObject;
-		this->mousePositionX = inputState->getMousePosition().x;
+		this->mousePositionXPrev = this->mousePositionX;
+
+		// get the new mouse position
+	
+		const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
+	
+		if ( isObject != nullptr )
+		{
+			const GEInputState* inputState = (GEInputState*)isObject;
+			this->mousePositionX = inputState->getMousePosition().x;
+		}
+
+		// find the change
+		float mousePosXDelta = this->mousePositionX - this->mousePositionXPrev;
+		
+		// apply the change. x = y rotation, y = x rotation
+		transformedValue += valueDelta * mousePosXDelta;
 	}
 
-	// find the change
-	float mousePosXDelta = this->mousePositionX - this->mousePositionXPrev;
-
-	// apply the change. x = y rotation, y = x rotation
-	transformedValue += valueDelta * mousePosXDelta;
+	
 
 	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
 

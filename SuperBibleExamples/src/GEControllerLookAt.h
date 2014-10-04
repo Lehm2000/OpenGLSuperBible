@@ -21,7 +21,7 @@
 
 class GEControllerLookAt: public GEController<GEvec3>
 {
-private:
+protected:
 	// Members
 
 	std::string targetName;	// What are we looking at.
@@ -66,14 +66,10 @@ public:
 		@param sourceVector - vector to be combined with the controllers transformedVector.
 			Usually the objects original transform.
 	*/
-	virtual GEvec3 CalcTransform( GEvec3 sourceVector );
+	virtual GEvec3 CalcTransform( const GEvec3 sourceVector );
 
 };
 
-
-
-#include "GEControllerLookAt.h"
-#include "GEConstants.h"
 
 //Structors
 
@@ -122,7 +118,7 @@ GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTim
 	if ( targetObject != nullptr && parent != nullptr )
 	{
 	
-		const GEvec3 targetPos = targetObject->clone()->getPosition()->getFinalValue();
+		const GEvec3 targetPos = targetObject->getPosition()->getFinalValue();
 		const GEPropertyv3* tempPosProp = parent->getPosition();
 		GEvec3 parentPos = tempPosProp->getFinalValue();
 		GEvec3 deltaPos = targetPos - parentPos;
@@ -171,7 +167,7 @@ GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTim
 }
 
 
-GEvec3 GEControllerLookAt::CalcTransform( GEvec3 sourceVector )
+GEvec3 GEControllerLookAt::CalcTransform( const GEvec3 sourceVector )
 {
 	return transformedValue;  // ignore the sourceVector
 }

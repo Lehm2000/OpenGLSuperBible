@@ -35,7 +35,7 @@ GameEngine::~GameEngine()
 
 	if (graphics != nullptr)
 	{
-		delete graphics;
+		delete graphics;	// instantiated with new
 		graphics = nullptr;
 	}
 }

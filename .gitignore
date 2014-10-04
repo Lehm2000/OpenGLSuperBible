@@ -49,3 +49,7 @@
 
 #resource files
 *.ASE
+*.ase
+*.bmp
+*.psd
+*.tga

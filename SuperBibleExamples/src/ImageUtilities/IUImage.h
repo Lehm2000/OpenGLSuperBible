@@ -97,11 +97,8 @@ IUImage<T>::IUImage(const IUImage& sourceImage)
 template <class T>
 IUImage<T>::~IUImage()
 {
-	if (data != nullptr)
-	{
-		delete[] data;
-		data = nullptr;
-	}
+	free (data);
+	data = nullptr;
 }
 
 //operators
@@ -148,12 +145,10 @@ void IUImage<T>::setData(const unsigned int width, const unsigned int height, co
 	this->height = height;
 	this->numChannels = channels;
 
-	if (this->data != nullptr)
-	{
-		delete[] this->data;
-		this->data = nullptr;
-	}
-
+	// free old data if it has been allocated.
+	free( this->data );
+	this->data = nullptr;
+	
 	unsigned int dataSize = this->getDataSize();
 	
 	this->data = (T*)malloc( dataSize );
@@ -183,10 +178,6 @@ unsigned char IUImage<T>::getNumChannels() const
 template <class T>
 void IUImage<T>::getData(T* returnData) const
 {
-	//first delete any data that might be in there.  Otherwise it might be a leak.
-	//if (returnData != nullptr)
-		//delete[] returnData;
-
 	//this next step could be dangerous if the size of the returnData is not the proper size. //TODO: find a way to make this safe. 
 	memcpy( returnData, this->data, this->getDataSize() );
 }

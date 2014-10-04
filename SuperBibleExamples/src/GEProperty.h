@@ -35,7 +35,7 @@ public:
 	// Structors
 	GEProperty();
 	GEProperty( T value, T max, bool useMax, T min, bool useMin );
-	GEProperty( GEProperty& source );
+	GEProperty( const GEProperty& source );
 	~GEProperty();
 
 	// Setters
@@ -54,10 +54,10 @@ public:
 	bool getUseMin() const;
 
 	// Operators
-	//GEProperty& operator=( const GEProperty& source );
+	GEProperty& operator=( GEProperty<T> source );
 
 	// Functions
-	void addController( GEController<T>* controller, GEObject* parent );
+	void addController( GEController<T>* controller, const GEObject* parent );
 	void removeController( const unsigned int index );
 	void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
@@ -86,7 +86,7 @@ GEProperty<T>::GEProperty( T value, T max, bool useMax, T min, bool useMin )
 }
 
 template <class T>
-GEProperty<T>::GEProperty( GEProperty& source )
+GEProperty<T>::GEProperty( const GEProperty& source )
 {
 	
 	this->setMax( source.max );
@@ -99,7 +99,7 @@ GEProperty<T>::GEProperty( GEProperty& source )
 	this->controllers.clear();
 	for ( unsigned int i = 0; i< source.controllers.size(); i++ )
 	{
-		this->addController( source.controllers[i].clone() );
+		this->addController( source.controllers[i]->clone(), source.controllers[i]->getParent() );
 	}
 }
 
@@ -111,7 +111,7 @@ GEProperty<T>::~GEProperty()
 	{
 		if ( controllers[i] != nullptr )
 		{
-			delete controllers[i];
+			delete controllers[i];  // controllers created with new
 			controllers[i] = nullptr;
 		}
 	}
@@ -227,28 +227,24 @@ bool GEProperty<T>::getUseMin() const
 
 // Operators
 
-/*template <class T>
-GEProperty<T>& GEProperty<T>::operator=( const GEProperty<T>& source )
+template <class T>
+GEProperty<T>& GEProperty<T>::operator=( GEProperty<T> source )
 {
+	std::swap( value, source.value );
+	std::swap( max, source.max );
+	std::swap( useMax, source.useMax );
+	std::swap( min, source.min );
+	std::swap( useMin, source.useMin );
+	std::swap( controllers, source.controllers );
 	
-	this->setValue( source.getInitialValue() );
-
-	// copy the controllers from the other GEProperty
-	this->controllers.clear();
-	for ( unsigned int i = 0; i < source.controllers.size(); i++ )
-	{
-		this->addController( source.controllers[i]->clone()
-			);
-	}
-
 	return *this;
-}*/
+}
 
 
 // Functions
 
 template <class T>
-void GEProperty<T>::addController( GEController<T>* controller, GEObject* parent )
+void GEProperty<T>::addController( GEController<T>* controller, const GEObject* parent )
 {
 	controller->setParent( parent );
 	this->controllers.push_back( controller->clone() );  // add a copy of the controller to the controller vector
