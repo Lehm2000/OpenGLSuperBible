@@ -1,6 +1,6 @@
 #version 430 core
 
-layout (triangles) in;
+layout (triangles, invocations = 2) in;
 layout (line_strip, max_vertices=2) out;
 
 uniform mat4 worldMatrix;
@@ -22,6 +22,8 @@ out GS_OUT
 
 void main(void)
 {
+	gl_ViewportIndex = gl_InvocationID;
+
 	float normalVisLength = 0.05;  // how long the normal should appear.
 	
 	vec3 ab = gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz;
@@ -33,7 +35,7 @@ void main(void)
 
 	vec3 normalEndPoint = ( faceNormal * normalVisLength ) + faceCenter;
 	
-	gs_out.color = vec4( 0.5 ,  0.5,  0.5, 1.0 );
+	gs_out.color = vec4( 0.0 ,  1.0,  0.0, 1.0 );
 	gl_Position= viewMatrix * worldMatrix * vec4( faceCenter, 1.0);
 	EmitVertex();
 

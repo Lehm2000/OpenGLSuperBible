@@ -91,9 +91,11 @@ bool GameEngine::Initialize()
 	LoadMaterial("geometry_testNormals");
 	LoadMaterial("geometry_testNormalsRay");
 	LoadMaterial("default");
+	LoadMaterial("default_wTexture");
 
 	// Buffer the default meshes... TODO: Move somewhere else
 	LoadMesh( "beziersphere" );
+	LoadMesh( "sphere" );
 	
 
 	return success;
@@ -177,8 +179,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		//graphics->Render( getGameTime() );  // tutorial/test renderer
-		graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		graphics->Render( getGameTime() );  // tutorial/test renderer
+		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
 	// TODO what happens when its nullptr
 }
 

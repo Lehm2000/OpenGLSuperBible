@@ -39,7 +39,7 @@ int main(void)
 	// create the main render camera
 
 	//gameEngine.CreateGameCam(CAMTYPE_PERSPECTIVE,GEvec3( 0.0f, 0.0f, 2.5f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
-	CameraPerspective* camObject = new CameraPerspective( GEvec3( 0.0f, 0.0f, 2.5f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
+	CameraPerspective* camObject = new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
 	//camObject->getRotation()->addController( new GEControllerInputMousePositionXv3( GEvec3( 0.0f, -0.0025f, 0.0f ) ), camObject );
 	//camObject->getRotation()->addController( new GEControllerInputMousePositionYv3( GEvec3( -0.0025f, 0.0f, 0.0f ) ), camObject );
 	camObject->getRotation()->setMax( GEvec3( 0.5f, 0.5f, 0.05f ) );
