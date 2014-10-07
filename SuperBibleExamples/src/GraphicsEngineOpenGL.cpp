@@ -59,48 +59,33 @@ GraphicsEngineOpenGL::~GraphicsEngineOpenGL()
 // this version of render is for tutorial code.
 void GraphicsEngineOpenGL::Render(const double currentTime)
 {
-	glEnable ( GL_STENCIL_TEST );
+	
 
 	// get the viewport info out of the game entities
 	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
 
 	if ( viewportInfo != nullptr )
 	{
-		// set render region
-		//glViewport(0,0,viewportInfo->getViewportWidth() , viewportInfo->getViewportHeight() );
-		glViewportIndexedf(0, 0, 0, viewportInfo->getViewportWidth(), viewportInfo->getViewportHeight());
+		const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		const GLfloat green[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+		const GLfloat one = 1.0f;
+		const GLfloat zero = 0.0f; 
+
+		// Bind our FBO
+		glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+
+		// Set the fiewport and clear the depth and color buffers
+		glViewport( 0, 0, 512, 512 );
+		glClearBufferfv( GL_COLOR, 0, green );
+		glClearBufferfv( GL_DEPTH, 0, &one );
 
 		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 		glm::mat4 viewMatrix;
 		
-		// find the rendercam
-		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( viewportInfo->getRenderCam() );
-
-		if( renderCam != nullptr )
-		{
-			if (renderCam->getClassName() == "CameraPerspective" )
-			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
-			}
-		}
-		else
-		{
-			// if can't find renderCam build a generic one.
-			renderCam = new CameraPerspective( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
-		}
-	
-		const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		const GLfloat one = 1.0f;
-		const GLfloat zero = 0.0f; 
-
-		glClearBufferfv( GL_COLOR, 0, bkColor );
-		glClearBufferfv( GL_DEPTH,0, &one );
-		glClearBufferfv( GL_STENCIL, 0, &zero );
-
-		//std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("sphere");
-
-		//GEMesh renderMesh = meshIt->second;
+		// create a camera.
+		const CameraObject* renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), 1.0f, 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+		
 		GEMesh renderMesh = resMesh.GetResource( "plane" );
 
 		glBindVertexArray( renderMesh.getVertexArrayObject() );
@@ -113,14 +98,8 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 			
 		GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "worldMatrix" );
 		GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "viewMatrix" );
-		//GLint tessLevelLocation = glGetUniformLocation( renderMaterial.getProgram(), "tessLevel" );
-		//GLint displaceTextureLoc = glGetUniformLocation( renderMaterial.getProgram(), "displaceTexture");
-
-		//bind the displace texture
-		//glBindTexture( GL_TEXTURE_2D, textureMap.find("DisplaceTest")->second );
-
-		//glm::mat4 worldMatrix = it->second->GetTransformMatrix();
-		glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 4.0f,GEvec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
+		
+		glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 1.0f,GEvec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
 
 		glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
 		glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
@@ -139,32 +118,42 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 			glUniform1i( texLoc, i );
 
 		}
-		glStencilFunc( GL_ALWAYS, 1, 0xff );
-		glStencilOp( GL_KEEP, GL_ZERO, GL_REPLACE );
+		
 
 		glEnable( GL_PRIMITIVE_RESTART );
 		glPrimitiveRestartIndex( 0xFFFF );
-		glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
+		glDrawElements( renderMesh.getMeshType(), renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
 		glDisable( GL_PRIMITIVE_RESTART );
 
-		
-		// draw second time reversed rotation
+		// cleanup
 
-		// clear the color and depth buffers... keeping the stencil
+		delete renderCam;
+		
+		// draw a cube with the rendered texture.
+
+		// return to default framebuffer
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+		// create a camera and new view matrix
+		renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+
+		// reset the viewport
+		glViewport( 0, 0,  (float)viewportInfo->getViewportWidth(), (float)viewportInfo->getViewportHeight() );
+
+		// clear the color and depth buffers
 		glClearBufferfv( GL_COLOR, 0, bkColor );
 		glClearBufferfv( GL_DEPTH, 0, &one );
 
-		// change the stencil ops
-		glStencilFunc( GL_EQUAL, 1, 0xff );
-		glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
+		
 
-		worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / -4.0f,GEvec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
+		worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / -4.0f,GEvec3(1.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
 
 		glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
 		glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
 	
 		// bind the required textures
-		for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
+		/*for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
 		{
 			glActiveTexture( GL_TEXTURE0 + i );
 			GLuint renderTex = resTexture.GetResource( renderMaterial.getTextures()[i] );
@@ -176,18 +165,28 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 			GLint texLoc = glGetUniformLocation( renderMaterial.getProgram(), textureString.c_str() );
 			glUniform1i( texLoc, i );
 
-		}
+		}*/
+
+		renderMesh = resMesh.GetResource( "testBox" );
+
+		glBindVertexArray( renderMesh.getVertexArrayObject() );
+
+		// bind the texture we just wrote to.
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, color_texture );
+
 		glEnable( GL_PRIMITIVE_RESTART );
 		glPrimitiveRestartIndex( 0xFFFF );
-		glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
+		glDrawElements( renderMesh.getMeshType(),renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
 		glDisable( GL_PRIMITIVE_RESTART );
-
 		
-	
+		
+		// clean up
+		delete renderCam;
 		
 	}
 	
-	glDisable ( GL_STENCIL_TEST );
+	
 
 
 	RenderFPS( currentTime );
@@ -519,6 +518,11 @@ bool GraphicsEngineOpenGL::Init()
 
 	}
 
+	// Some random stuff that can be removed
+	GLint texSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texSize );
+
+
 	
 	return success;
 }
@@ -693,6 +697,36 @@ void GraphicsEngineOpenGL::InitBuffers(void)
 	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0);  // the font mesh doesn't really fit the GEMesh type... new type?
 	//meshMap["SYS_FONT"] = newMesh;
 	resMesh.AddResource( "SYS_FONT", newMesh );
+
+	// Chapter 09 framebuffer objects'
+
+	glGenFramebuffers( 1, &fbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+
+	// Create a texture for out color buffer
+	glGenTextures( 1, &color_texture );
+	glBindTexture( GL_TEXTURE_2D, color_texture );
+	glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA8, 512, 512 );
+
+	// turn off mipmaps
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+	// Create texture for depth buffer
+	glGenTextures( 1, &depth_texture );
+	glBindTexture( GL_TEXTURE_2D, depth_texture );
+	glTexStorage2D( GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, 512, 512 );
+
+	// Attach the color and depth to the fbo
+	glFramebufferTexture( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
+	glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+
+	// Draw into the buffer
+	static const GLenum draw_buffers[] = 
+	{
+		GL_COLOR_ATTACHMENT0
+	};
+	glDrawBuffers( 1, draw_buffers );
 	
 
 }
@@ -827,7 +861,6 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, MUMesh* mesh )
 		meshType = GL_TRIANGLES;
 
 	GEMesh newMesh( meshType, mesh->getNumVerts(), mesh->getNumIndicies(), newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );
-	//meshMap[meshPath] = newMesh;
 	resMesh.AddResource( meshPath, newMesh );
 
 	// Unbind voa??  Don't for now.

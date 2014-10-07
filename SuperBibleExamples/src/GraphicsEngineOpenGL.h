@@ -46,6 +46,10 @@ private:
 	MaterialManager materialMan;	// for material operations
 	TextureManager textureMan;		// for texture operations
 
+	// Chapter 09 framebuffer object tutorial
+	GLuint fbo;
+	GLuint color_texture, depth_texture;
+
 public:
 
 	

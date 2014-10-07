@@ -96,6 +96,7 @@ bool GameEngine::Initialize()
 	// Buffer the default meshes... TODO: Move somewhere else
 	LoadMesh( "beziersphere" );
 	LoadMesh( "sphere" );
+	LoadMesh( "testBox" );
 	
 
 	return success;
