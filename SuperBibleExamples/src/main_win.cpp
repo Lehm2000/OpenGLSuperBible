@@ -16,8 +16,8 @@
 #include "GEControllerInputMousePositionY.h"
 #include "GEControllerInputMouseScrollY.h"
 #include "GEControllerOrbiter.h"
-#include "InfoViewport.h"
 #include "MeshUtilities.h"
+#include "InfoGameEngineSettings.h"
 
 
 int main(void)
@@ -51,11 +51,11 @@ int main(void)
 
 	// tell the game to use it.
 
-	InfoViewport* viewportOptions = (InfoViewport*)gameEngine.GetEntity( "SYS_Viewport_Options" );
+	InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEngine.GetEntity( "SYS_GameEngine_Settings" );
 
-	if( viewportOptions != nullptr )
+	if( gameEngineSettings != nullptr )
 	{
-		viewportOptions->setRenderCam( "gameCam01" );
+		gameEngineSettings->setRenderCam( "gameCam01" );
 	}
 
 	// Create a test object

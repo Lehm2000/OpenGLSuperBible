@@ -4,7 +4,6 @@
 #include "GameEngine.h"
 #include "CameraObject.h"
 #include "CameraPerspective.h"
-#include "InfoViewport.h"
 #include "GEControllerOscillator.h"
 //#include "GEControllerLookAt.h"
 #include "GEControllerInputMousePositionX.h"
@@ -76,18 +75,16 @@ bool GameEngine::Initialize()
 	InfoGameEngineSettings* gameEngineSettings = new InfoGameEngineSettings();
 	gameEngineSettings->setRenderMode( GE_RENDERMODE_FULL );
 	gameEngineSettings->setShowBoundingBoxes( true );
+	gameEngineSettings->setViewportWidth( 1280 );
+	gameEngineSettings->setViewportHeight( 720 );
 	AddEntity( "SYS_GameEngine_Settings", gameEngineSettings );  //add the options to the entity list.
-
-	// Setup the viewport options... is this the best place for this?
-	GEObject* viewportOptions = new InfoViewport( 1280, 720 );
-	AddEntity( "SYS_Viewport_Options", viewportOptions );  //add the options to the entity list.
 
 	// Add the game variable object
 	GEObject* gameVars = new InfoGameVars();
 	AddEntity( "SYS_Game_Vars", gameVars );
 
 	// Add the input state object... keeps track of current inputs.
-	GEObject* inputState = new GEInputState( GEvec2( ((InfoViewport*)viewportOptions)->getViewportWidth()/2, ((InfoViewport*)viewportOptions)->getViewportHeight()/2) );
+	GEObject* inputState = new GEInputState( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
 	AddEntity( "SYS_Input_State", inputState );
 
 	// create the graphics engine

@@ -19,6 +19,13 @@ private:
 
 	// members
 
+	// Viewport options
+	unsigned short viewportWidth;
+	unsigned short viewportHeight;
+
+	std::string renderCam;				// Name of the camera object we are 
+		//rendering from.  TODO how to allow more than one render cam?
+
 	// Render options ( That aren't exclusive to a specific render engine )
 	unsigned char renderMode;
 	bool showBoundingBoxes;
@@ -30,10 +37,20 @@ public:
 	InfoGameEngineSettings( const InfoGameEngineSettings& source );
 
 	// Setters
+	void setViewportWidth( const unsigned short viewportWidth );
+	void setViewportHeight( const unsigned short viewportHeight );
+	
+	void setRenderCam( const std::string renderCam );
+
 	void setRenderMode( unsigned char renderMode );
 	void setShowBoundingBoxes( bool showBoundingBoxes );
 
 	// Getters
+	unsigned short getViewportWidth() const;
+	unsigned short getViewportHeight() const;
+	
+	std::string getRenderCam() const;
+
 	unsigned char getRenderMode() const;
 	bool getShowBoundingBoxes() const;
 

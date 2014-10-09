@@ -9,7 +9,6 @@
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
 #include "CameraPerspective.h"
-#include "InfoViewport.h"
 #include "InfoGameVars.h"
 #include "InfoGameEngineSettings.h"
 #include "GEInputState.h"
@@ -63,9 +62,9 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 	
 
 	// get the viewport info out of the game entities
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 
-	if ( viewportInfo != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
 		const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		const GLfloat green[] = { 0.0f, 1.0f, 0.0f, 1.0f };
@@ -137,10 +136,10 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 
 		// create a camera and new view matrix
 		renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
 
 		// reset the viewport
-		glViewport( 0, 0,  (float)viewportInfo->getViewportWidth(), (float)viewportInfo->getViewportHeight() );
+		glViewport( 0, 0,  (float)gameEngineSettings->getViewportWidth(), (float)gameEngineSettings->getViewportHeight() );
 
 		// clear the color and depth buffers
 		glClearBufferfv( GL_COLOR, 0, bkColor );
@@ -201,10 +200,9 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 {
 	
 	// get the viewport info and gameengine settings out of the game entities
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
 	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 	
-	if ( viewportInfo != nullptr && gameEngineSettings != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
 		// declare some variables
 		glm::mat4 viewMatrix;
@@ -217,20 +215,20 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 
 		// find the rendercam
-		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( viewportInfo->getRenderCam() );
+		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( gameEngineSettings->getRenderCam() );
 
 		if( renderCam != nullptr )
 		{
 			if (renderCam->getClassName() == "CameraPerspective" )
 			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
 			}
 		}
 		else
 		{
 			// if can't find renderCam build a generic one.
 			renderCam = new CameraPerspective( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
+			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
 		}
 
 		const GLfloat bkColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
@@ -341,14 +339,14 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 	// Testing text output
 
 	// get the viewport info out of the game entities
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_Viewport_Options" );
 	
-	if ( viewportInfo != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
 		// always draw text filled
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
-		glViewportIndexedf(0, 0, 0, viewportInfo->getViewportWidth(), viewportInfo->getViewportHeight());
+		glViewportIndexedf(0, 0, 0, gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight());
 
 		GEMesh fontMesh = resMesh.GetResource( "SYS_FONT" );
 	
@@ -369,7 +367,7 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 		glUniform2f( startPosLoc, 0.0075f, 0.0075f );
 		glUniform4f( fontColorLoc, 1.0f, 0.0f, 0.0f, 1.0f );
 
-		glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)viewportInfo->getViewportHeight()/(float)viewportInfo->getViewportWidth(), 0.0f );
+		glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)gameEngineSettings->getViewportHeight()/(float)gameEngineSettings->getViewportWidth(), 0.0f );
 
 		glUniformMatrix4fv(screenMatrixLocation, 1, GL_FALSE, &screenMatrix[0][0]);
 	
@@ -490,9 +488,9 @@ bool GraphicsEngineOpenGL::Init()
 	if( !glfwInit() )
 		return success;		// success is still false here.
 	
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 
-	if ( viewportInfo != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
 
 	
@@ -509,7 +507,7 @@ bool GraphicsEngineOpenGL::Init()
 		glfwWindowHint( GLFW_STENCIL_BITS, GL_TRUE );
 
 		// create the window
-		window = glfwCreateWindow( viewportInfo->getViewportWidth(), viewportInfo->getViewportHeight(), "OpenGL Super Bible", NULL,NULL);
+		window = glfwCreateWindow( gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight(), "OpenGL Super Bible", NULL,NULL);
 		if(!window)
 		{
 			glfwTerminate();
@@ -539,7 +537,7 @@ bool GraphicsEngineOpenGL::Init()
 		// specify some callback functions
 		glfwSetKeyCallback( window, key_callback );
 		glfwSetWindowSizeCallback( window, window_size_callback );
-		glfwSetCursorPos( window, viewportInfo->getViewportWidth() / 2, viewportInfo->getViewportHeight() / 2 );
+		glfwSetCursorPos( window, gameEngineSettings->getViewportWidth() / 2, gameEngineSettings->getViewportHeight() / 2 );
 		glfwSetCursorPosCallback( window, mouse_position_callback );
 		glfwSetMouseButtonCallback( window, mouse_button_callback );
 		glfwSetScrollCallback( window, mouse_scroll_callback );

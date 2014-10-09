@@ -9,7 +9,6 @@
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
 #include "CameraPerspective.h"
-#include "InfoViewport.h"
 #include "InfoGameVars.h"
 #include "GEInputState.h"
 
