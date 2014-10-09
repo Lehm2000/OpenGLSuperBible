@@ -11,6 +11,7 @@
 #include "GEControllerInputMousePositionY.h"
 #include "GEControllerInputMouseScrollY.h"
 #include "InfoGameVars.h"
+#include "InfoGameEngineSettings.h"
 #include "GEConstants.h"
 #include "GEInputState.h"
 #include "TypeDefinitions.h"
@@ -69,8 +70,15 @@ bool GameEngine::Initialize()
 
 	bool success = true;
 
-	// Setup the viewport options... is this the best place for this?
+	// Setup the engine settings objects
 
+	// Add the game engine settings object
+	InfoGameEngineSettings* gameEngineSettings = new InfoGameEngineSettings();
+	gameEngineSettings->setRenderMode( GE_RENDERMODE_FULL );
+	gameEngineSettings->setShowBoundingBoxes( true );
+	AddEntity( "SYS_GameEngine_Settings", gameEngineSettings );  //add the options to the entity list.
+
+	// Setup the viewport options... is this the best place for this?
 	GEObject* viewportOptions = new InfoViewport( 1280, 720 );
 	AddEntity( "SYS_Viewport_Options", viewportOptions );  //add the options to the entity list.
 
@@ -92,6 +100,7 @@ bool GameEngine::Initialize()
 	LoadMaterial("geometry_testNormalsRay");
 	LoadMaterial("default");
 	LoadMaterial("default_wTexture");
+	LoadMaterial( "boundingBox" );
 
 	// Buffer the default meshes... TODO: Move somewhere else
 	LoadMesh( "beziersphere" );
@@ -180,8 +189,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		graphics->Render( getGameTime() );  // tutorial/test renderer
-		//graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		//graphics->TutRender( getGameTime() );  // tutorial/test renderer
+		graphics->Render( getGameTime() ); // game renderer
 	// TODO what happens when its nullptr
 }
 

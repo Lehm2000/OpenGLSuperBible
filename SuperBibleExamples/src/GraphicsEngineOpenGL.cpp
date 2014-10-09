@@ -11,6 +11,7 @@
 #include "CameraPerspective.h"
 #include "InfoViewport.h"
 #include "InfoGameVars.h"
+#include "InfoGameEngineSettings.h"
 #include "GEInputState.h"
 
 
@@ -57,7 +58,7 @@ GraphicsEngineOpenGL::~GraphicsEngineOpenGL()
 
 
 // this version of render is for tutorial code.
-void GraphicsEngineOpenGL::Render(const double currentTime)
+void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 {
 	
 
@@ -196,16 +197,24 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 }
 
 // this version of render is for the actual game engine.
-void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContainer* gameEntities_notused)
+void GraphicsEngineOpenGL::Render( const double currentTime )
 {
 	
-	// get the viewport info out of the game entities
+	// get the viewport info and gameengine settings out of the game entities
 	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 	
-	if ( viewportInfo != nullptr )
+	if ( viewportInfo != nullptr && gameEngineSettings != nullptr )
 	{
-		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
+		// declare some variables
 		glm::mat4 viewMatrix;
+		GEMaterial boundingMaterial = resMaterial.GetResource( "boundingBox" );										// get bounding box material incase we are showing that.
+		GLint boundingworldMatrixLocation = glGetUniformLocation( boundingMaterial.getProgram(), "worldMatrix" );
+		GLint boundingviewMatrixLocation = glGetUniformLocation( boundingMaterial.getProgram(), "viewMatrix" );
+		GLint boundingMinLocation = glGetUniformLocation( boundingMaterial.getProgram(), "bmin" );
+		GLint boundingMaxLocation = glGetUniformLocation( boundingMaterial.getProgram(), "bmax" );
+
+		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 
 		// find the rendercam
 		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( viewportInfo->getRenderCam() );
@@ -229,6 +238,20 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 	
 		glClearBufferfv(GL_COLOR, 0, bkColor);
 		glClearBufferfv(GL_DEPTH,0, &one);
+
+		// Set the draw mode
+		switch ( gameEngineSettings->getRenderMode() )
+		{
+		case GE_RENDERMODE_WIRE:
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			break;
+		case GE_RENDERMODE_FULL:
+		default:
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		};
+
+		// set the depth mode
+		glDepthFunc( GL_LEQUAL );
 
 		// Iterate throught game entities here.
 	
@@ -270,8 +293,6 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 
 				}
 
-
-
 				glEnable( GL_PRIMITIVE_RESTART );
 				glPrimitiveRestartIndex( 0xFFFF );
 				for (int j = 0; j<1; j++ )  // just to test performance
@@ -282,11 +303,30 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 					//glDrawElementsInstanced(  renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0, 10000);
 				}
 				glDisable( GL_PRIMITIVE_RESTART );
+
+				// Now render the bounding box if necessary
+
+				if( gameEngineSettings->getShowBoundingBoxes() )
+				{
+					GEBoundingBox boundingBox = renderMesh.getBoundingBox();
+			
+					glUseProgram ( boundingMaterial.getProgram() );
+
+					glUniformMatrix4fv( boundingworldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
+					glUniformMatrix4fv( boundingviewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
+
+					glUniform3fv( boundingMinLocation, 1, &boundingBox.min[0] );
+					glUniform3fv( boundingMaxLocation, 1, &boundingBox.max[0] );
+
+					glDrawArrays( GL_LINES, 0, 24 );
+
+				}
 				
 			}
 	
 		}
 	}
+	// TODO... what happens if nullptr?
 	
 	RenderFPS( currentTime );
 
@@ -305,6 +345,9 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 	
 	if ( viewportInfo != nullptr )
 	{
+		// always draw text filled
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
 		glViewportIndexedf(0, 0, 0, viewportInfo->getViewportWidth(), viewportInfo->getViewportHeight());
 
 		GEMesh fontMesh = resMesh.GetResource( "SYS_FONT" );
@@ -694,7 +737,7 @@ void GraphicsEngineOpenGL::InitBuffers(void)
 	glVertexAttribIPointer( 0, 1, GL_UNSIGNED_BYTE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0);  // the font mesh doesn't really fit the GEMesh type... new type?
+	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0, GEBoundingBox() );  // the font mesh doesn't really fit the GEMesh type... new type?
 	//meshMap["SYS_FONT"] = newMesh;
 	resMesh.AddResource( "SYS_FONT", newMesh );
 
@@ -728,6 +771,8 @@ void GraphicsEngineOpenGL::InitBuffers(void)
 	};
 	glDrawBuffers( 1, draw_buffers );
 	
+	// once new framebuffer is setup... return to the default
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 }
 
@@ -860,7 +905,7 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, MUMesh* mesh )
 	else
 		meshType = GL_TRIANGLES;
 
-	GEMesh newMesh( meshType, mesh->getNumVerts(), mesh->getNumIndicies(), newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );
+	GEMesh newMesh( meshType, mesh->getNumVerts(), mesh->getNumIndicies(), newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer, mesh->getBoundingBox() );
 	resMesh.AddResource( meshPath, newMesh );
 
 	// Unbind voa??  Don't for now.

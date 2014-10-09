@@ -108,7 +108,7 @@ public:
 
 		@param currentTime - the time since the program started.
 	*/
-	void Render(const double currentTime);
+	void RenderTut(const double currentTime);
 
 	/**
 		Renders the scene. 
@@ -116,7 +116,7 @@ public:
 		@param currentTime - the time since the program started.
 		@param gameEntities - pointer to the game Engine entities.
 	*/
-	void Render(const double currentTime, const GEObjectContainer* gameEntities);
+	void Render(const double currentTime );
 
 	/**
 		Renders the FPS counter. 

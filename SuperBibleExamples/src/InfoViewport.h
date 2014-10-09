@@ -8,9 +8,9 @@
 	This class provides all the options for the viewport/window.  Extension of the GEObject class so that it can be passed to the render as a gameEntity.
 */
 
-#include "GEObject.h"
+#include "Info.h"
 
-class InfoViewport: public GEObject
+class InfoViewport: public Info
 {
 private:
 	// Members

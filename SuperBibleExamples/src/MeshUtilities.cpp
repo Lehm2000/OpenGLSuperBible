@@ -297,12 +297,12 @@ MUMesh MeshUtilities::LoadASE( std::string meshPath )
 
 		/*
 			OpenGL typically likes the uv and normal data to be included with the 
-			vert so that means for every unique normal/uv/position data you need a
+			vert so that means for every unique normal/uv/position combination you need a
 			vertex.  The ASE data is not recorded this way so that a vertex can have
 			different attributes. There are two approaches to handling this.  Either 
 			keep them seperate and let the shaders handle putting the data back 
 			together or create unique vertices.  We'll be going with the later and 
-			creating unique vertices.  This means more vertices to render, but less
+			creating unique vertices.  This means more vertices to render, but fewer
 			storage buffers.  TODO: investigate the other way.
 
 		*/
@@ -388,33 +388,19 @@ MUMesh MeshUtilities::LoadASE( std::string meshPath )
 
 void MeshUtilities::ColorizeMesh( MUMesh* mesh )
 {
-	float xMin, xMax, yMin, yMax, zMin, zMax;
-
-	// initialize all the max/mins to the first vertex.
-
-	xMin = xMax = mesh->getVerticies()[0].x;
-	yMin = yMax = mesh->getVerticies()[0].y;
-	zMin = zMax = mesh->getVerticies()[0].z;
-
-	// find the min/max value for each axis
-	for( unsigned int i = 1; i < mesh->getNumVerts(); i++ )
-	{
-		xMin = glm::min( xMin, mesh->getVerticies()[i].x );
-		xMax = glm::max( xMax, mesh->getVerticies()[i].x );
-
-		yMin = glm::min( yMin, mesh->getVerticies()[i].y );
-		yMax = glm::max( yMax, mesh->getVerticies()[i].y );
-
-		zMin = glm::min( zMin, mesh->getVerticies()[i].z );
-		zMax = glm::max( zMax, mesh->getVerticies()[i].z );	
-	}
+	// get the extends/bounds of the mesh.
+	GEBoundingBox meshBounds = mesh->GetMeshBounds();
 
 	// now we colorize based on where the vertex is in the range
 	for( unsigned int i = 0; i < mesh->getNumVerts(); i++ )
 	{
 		//const GEVertex* curVert = mesh->getVerticies();
 
-		GEvec3 vertColor( (mesh->getVerticies()[i].x - xMin) / (xMax - xMin ), (mesh->getVerticies()[i].y - yMin) / (yMax - yMin ), (mesh->getVerticies()[i].z - zMin) / (zMax - zMin ));
+		GEvec3 vertColor( 
+			(mesh->getVerticies()[i].x - meshBounds.min.x) / ( meshBounds.max.x - meshBounds.min.x ), 
+			(mesh->getVerticies()[i].y - meshBounds.min.y) / ( meshBounds.max.y - meshBounds.min.y ), 
+			(mesh->getVerticies()[i].z - meshBounds.min.z) / ( meshBounds.max.z - meshBounds.min.z )
+			);
 
 		mesh->SetVertexColor( i, vertColor );
 	}

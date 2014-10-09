@@ -6,19 +6,17 @@
 // Structors
 InfoViewport::InfoViewport()
 {
-	this->setVisible(false);
 }
 
 InfoViewport::InfoViewport( unsigned short viewportWidth, unsigned short viewportHeight )
 {
-	this->setVisible(false);
 
 	this->setViewportWidth( viewportWidth );
 	this->setViewportHeight( viewportHeight );
 }
 
 InfoViewport::InfoViewport( const InfoViewport& source )
-	:GEObject( source )
+	:Info( source )
 {
 	this->setViewportWidth( source.viewportWidth );
 	this->setViewportHeight( source.viewportHeight );

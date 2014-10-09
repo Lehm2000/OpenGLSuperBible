@@ -8,7 +8,7 @@ GEMesh::GEMesh()
 {
 }
 
-GEMesh::GEMesh( GLenum meshType, unsigned int numVertices, unsigned int numIndices, GLuint vertexArrayObject, GLuint vertexBuffer, GLuint indexBuffer, GLuint indirectBuffer )
+GEMesh::GEMesh( GLenum meshType, unsigned int numVertices, unsigned int numIndices, GLuint vertexArrayObject, GLuint vertexBuffer, GLuint indexBuffer, GLuint indirectBuffer, GEBoundingBox boundingBox )
 {
 	this->setMeshType( meshType );
 	this->setNumVertices( numVertices );
@@ -17,6 +17,7 @@ GEMesh::GEMesh( GLenum meshType, unsigned int numVertices, unsigned int numIndic
 	this->setVertexBuffer( vertexBuffer );
 	this->setIndexBuffer( indexBuffer );
 	this->setIndirectBuffer( indirectBuffer );
+	this->setBoundingBox( boundingBox );
 }
 
 GEMesh::~GEMesh()
@@ -59,6 +60,11 @@ void GEMesh::setIndirectBuffer( const GLuint indirectBuffer )
 	this->indirectBuffer = indirectBuffer;
 }
 
+void GEMesh::setBoundingBox( const GEBoundingBox boundingBox )
+{
+	this->boundingBox = boundingBox;
+}
+
 //Getters
 GLenum GEMesh::getMeshType() const
 {
@@ -90,8 +96,13 @@ GLuint GEMesh::getIndexBuffer() const
 	return this->indexBuffer;
 }
 
-GLuint GEMesh:: getIndirectBuffer() const
+GLuint GEMesh::getIndirectBuffer() const
 {
 	return this->indirectBuffer;
+}
+
+GEBoundingBox GEMesh::getBoundingBox() const
+{
+	return this->boundingBox;
 }
 

@@ -6,11 +6,10 @@ InfoGameVars::InfoGameVars()
 {
 	this->lastFrameTime = 0.0 ;
 	this->setCurrentFrameTime( 0.0 );
-	this->setVisible(false);
 }
 
 InfoGameVars::InfoGameVars( const InfoGameVars& source )
-	:GEObject( source )
+	:Info( source )
 {
 	this->lastFrameTime = source.lastFrameTime;
 	this->currentFrameTime = currentFrameTime;

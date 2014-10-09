@@ -40,6 +40,13 @@ struct GEVertex
 	float v;
 };
 
+// definition of the basic bounding box... TODO is this the best place for it?
+struct GEBoundingBox
+{
+	GEvec3 max;
+	GEvec3 min;
+};
+
 class MUMesh
 {
 private:
@@ -47,7 +54,8 @@ private:
 	unsigned int numVerts;		// How many vertices are in the mesh
 	GEVertex* vertices;			// Vertice data
 	unsigned int numIndicies;	// Number of indicies.  
-	unsigned int* indicies;		// Indice data. These define the triangles are indexes to the vertices
+	unsigned int* indicies;		// Index data. These define the triangles are indexes to the vertices
+	GEBoundingBox boundingBox;	// Bounding box that encompasses the entire mesh 
 
 public:
 	// Structors
@@ -66,6 +74,8 @@ public:
 	void setMeshType( const unsigned char meshType );
 	void setVertices( const unsigned int numVerts, const GEVertex* vertices );
 	void setIndicies( const unsigned int numIndicies, const unsigned int* indicies );
+	void setBoundingBox( );																// uses the mesh data to calculate the correct bounding box
+	void setBoundingBox( const GEBoundingBox boundingBox);								// set arbitrary bounding box.
 
 	// Getters
 
@@ -75,8 +85,20 @@ public:
 	unsigned int getNumIndicies() const;
 	const unsigned int* getIndicies() const;
 
+	/**
+		getBoundingBox()
+		Returns the current bounding box applied to the mesh.
+	*/
+	GEBoundingBox getBoundingBox() const;
+
 	// Functions
 	void SetVertexColor( unsigned int vertIndex, GEvec3 color );
+
+	/**
+		GetBounds()
+		Returns a bounding box coresponding to the meshes size.
+	*/
+	GEBoundingBox GetMeshBounds() const;
 };
 
 

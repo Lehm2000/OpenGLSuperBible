@@ -3,6 +3,8 @@
 #include <cstring>
 #include <algorithm>
 
+#include <glm\glm.hpp>
+
 #include "MUMesh.h"
 #include "TypeDefinitions.h"
 
@@ -43,6 +45,8 @@ MUMesh::MUMesh( const MUMesh& source )
 	{
 		this->indicies[i] = source.indicies[i];
 	}
+
+	this->boundingBox = source.boundingBox;
 }
 
 MUMesh::~MUMesh()
@@ -68,6 +72,7 @@ MUMesh& MUMesh::operator=( MUMesh source )
 	std::swap( vertices, source.vertices );
 	std::swap( numIndicies, source.numIndicies );
 	std::swap( indicies, source.indicies );
+	std::swap( boundingBox, source.boundingBox );
 
 	return *this;
 }
@@ -98,6 +103,9 @@ void MUMesh::setVertices( const unsigned int numVerts, const GEVertex* vertices 
 			this->vertices[i] = vertices[i];
 		}
 	}
+
+	// set the new bounding box
+	this->setBoundingBox();
 }
 
 void MUMesh::setIndicies( const unsigned int numIndicies, const unsigned int* indicies )
@@ -118,6 +126,18 @@ void MUMesh::setIndicies( const unsigned int numIndicies, const unsigned int* in
 			this->indicies[i] = indicies[i];
 		}
 	}
+
+	
+}
+
+void MUMesh::setBoundingBox( )
+{
+	this->setBoundingBox( this->GetMeshBounds() );
+}
+
+void MUMesh::setBoundingBox( const GEBoundingBox boundingBox)
+{
+	this->boundingBox = boundingBox;
 }
 
 
@@ -148,6 +168,11 @@ const unsigned int* MUMesh::getIndicies() const
 	return this->indicies;
 }
 
+GEBoundingBox MUMesh::getBoundingBox() const
+{
+	return this->boundingBox;
+}
+
 // Functions
 void MUMesh::SetVertexColor( unsigned int vertIndex, GEvec3 color )
 {
@@ -158,4 +183,35 @@ void MUMesh::SetVertexColor( unsigned int vertIndex, GEvec3 color )
 		vertices[ vertIndex ].g = color.g;
 		vertices[ vertIndex ].b = color.b;
 	}
+}
+
+GEBoundingBox MUMesh::GetMeshBounds() const
+{
+	GEBoundingBox meshBounds;
+	
+	// verify that there is a mesh.
+	if( this->vertices != nullptr )
+	{
+		
+
+		// initialize all the max/mins to the first vertex.
+		meshBounds.min.x = meshBounds.max.x = this->vertices[0].x;
+		meshBounds.min.y = meshBounds.max.y = this->vertices[0].y;
+		meshBounds.min.z = meshBounds.max.z = this->vertices[0].z;
+
+		// find the min/max value for each axis
+		for( unsigned int i = 1; i < this->getNumVerts(); i++ )
+		{
+			meshBounds.min.x = glm::min( meshBounds.min.x, this->vertices[i].x );
+			meshBounds.max.x = glm::max( meshBounds.max.x, this->vertices[i].x );
+
+			meshBounds.min.y = glm::min( meshBounds.min.y, this->vertices[i].y );
+			meshBounds.max.y = glm::max( meshBounds.max.y, this->vertices[i].y );
+
+			meshBounds.min.z = glm::min( meshBounds.min.z, this->vertices[i].z );
+			meshBounds.max.z = glm::max( meshBounds.max.z, this->vertices[i].z );	
+		}
+	}
+
+	return meshBounds;
 }

@@ -8,6 +8,8 @@
 
 #include <GL\glew.h>
 
+#include "MUMesh.h"
+
 
 typedef struct
 {
@@ -22,7 +24,7 @@ class GEMesh
 {
 private:
 	// Members
-	GLenum meshType;	// Type of mesh ie GL_TRIANGLES etc
+	GLenum meshType;			// Type of mesh ie GL_TRIANGLES etc
 	unsigned int numVertices;	// Number of vertices in the mesh
 	unsigned int numIndices;	// Number of points to render... I think.
 
@@ -31,11 +33,13 @@ private:
 	GLuint indexBuffer;			// Index Buffer for the mesh
 	GLuint indirectBuffer;		// Indirect Buffer	
 
+	GEBoundingBox boundingBox;	// boundingBox for the mesh.  Most of the time will match the extents of the mesh, however any size mesh could be applied.
+
 public:
 
 	// Structors
 	GEMesh();
-	GEMesh( GLenum meshType, unsigned int numVertices, unsigned int numIndices, GLuint vertexArrayObject, GLuint vertexBuffer, GLuint indexBuffer, GLuint indirectBuffer );
+	GEMesh( GLenum meshType, unsigned int numVertices, unsigned int numIndices, GLuint vertexArrayObject, GLuint vertexBuffer, GLuint indexBuffer, GLuint indirectBuffer, GEBoundingBox boundingBox );
 	~GEMesh();
 
 	// Setters
@@ -46,6 +50,8 @@ public:
 	void setVertexBuffer( const GLuint vb );
 	void setIndexBuffer( const GLuint indexBuffer );
 	void setIndirectBuffer( const GLuint indirectBuffer );
+	//void setBoundingBox( );		// version that builds a new bounding box based on the size of the mesh... once I learn how to get the mesh back out of the buffer
+	void setBoundingBox( const GEBoundingBox boundingBox );
 
 	//Getters
 	GLenum getMeshType() const;
@@ -55,6 +61,7 @@ public:
 	GLuint getVertexBuffer() const;
 	GLuint getIndexBuffer() const;
 	GLuint getIndirectBuffer() const;
+	GEBoundingBox getBoundingBox() const;
 
 };
 
