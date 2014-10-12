@@ -74,8 +74,15 @@ int main(void)
 		"testObject", GEvec3( 0.0f, 0.0f, 0.0f ), 1.0f );
 	testOrbiter->setMesh( "cube" );
 	testOrbiter->setMaterial( "default" );
-	testOrbiter->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, 5.0f, 0.0f ) ), testOrbiter );
+	testOrbiter->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, 1.0f, 0.0f ) ), testOrbiter );
 	gameEngine.AddEntity( "testOrbiter", testOrbiter );
+
+	Orbiter* testOrbiter2 = new Orbiter( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( .25f, .25f, .25f ),
+		"testOrbiter", GEvec3( 0.0f, 0.0f, 0.0f ), 0.5f );
+	testOrbiter2->setMesh( "cube" );
+	testOrbiter2->setMaterial( "default" );
+	testOrbiter2->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, 5.0f, 0.0f ) ), testOrbiter );
+	gameEngine.AddEntity( "testOrbiter2", testOrbiter2 );
 
 	GEObject* testObject2 = new GEObject( GEvec3( 1.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ) );
 	testObject2->setMesh( "cube" );
@@ -91,7 +98,7 @@ int main(void)
 	GEObject* testObject3 = new GEObject( GEvec3( -1.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( .25f, .25f, .25f ) );
 	testObject3->setMesh( "plane" );
 	testObject3->setMaterial( "texture_test" );
-	testObject3->addPositionController( orbitController, testObject3 );
+	
 	testObject3->addRotationController( new GEControllerLookAt( "testObject2"), testObject3 );
 	gameEngine.AddEntity( "testObject3", testObject3 );
 

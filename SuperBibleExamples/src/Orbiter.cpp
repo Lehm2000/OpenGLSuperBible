@@ -85,18 +85,9 @@ void Orbiter::removeOrbitDistanceController( const unsigned int index )
 	this->orbitDistance.removeController( index );
 }
 
-
-glm::mat4 Orbiter::GetTransformMatrix() const
+GEvec3 Orbiter::GetOrbitPosition() const
 {
-	glm::mat4 transformMatrix;
-	GEvec3 transformedPosition;
-	GEvec3 transformedRotation;
-	GEvec3 transformedScale;
-
-	transformedPosition;								// calculated based on orbit distance and orbit angle
-	transformedRotation = rotation.getFinalValue();		// get value after controllers applied
-	transformedScale = scale.getFinalValue();			// get value after controllers applied
-
+	GEvec3 orbitPosition;
 	const GEObject* targetObject = gameEntities->GetObject( this->orbitTargetName );
 	
 	if ( targetObject != nullptr )
@@ -110,7 +101,7 @@ glm::mat4 Orbiter::GetTransformMatrix() const
 		glm::vec4 newPos = glm::rotate( glm::mat4(), orbitAngle.getFinalValue().z, glm::vec3( 0.0f, 0.0f, 1.0f ) ) * glm::rotate( glm::mat4(), orbitAngle.getFinalValue().y, glm::vec3( 0.0f, 1.0f, 0.0f ) ) * glm::rotate( glm::mat4(), orbitAngle.getFinalValue().x, glm::vec3( 1.0f, 0.0f, 0.0f ) ) * distVector;
 		
 		// next transform the position to target.
-		transformedPosition = targetPos + glm::vec3( newPos.x, newPos.y, newPos.z );
+		orbitPosition = targetPos + glm::vec3( newPos.x, newPos.y, newPos.z );
 
 		// assign the new calculated rotation back... this ignores what we were given.
 		//transformedValue = newPos;
@@ -118,10 +109,21 @@ glm::mat4 Orbiter::GetTransformMatrix() const
 	else
 	{
 		// just return the objects base position
-		transformedPosition = this->getPositionStart();
+		orbitPosition = this->getPositionStart();
 	}
+	return orbitPosition;
+}
 
-	
+glm::mat4 Orbiter::GetTransformMatrix() const
+{
+	glm::mat4 transformMatrix;
+	GEvec3 transformedPosition;
+	GEvec3 transformedRotation;
+	GEvec3 transformedScale;
+
+	transformedPosition = this->GetOrbitPosition();								// calculated based on orbit distance and orbit angle
+	transformedRotation = rotation.getFinalValue();		// get value after controllers applied
+	transformedScale = scale.getFinalValue();			// get value after controllers applied
 
 	transformMatrix = glm::translate( glm::mat4(), transformedPosition ) * 
 		glm::rotate( glm::mat4(), transformedRotation.z, GEvec3( 0.0f, 0.0f, 1.0f ) ) * 

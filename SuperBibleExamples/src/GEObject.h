@@ -83,21 +83,21 @@ public:
 	std::string getID() const;
 	
 	GEvec3 getPositionStart() const { return this->position.getBaseValue(); };
-	GEvec3 getPositionFinal() const { return this->position.getFinalValue(); };
+	virtual GEvec3 getPositionFinal() const { return this->position.getFinalValue(); };
 	GEvec3 getPositionMin() const { return this->position.getMinValue(); };
 	bool getPositionUseMin() const { return this->position.getUseMin(); };
 	GEvec3 getPositionMax() const { return this->position.getMaxValue(); };
 	bool getPositionUseMax() const { return this->position.getUseMax(); };
 
 	GEvec3 getRotationStart() const { return this->rotation.getBaseValue(); };
-	GEvec3 getRotationFinal() const { return this->rotation.getFinalValue(); };
+	virtual GEvec3 getRotationFinal() const { return this->rotation.getFinalValue(); };
 	GEvec3 getRotationMin() const { return this->rotation.getMinValue(); };
 	bool getRotationUseMin() const { return this->rotation.getUseMin(); };
 	GEvec3 getRotationMax() const { return this->rotation.getMaxValue(); };
 	bool getRotationUseMax() const { return this->rotation.getUseMax(); };
 
 	GEvec3 getScaleStart() const { return this->scale.getBaseValue(); };
-	GEvec3 getScaleFinal() const { return this->scale.getFinalValue(); };
+	virtual GEvec3 getScaleFinal() const { return this->scale.getFinalValue(); };
 	GEvec3 getScaleMin() const { return this->scale.getMinValue(); };
 	bool getScaleUseMin() const { return this->scale.getUseMin(); };
 	GEvec3 getScaleMax() const { return this->scale.getMaxValue(); };

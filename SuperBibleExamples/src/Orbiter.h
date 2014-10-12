@@ -52,6 +52,8 @@ public:
 
 	std::string getOrbitTargetName() const;
 
+	virtual GEvec3 getPositionFinal() const { return this->GetOrbitPosition(); };
+
 	GEvec3 getOrbitAngleStart() const { return this->orbitAngle.getBaseValue(); };
 	GEvec3 getOrbitAngleFinal() const { return this->orbitAngle.getFinalValue(); };
 	GEvec3 getOrbitAngleMin() const { return this->orbitAngle.getMinValue(); };
@@ -74,6 +76,10 @@ public:
 	void removeOrbitAngleController( const unsigned int index );
 	void addOrbitDistanceController( GEControllerf1* controller, const GEObject* parent );
 	void removeOrbitDistanceController( const unsigned int index );
+	
+	/**
+	*/
+	GEvec3 GetOrbitPosition() const;
 
 	/**
 		GetTransformMatrix()
