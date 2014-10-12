@@ -14,16 +14,15 @@
 GEObject::GEObject()
 {
 	this->GenerateID();
-	this->setName( "" );
 	
-	this->getPosition()->setValue( GEvec3( 0.0f, 0.0f, 0.0f ) );
-	this->getRotation()->setValue( GEvec3( 0.0f, 0.0f, 0.0f ) );
-	this->getScale()->setValue( GEvec3( 1.0f, 1.0f, 1.0f ) );
+	this->setPositionStart( GEvec3( 0.0f, 0.0f, 0.0f ) );
+	this->setRotationStart( GEvec3( 0.0f, 0.0f, 0.0f ) );
+	this->setScaleStart( GEvec3( 1.0f, 1.0f, 1.0f ) );
 
 	// Initialize the controller list... add base "static" controller to the as the first
-	this->getPosition()->addController( new GEControllerv3(), this );
-	this->getRotation()->addController( new GEControllerv3(), this );	
-	this->getScale()->addController( new GEControllerv3(), this );
+	this->addPositionController( new GEControllerv3(), this );
+	this->addRotationController( new GEControllerv3(), this );	
+	this->addScaleController( new GEControllerv3(), this );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
@@ -33,7 +32,6 @@ GEObject::GEObject()
 GEObject::GEObject( const GEObject& source )
 {
 	this->GenerateID();
-	this->setName( source.getName() );
 
 	this->position = source.position;
 	this->rotation = source.rotation;
@@ -44,19 +42,18 @@ GEObject::GEObject( const GEObject& source )
 	this->setMaterial( source.getMaterial() );
 }
 
-GEObject::GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string name )
+GEObject::GEObject( GEvec3 position, GEvec3 rotation, GEvec3 scale )
 {
 	this->GenerateID();
-	this->setName( name );
 	
-	this->getPosition()->setValue( position );
-	this->getRotation()->setValue( rotation );
-	this->getScale()->setValue( scale );
+	this->setPositionStart( position );
+	this->setRotationStart( rotation );
+	this->setScaleStart( scale );
 
 	// Initialize the controller list... add base "static" controller as the first
-	this->getPosition()->addController( new GEControllerv3(), this );
-	this->getRotation()->addController( new GEControllerv3(), this );	
-	this->getScale()->addController( new GEControllerv3(), this );
+	this->addPositionController( new GEControllerv3(), this );
+	this->addRotationController( new GEControllerv3(), this );	
+	this->addScaleController( new GEControllerv3(), this );
 
 	this->setVisible( true );
 	this->setMesh( "" );			// Have a default mesh?
@@ -68,26 +65,7 @@ GEObject::~GEObject()
 	
 }
 
-//setters
-void GEObject::setName( const std::string name )
-{
-	this->name = name;
-}
-
-/*void GEObject::setPosition( const GEvec3 position )
-{
-	this->position.setValue( position);
-}
-
-void GEObject::setRotation( const GEvec3 rotation )
-{
-	this->rotation.setValue( rotation );
-}
-
-void GEObject::setScale(const GEvec3 scale)
-{
-	this->scale.setValue( scale );
-}*/
+// Setters
 
 void GEObject::setVisible( const bool visible )
 {
@@ -104,17 +82,20 @@ void GEObject::setMaterial( const std::string material )
 	this->material = material;
 }
 
-//getters
+void GEObject::setGameEntities( const GEObjectContainer* gameEntities )
+{
+	this->gameEntities = gameEntities;
+}
+
+
+
+// Getters
 std::string GEObject::getID() const
 {
 	return this->id;
 }
 
-std::string GEObject::getName() const
-{
-	return this->name;
-}
-
+	/*
 GEPropertyv3* GEObject::getPosition()
 {
 	return &this->position;
@@ -143,7 +124,7 @@ GEPropertyv3* GEObject::getScale()
 const GEPropertyv3* GEObject::getScale() const
 {
 	return &this->scale;
-}
+}*/
 
 bool GEObject::isVisible() const
 {
@@ -159,6 +140,8 @@ std::string GEObject::getMaterial() const
 {
 	return this->material;
 }
+
+
 
 // Comparison
 bool GEObject::operator==( const GEObject& other ) const
@@ -209,7 +192,38 @@ std::string GEObject::getClassName() const
 	return "GEObject";
 }
 
-glm::mat4 GEObject::GetTransformMatrix()
+void GEObject::addPositionController( GEControllerv3* controller, const GEObject* parent )
+{
+	position.addController( controller, parent );
+}
+
+void GEObject::removePositionController( const unsigned int index )
+{
+	position.removeController( index );
+}
+
+void GEObject::addRotationController( GEControllerv3* controller, const GEObject* parent )
+{
+	rotation.addController( controller, parent );
+}
+
+void GEObject::removeRotationController( const unsigned int index )
+{
+	rotation.removeController( index );
+}
+
+void GEObject::addScaleController( GEControllerv3* controller, const GEObject* parent )
+{
+	scale.addController( controller, parent );
+}
+
+void GEObject::removeScaleController( const unsigned int index )
+{
+	scale.removeController( index );
+}
+
+
+glm::mat4 GEObject::GetTransformMatrix() const
 {
 	glm::mat4 transformMatrix;
 	GEvec3 transformedPosition;
@@ -238,6 +252,14 @@ void GEObject::Update( const double gameTime, const double deltaTime)
 	scale.Update( gameTime, deltaTime);
 }
 
+void GEObject::ProcessInput( const GEInputState* inputState)
+{
+	// pass it on to the controllers to do their thing.
+	position.ProcessInput( inputState );
+	rotation.ProcessInput( inputState );
+	scale.ProcessInput( inputState );
+}
+
 GEObject* GEObject::clone() const
 {
 	return new GEObject(*this);
@@ -245,6 +267,8 @@ GEObject* GEObject::clone() const
 
 void GEObject::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities)
 {
+	this->setGameEntities( gameEntities );
+
 	// give all the transform controllers a pointer to the gameEntities
 
 	position.setControllerGameEntitiesPointer( gameEntities );

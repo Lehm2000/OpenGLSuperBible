@@ -1,8 +1,8 @@
 
 #include <glm\glm.hpp>
 
-#include "GEInputState.h"
 #include "InputItem.h"
+#include "GEInputState.h"
 
 // Structors
 GEInputState::GEInputState()
@@ -21,8 +21,6 @@ GEInputState::GEInputState()
 
 	this->setMousePosition( GEvec2( 0.0f, 0.0f ) );
 
-	// set other parameters
-	this->setVisible( false );	// this is not a visible game object.
 }
 
 GEInputState::GEInputState( GEvec2 mousePosition )
@@ -42,11 +40,9 @@ GEInputState::GEInputState( GEvec2 mousePosition )
 	this->setMousePosition( mousePosition );
 
 	// set other parameters
-	this->setVisible( false );	// this is not a visible game object.
 }
 
 GEInputState::GEInputState( const GEInputState& source )
-	:GEObject( source )
 {
 	for ( unsigned short i = 0; i< INPUTSTATE_MAX_KEY_BUTTONS; i++ )
 	{
@@ -108,16 +104,6 @@ GEvec2 GEInputState::getMouseScrollOffset( ) const
 
 
 // Functions
-
-GEInputState* GEInputState::clone() const
-{
-	return new GEInputState(*this);
-}
-
-std::string GEInputState::getClassName() const
-{
-	return "GEInputState";
-}
 
 void GEInputState::ResetMouseScrollOffset()
 {

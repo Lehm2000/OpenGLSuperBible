@@ -25,10 +25,11 @@ private:
 	double lastFrameTime;  
 
 	// Game Objects
-	GEObjectContainer gameEntities;		// Contains all objects in the game.
+	GEObjectContainer gameEntities;			// Contains all objects in the game.
 
 	// System Objects
-	GraphicsEngine* graphics;	// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.
+	GraphicsEngine* graphics;				// The graphics engine used.  GraphicsEngine will eventually be abstracted for modularity.
+	GEInputState inputState;				// the state of input.
 
 public:
 

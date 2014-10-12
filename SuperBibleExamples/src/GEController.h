@@ -18,10 +18,12 @@
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
-#include "TypeDefinitions.h"
 #include "GEObjectContainer.h"
+#include "GEInputState.h"
+#include "TypeDefinitions.h"
 
 class GEObject;
+class GEInputState;
 
 template <class T>
 class GEController
@@ -35,7 +37,7 @@ protected:
 		// GEproperty.  The function that returns the GEProperty can't return a
 		// const version of the property so that it can be modified.  
 		// Controllers need to be added to it for example.
-	const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
+	const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This one scares me a bit... I know its const... but is there a better way to get this info?
 
 	T transformedValue;	// the transformed data.
 
@@ -89,6 +91,12 @@ public:
 			Usually the objects original transform.
 	*/
 	virtual T CalcTransform( const T sourceValue ); 
+
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the inputFunction list as a pointer.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
 
 	/**
 		ValidateRange
@@ -183,6 +191,13 @@ template <class T>
 T GEController<T>::CalcTransform( T sourceValue )
 {
 	return sourceValue;  //return the source as the transformed.
+}
+
+template <class T>
+void GEController<T>::ProcessInput( const GEInputState* inputState )
+{
+	// do nothing.
+	
 }
 
 template <class T>

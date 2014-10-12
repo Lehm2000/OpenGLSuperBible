@@ -43,7 +43,7 @@ public:
 	virtual GEControllerInputKey<T>* clone() const;
 
 	/**
-		Update()
+		Control()
 		Takes objectVector and applies the deltaVec to it if this objects key is pressed.
 		@param startVector - starting point of the object.  Could be position, rotation or scale
 		@param gameTime - time since the game started
@@ -59,6 +59,12 @@ public:
 			Usually the objects original transform.
 	*/
 	virtual T CalcTransform( const T sourceValue );
+
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the inputFunction list as a pointer.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
 };
 
 template <class T>
@@ -66,6 +72,8 @@ GEControllerInputKey<T>::GEControllerInputKey()
 	:GEControllerConstant<T>()
 {
 	this->setKey( GE_KEY_UNKNOWN );
+	this->pressed = false;
+	this->pressedPrev = false;
 	
 }
 
@@ -74,6 +82,8 @@ GEControllerInputKey<T>::GEControllerInputKey( const T valueDelta, unsigned shor
 	:GEControllerConstant<T>( valueDelta )
 {
 	this->setKey( key );
+	this->pressed = false;
+	this->pressedPrev = false;
 }
 
 template <class T>
@@ -81,6 +91,8 @@ GEControllerInputKey<T>::GEControllerInputKey( const GEControllerInputKey<T>& so
 	:GEControllerConstant<T>( source.valueDelta )
 {
 	this->setKey( source.key );
+	this->pressed = false;
+	this->pressedPrev = false;
 }
 
 template <class T>
@@ -118,23 +130,7 @@ GEControllerInputKey<T>* GEControllerInputKey<T>::clone() const
 template <class T>
 T GEControllerInputKey<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	// Update the key status
-
-	this->pressedPrev = this->pressed;
-
-	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
-	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
-	if ( isObject != nullptr )
-	{
-		const GEInputState* inputState = (GEInputState*)isObject;
-		this->pressed = inputState->getKeyboardKey( this->key );
-	}
-	else
-	{
-		// if fail to find the input state object... assume its not pressed.
-		this->pressed = false;
-	}
 
 	// then apply the delta if the key is pressed.
 	if ( this->pressed )
@@ -153,7 +149,16 @@ T GEControllerInputKey<T>::CalcTransform( T sourceValue )
 	return sourceValue + transformedValue;
 }
 
-
+template <class T>
+void GEControllerInputKey<T>::ProcessInput( const GEInputState* inputState )
+{
+	// Set the previous pressed state.
+	this->pressedPrev = this->pressed;
+	
+	// Update the key status
+	this->pressed = inputState->getKeyboardKey( this->key );
+	
+}
 
 typedef GEControllerInputKey<float> GEControllerInputKeyf1;
 typedef GEControllerInputKey<GEvec2> GEControllerInputKeyv2;

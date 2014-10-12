@@ -13,11 +13,14 @@
 #include "GEObject.h"
 #include "GEController.h"
 #include "GEObjectContainer.h"
+#include "GEInputState.h"
 
 template <class T>
 class GEController;
 
 class GEObject;
+
+class GEInputState;
 
 template <class T>
 class GEProperty
@@ -62,6 +65,13 @@ public:
 	void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 	void Update( const double gameTime, const double deltaTime);
+
+	/**
+		ProcessInput
+		Function for processing input from the user.  Takes the input state and
+		passes it to the Controllers
+	*/
+	void ProcessInput( const GEInputState* inputState );
 	
 };
 
@@ -273,6 +283,15 @@ void GEProperty<T>::Update( const double gameTime, const double deltaTime)
 	// go through list of controllers and tell them to do their calculations.
 	for ( unsigned int i = 0; i < controllers.size(); i++)
 		totalValue = controllers[i]->Control( totalValue, gameTime, deltaTime, max, useMax, min, useMin );
+}
+
+template <class T>
+void GEProperty<T>::ProcessInput( const GEInputState* inputState )
+{
+	for( unsigned int i = 0; i < controllers.size(); i++ )
+	{
+		controllers[i]->ProcessInput( inputState );
+	}
 }
 
 

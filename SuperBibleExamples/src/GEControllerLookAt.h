@@ -118,9 +118,9 @@ GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTim
 	if ( targetObject != nullptr && parent != nullptr )
 	{
 	
-		const GEvec3 targetPos = targetObject->getPosition()->getFinalValue();
-		const GEPropertyv3* tempPosProp = parent->getPosition();
-		GEvec3 parentPos = tempPosProp->getFinalValue();
+		const GEvec3 targetPos = targetObject->getPositionFinal();
+		//const GEPropertyv3* tempPosProp = parent->getPosition();
+		GEvec3 parentPos = parent->getPositionFinal();
 		GEvec3 deltaPos = targetPos - parentPos;
 
 		// get the distance in the xz plane

@@ -13,8 +13,10 @@
 #include <map>
 
 #include "GEObject.h"
+#include "GEInputState.h"
 
 class GEObject;
+class GEInputState;
 
 class GEObjectContainer
 {
@@ -75,7 +77,7 @@ public:
 		UpdateObjects()
 		Calls the update function of all the objects
 	*/
-	void UpdateObjects( double gameTime, double deltaTime );
+	void UpdateObjects( double gameTime, double deltaTime, const GEInputState* inputState );
 };
 
 #endif /* GEOBJECTCONTAINER_H */

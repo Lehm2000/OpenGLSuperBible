@@ -79,10 +79,11 @@ std::map< std::string, GEObject*>::const_iterator GEObjectContainer::Last() cons
 	return objects.end();
 }
 
-void GEObjectContainer::UpdateObjects( double gameTime, double deltaTime )
+void GEObjectContainer::UpdateObjects( double gameTime, double deltaTime, const GEInputState* inputState )
 {
 	for ( std::map< std::string, GEObject* >::const_iterator it = objects.begin(); it != objects.end(); it++ )
 	{
+		it->second->ProcessInput( inputState );
 		it->second->Update( gameTime, deltaTime );
 	}
 }

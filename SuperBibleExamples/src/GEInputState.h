@@ -11,6 +11,7 @@
 	Author: Jeff Adams
 */
 
+#include <string>
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
@@ -19,7 +20,8 @@
 #define INPUTSTATE_MAX_KEY_BUTTONS		512
 #define INPUTSTATE_MAX_MOUSE_BUTTONS	8
 
-class GEInputState: public GEObject
+
+class GEInputState
 {
 private:
 
@@ -51,13 +53,6 @@ public:
 
 	// Functions
 
-	/**
-		clone()
-		Creates a copy of the object and returns it.
-	*/
-	virtual GEInputState* clone() const;
-
-	virtual std::string getClassName() const;
 
 	void ResetMouseScrollOffset();
 	

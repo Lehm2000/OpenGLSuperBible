@@ -2,6 +2,7 @@
 
 #include "GraphicsEngineOpenGL.h"
 #include "GameEngine.h"
+#include "GEObject.h"
 #include "CameraObject.h"
 #include "CameraPerspective.h"
 #include "GEControllerOscillator.h"
@@ -83,9 +84,11 @@ bool GameEngine::Initialize()
 	GEObject* gameVars = new InfoGameVars();
 	AddEntity( "SYS_Game_Vars", gameVars );
 
-	// Add the input state object... keeps track of current inputs.
-	GEObject* inputState = new GEInputState( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
-	AddEntity( "SYS_Input_State", inputState );
+	// Initialize input state object... keeps track of current inputs.
+	inputState.setMousePosition( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
+
+	//GEObject* inputState = new GEInputState( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
+	//AddEntity( "SYS_Input_State", inputState );
 
 	// create the graphics engine
 	graphics = new GraphicsEngineOpenGL( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
@@ -114,14 +117,14 @@ void GameEngine::Update()
 
 	// Get a reference to the input state
 
-	GEInputState* inputState = (GEInputState*)gameEntities.GetObject( "SYS_Input_State" );
+	//GEInputState* inputState = (GEInputState*)gameEntities.GetObject( "SYS_Input_State" );
 
 	// Get pointer to the input queue in the graphics engine.
 	std::queue< InputItem >* inputList = graphics->getInputList();
 	
 	// do the input here.
 
-	inputState->ResetMouseScrollOffset();  // mouse offset needs to be reset at the beginning.
+	inputState.ResetMouseScrollOffset();  // mouse offset needs to be reset at the beginning.
 
 	while (inputList->size() > 0 )
 	{
@@ -132,8 +135,6 @@ void GameEngine::Update()
 
 		unsigned int inputType = curInput.getInputType();
 
-		inputState->ResetMouseScrollOffset();
-
 		switch ( inputType )
 		{
 		case GE_INPUT_KEY:
@@ -143,20 +144,20 @@ void GameEngine::Update()
 				pressed = true;
 
 			// update the key state in the game engine.
-			inputState->setKeyboardKey( curInput.getInputIndex(), pressed );
+			inputState.setKeyboardKey( curInput.getInputIndex(), pressed );
 
 			break;
 		case GE_INPUT_MOUSEBUTTON:
 			if ( curInput.getInputAction() == GE_ACTION_PRESS )
 				pressed = true;
-			inputState->setMouseButton( curInput.getInputIndex(), pressed );
+			inputState.setMouseButton( curInput.getInputIndex(), pressed );
 
 			break;
 		case GE_INPUT_MOUSEPOSITION:
-			inputState->setMousePosition( curInput.getInputPosition() );
+			inputState.setMousePosition( curInput.getInputPosition() );
 			break;
 		case GE_INPUT_MOUSESCROLL:
-			inputState->setMouseScrollOffset( curInput.getInputPosition() );
+			inputState.setMouseScrollOffset( curInput.getInputPosition() );
 
 			break;
 		//default:
@@ -174,10 +175,9 @@ void GameEngine::Update()
 	//update the game time
 	gameVars->setCurrentFrameTime( getGameTime() );
 	
-	//double timeDelta = getGameTime() - lastFrameTime;
 
 	// Update entities--------------------------------------------------------------------------------------
-	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime() );
+	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime(), &inputState );
 
 	// Update the last frametime
 	this->lastFrameTime = getGameTime();
@@ -238,6 +238,8 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 void GameEngine::RemoveEntity( const std::string entityName)
 {
 	gameEntities.RemoveObject( entityName );
+
+	// TODO deregister objects ProcessInput Function.
 }
 
 GEObject* GameEngine::GetEntity( const std::string entityName )

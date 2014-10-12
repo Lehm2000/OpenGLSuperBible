@@ -84,7 +84,7 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 		
 		// create a camera.
 		const CameraObject* renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), 1.0f, 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), 1.0f, 0.1f, 1000.0f) * renderCam->GetViewMatrix();
 		
 		GEMesh renderMesh = resMesh.GetResource( "plane" );
 
@@ -136,7 +136,7 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 
 		// create a camera and new view matrix
 		renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
 
 		// reset the viewport
 		glViewport( 0, 0,  (float)gameEngineSettings->getViewportWidth(), (float)gameEngineSettings->getViewportHeight() );
@@ -221,14 +221,14 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 		{
 			if (renderCam->getClassName() == "CameraPerspective" )
 			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
 			}
 		}
 		else
 		{
 			// if can't find renderCam build a generic one.
 			renderCam = new CameraPerspective( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
+			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
 		}
 
 		const GLfloat bkColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
@@ -339,7 +339,7 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 	// Testing text output
 
 	// get the viewport info out of the game entities
-	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 	
 	if ( gameEngineSettings != nullptr )
 	{
@@ -397,7 +397,7 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 		glVertexAttribDivisor(0, 0);
 
 		// temp render the pressed inputs.------------------------------------------
-
+		/*
 		// get pointer to the input state
 		const GEInputState* inputState = (GEInputState*)gameEntities->GetObject( "SYS_Input_State" );
 		
@@ -475,6 +475,7 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 		glVertexAttribDivisor(0, 1);
 		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
 		glVertexAttribDivisor(0, 0);
+		*/
 	}
 }
 
