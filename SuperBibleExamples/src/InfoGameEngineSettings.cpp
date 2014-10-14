@@ -7,7 +7,17 @@ InfoGameEngineSettings::InfoGameEngineSettings()
 	this->setViewportWidth( 640 );
 	this->setViewportHeight( 480 );
 
-	this->setRenderMode( GE_RENDERMODE_FULL );
+	// Initialize Settings here
+	this->renderMode.setValueIndex( 0 );
+	std::vector< unsigned char> modeList;
+	modeList.push_back( GE_RENDERMODE_FULL );
+	modeList.push_back( GE_RENDERMODE_WIRE );
+	this->renderMode.setValueList( modeList );
+	this->renderMode.setEngineAction( GE_ENGINE_ACTION_CHANGERENDERMODE );
+	this->renderMode.setAction( GE_ACTION_PRESS	);
+	
+
+	//this->setRenderMode( GE_RENDERMODE_FULL );
 	this->setShowBoundingBoxes( false );
 }
 
@@ -19,7 +29,7 @@ InfoGameEngineSettings::InfoGameEngineSettings( const InfoGameEngineSettings& so
 
 	this->setRenderCam( source.renderCam );
 
-	this->setRenderMode( source.renderMode );
+	this->renderMode = renderMode;
 	this->setShowBoundingBoxes( source.showBoundingBoxes );
 }
 
@@ -41,7 +51,7 @@ void InfoGameEngineSettings::setRenderCam( const std::string renderCam )
 
 void InfoGameEngineSettings::setRenderMode( unsigned char renderMode )
 {
-	this->renderMode = renderMode;
+	//this->renderMode = renderMode;
 }
 
 void InfoGameEngineSettings::setShowBoundingBoxes( bool showBoundingBoxes )
@@ -70,7 +80,7 @@ std::string InfoGameEngineSettings::getRenderCam() const
 
 unsigned char InfoGameEngineSettings::getRenderMode() const
 {
-	return this->renderMode;
+	return this->renderMode.getValue();
 }
 
 bool InfoGameEngineSettings::getShowBoundingBoxes() const
@@ -82,6 +92,17 @@ bool InfoGameEngineSettings::getShowBoundingBoxes() const
 
 // Functions
 	
+void InfoGameEngineSettings::ProcessInput( const GEInputState* inputState)
+{
+	// pass it on to the controllers to do their thing.
+	position.ProcessInput( inputState );
+	rotation.ProcessInput( inputState );
+	scale.ProcessInput( inputState );
+
+	// pass it on to the settings
+	renderMode.ProcessInput( inputState );
+}
+
 /**
 	clone()
 	Creates a copy of the object and returns it.
@@ -96,3 +117,4 @@ std::string InfoGameEngineSettings::getClassName() const
 {
 	return "InfoGameEngineSettings";
 }
+

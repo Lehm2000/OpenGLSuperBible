@@ -42,7 +42,10 @@ protected:
 	std::string material;		// path to the material
 
 	// other
-	const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This one scares me a bit... I know its const... but is there a better way to get this info?
+	const GEObjectContainer* gameEntities;  /* pointer to the master gameEntity 
+		list.  In case the controller needs to know the properties of some 
+		other object in the world.  This one scares me a bit... I know its 
+		const... but is there a better way to get this info? */
 
 	
 public:

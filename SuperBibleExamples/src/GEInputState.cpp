@@ -78,7 +78,13 @@ void GEInputState::setMouseScrollOffset( const GEvec2 mouseScrollOffset )
 	this->mouseScrollOffset +=  mouseScrollOffset;
 }
 
-
+void GEInputState::setInputAction( const unsigned int index, const InputAction inputAction )
+{
+	if( index >= 0 && index < GE_MAX_INPUT_ACTIONS )
+	{
+		actionList[ index ] = inputAction; 
+	}
+}
 
 // Getters
 bool GEInputState::getKeyboardKey( const unsigned short key ) const
@@ -518,4 +524,31 @@ std::string GEInputState::ButtonToString( unsigned int buttonIndex ) const
 	}
 
 	return returnString;
+}
+
+bool GEInputState::ActionToggled( unsigned int actionIndex ) const
+{
+	bool toggled = true;
+
+	// go through list of ActionInput requirements and see if all met
+
+	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumKeys(); i++ )
+	{
+		if( !keyboardKeys[ actionList[ actionIndex ].getKey(i) ] )
+		{
+			toggled = false;
+			break;
+		}
+	}
+
+	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumMouseButtons() && toggled; i++ )
+	{
+		if( !mouseButtons[ actionList[ actionIndex ].getMouseButton(i) ] )
+		{
+			toggled = false;
+			break;
+		}
+	}
+
+	return toggled;
 }

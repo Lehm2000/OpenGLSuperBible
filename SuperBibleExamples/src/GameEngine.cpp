@@ -17,6 +17,7 @@
 #include "TypeDefinitions.h"
 #include "MUMesh.h"
 #include "MeshUtilities.h"
+#include "InputStateHolder.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -87,8 +88,18 @@ bool GameEngine::Initialize()
 	// Initialize input state object... keeps track of current inputs.
 	inputState.setMousePosition( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
 
-	//GEObject* inputState = new GEInputState( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
-	//AddEntity( "SYS_Input_State", inputState );
+	// add a pointer to the input state into the gameEntities list.
+	GEObject* inputStateHolder = new InputStateHolder( &inputState );
+	AddEntity( "SYS_Input_State", inputStateHolder );
+
+	// setup inputs necessary for InputActions... probably want new function for this... needs ability to load from file.
+	InputAction newInputAction;
+	newInputAction.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction.AddKey( GE_KEY_R );
+	inputState.setInputAction( GE_ENGINE_ACTION_CHANGERENDERMODE, newInputAction );
+	
+	//GE_ENGINE_ACTION_SHOWBOUNDINGBOX	2
+
 
 	// create the graphics engine
 	graphics = new GraphicsEngineOpenGL( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.

@@ -26,12 +26,7 @@ int main(void)
 	
 	bool gameRunning = true;
 
-	// testing mesh stuff here
-
-	MeshUtilities meshUtil;
-
-	meshUtil.LoadASE( "C:\\Programming\\OpenGLSuperBible\\SuperBibleExamples\\meshes\\testBox.ASE" );
-	
+	// testing math stuff here
 	
 	GameEngine gameEngine; //make pointer?... this will go inside the game class eventually
 
@@ -40,13 +35,13 @@ int main(void)
 	// create the main render camera
 
 	//gameEngine.CreateGameCam(CAMTYPE_PERSPECTIVE,GEvec3( 0.0f, 0.0f, 2.5f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
-	CameraPerspective* camObject = new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
-	//camObject->getRotation()->addController( new GEControllerInputMousePositionXv3( GEvec3( 0.0f, -0.0025f, 0.0f ) ), camObject );
-	//camObject->getRotation()->addController( new GEControllerInputMousePositionYv3( GEvec3( -0.0025f, 0.0f, 0.0f ) ), camObject );
-	camObject->setRotationMax( GEvec3( 0.5f, 0.5f, 0.05f ) );
+	CameraPerspective* camObject = new CameraPerspective( GEvec3( 0.0f, 0.0f, 3.0f ), GEvec3(0.0f, 0.0f, 0.0f ), glm::radians(45.0f) );
+	camObject->addRotationController( new GEControllerInputMousePositionXv3( GEvec3( 0.0f, -0.0025f, 0.0f ) ), camObject );
+	camObject->addRotationController( new GEControllerInputMousePositionYv3( GEvec3( -0.0025f, 0.0f, 0.0f ) ), camObject );
+	/*camObject->setRotationMax( GEvec3( 0.5f, 0.5f, 0.05f ) );
 	camObject->setRotationUseMax( true );
 	camObject->setRotationMin( GEvec3( -0.5f, -0.5f, 0.05f ) );
-	camObject->setRotationUseMin( true );
+	camObject->setRotationUseMin( true );*/
 	camObject->addFovController( new GEControllerInputMouseScrollYf1( -0.10f ), camObject );
 	gameEngine.AddEntity( "gameCam01", camObject );
 
@@ -74,14 +69,14 @@ int main(void)
 		"testObject", GEvec3( 0.0f, 0.0f, 0.0f ), 1.0f );
 	testOrbiter->setMesh( "cube" );
 	testOrbiter->setMaterial( "default" );
-	testOrbiter->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, 1.0f, 0.0f ) ), testOrbiter );
+	testOrbiter->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, 2.0f, 0.0f ) ), testOrbiter );
 	gameEngine.AddEntity( "testOrbiter", testOrbiter );
 
 	Orbiter* testOrbiter2 = new Orbiter( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( .25f, .25f, .25f ),
 		"testOrbiter", GEvec3( 0.0f, 0.0f, 0.0f ), 0.5f );
 	testOrbiter2->setMesh( "cube" );
 	testOrbiter2->setMaterial( "default" );
-	testOrbiter2->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, 5.0f, 0.0f ) ), testOrbiter );
+	testOrbiter2->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, -2.0f, 0.0f ) ), testOrbiter );
 	gameEngine.AddEntity( "testOrbiter2", testOrbiter2 );
 
 	GEObject* testObject2 = new GEObject( GEvec3( 1.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ) );
@@ -99,7 +94,7 @@ int main(void)
 	testObject3->setMesh( "plane" );
 	testObject3->setMaterial( "texture_test" );
 	
-	testObject3->addRotationController( new GEControllerLookAt( "testObject2"), testObject3 );
+	testObject3->addRotationController( new GEControllerLookAt( "testObject"), testObject3 );
 	gameEngine.AddEntity( "testObject3", testObject3 );
 
 	while (gameRunning)

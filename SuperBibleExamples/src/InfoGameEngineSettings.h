@@ -8,6 +8,8 @@
 */
 
 #include "Info.h"
+#include "GESetting.h"
+#include "InputItem.h"
 
 // render modes
 #define GE_RENDERMODE_FULL		1
@@ -27,7 +29,7 @@ private:
 		//rendering from.  TODO how to allow more than one render cam?
 
 	// Render options ( That aren't exclusive to a specific render engine )
-	unsigned char renderMode;
+	GESetting< unsigned char> renderMode; //unsigned char renderMode;
 	bool showBoundingBoxes;
 
 public:
@@ -57,6 +59,14 @@ public:
 
 	// Functions
 	
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the
+		inputFunction list as a pointer.  Takes the input state and passes it
+		to the Controllable Properties/Settings.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
+
 	/**
 		clone()
 		Creates a copy of the object and returns it.

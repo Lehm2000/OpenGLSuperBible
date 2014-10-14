@@ -55,6 +55,12 @@ public:
 	*/
 	virtual T CalcTransform( const T sourceValue );
 
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the inputFunction list as a pointer.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
+
 	
 };
 
@@ -102,7 +108,8 @@ void GEControllerInputMousePositionY<T>::setGameEntities( const GEObjectContaine
 	
 	if ( isObject != nullptr )
 	{
-		const GEInputState* inputState = (GEInputState*)isObject;
+		const InputStateHolder* inputStateHolder = (InputStateHolder*)isObject;
+		const GEInputState* inputState = inputStateHolder->getInputState();
 		this->mousePositionY = inputState->getMousePosition().y;
 		this->mousePositionYPrev = this->mousePositionY;
 	}
@@ -126,19 +133,7 @@ GEControllerInputMousePositionY<T>* GEControllerInputMousePositionY<T>::clone() 
 template <class T>
 T GEControllerInputMousePositionY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	// Start by updating the mouse position
-	this->mousePositionYPrev = this->mousePositionY;
-
-	// get the new mouse position
-	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
-	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
-	if ( isObject != nullptr )
-	{
-		const GEInputState* inputState = (GEInputState*)isObject;
-		this->mousePositionY = inputState->getMousePosition().y;
-	}
-
 	// find the change
 	float mousePosXDelta = this->mousePositionY - this->mousePositionYPrev;
 
@@ -155,6 +150,15 @@ template <class T>
 T GEControllerInputMousePositionY<T>::CalcTransform( T sourceValue )
 {
 	return sourceValue + transformedValue;
+}
+
+template <class T>
+void GEControllerInputMousePositionY<T>::ProcessInput( const GEInputState* inputState )
+{
+	this->mousePositionYPrev = this->mousePositionY;
+
+	this->mousePositionY = inputState->getMousePosition().y;
+
 }
 
 

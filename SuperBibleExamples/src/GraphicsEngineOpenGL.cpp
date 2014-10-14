@@ -12,6 +12,7 @@
 #include "InfoGameVars.h"
 #include "InfoGameEngineSettings.h"
 #include "GEInputState.h"
+#include "InputStateHolder.h"
 
 
 GraphicsEngineOpenGL::GraphicsEngineOpenGL()
@@ -275,7 +276,7 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 				glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-            
+			
 				// bind the required textures
 				for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
 				{
@@ -397,15 +398,17 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 		glVertexAttribDivisor(0, 0);
 
 		// temp render the pressed inputs.------------------------------------------
-		/*
+		
 		// get pointer to the input state
-		const GEInputState* inputState = (GEInputState*)gameEntities->GetObject( "SYS_Input_State" );
-		
-
-		std::string inputString = "";
-		
-		if( inputState != nullptr )
+		const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
+	
+		if ( isObject != nullptr )
 		{
+			const InputStateHolder* inputStateHolder = (InputStateHolder*)isObject;
+			const GEInputState* inputState = inputStateHolder->getInputState();
+
+			std::string inputString = "";
+		
 			for ( unsigned int i = 0; i < INPUTSTATE_MAX_KEY_BUTTONS; i++ )
 			{
 				if (inputState->getKeyboardKey( i ) )  // if key pressed
@@ -414,68 +417,66 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 					inputString.append( " " );
 				}
 			}
-		}
-		else
-		{
-			inputString = "Error: Cannot find SYS_Input_State";
-		}
+		
+		
 
-		glUniform2f( startPosLoc, 0.0075f, 0.04f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.04f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
 
-		// now render the mouse position
-		inputString = "";
+			// now render the mouse position
+			inputString = "";
 	
-		inputString = std::to_string( (int)inputState->getMousePosition().x ) + ", " + std::to_string( (int)inputState->getMousePosition().y );
+			inputString = std::to_string( (int)inputState->getMousePosition().x ) + ", " + std::to_string( (int)inputState->getMousePosition().y );
 
-		glUniform2f( startPosLoc, 0.0075f, 0.0275f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.0275f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
 
-		// now the mouse buttons
+			// now the mouse buttons
 
-		inputString = "";
+			inputString = "";
 	
-		for ( unsigned int i = 0; i < INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
-		{
-			if (inputState->getMouseButton( i ) )  // if key pressed
+			for ( unsigned int i = 0; i < INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
 			{
-				inputString.append( inputState->ButtonToString( i ) );  // get the string representation of it
-				inputString.append( " " );
+				if (inputState->getMouseButton( i ) )  // if key pressed
+				{
+					inputString.append( inputState->ButtonToString( i ) );  // get the string representation of it
+					inputString.append( " " );
+				}
 			}
-		}
 
-		glUniform2f( startPosLoc, 0.0075f, 0.05f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.05f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
 
-		// now the mouse scroll
+			// now the mouse scroll
 
-		inputString = "";
+			inputString = "";
 	
-		inputString = std::to_string( (int)inputState->getMouseScrollOffset().x ) + ", " + std::to_string( (int)inputState->getMouseScrollOffset().y );
+			inputString = std::to_string( (int)inputState->getMouseScrollOffset().x ) + ", " + std::to_string( (int)inputState->getMouseScrollOffset().y );
 
-		glUniform2f( startPosLoc, 0.0075f, 0.06f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
-		*/
+			glUniform2f( startPosLoc, 0.0075f, 0.06f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
+		}
+		
 	}
 }
 
@@ -633,20 +634,20 @@ bool GraphicsEngineOpenGL::InitShaders(void)
 	const char* fsCode[] = 
 	{
 		"#version 430  \n"
-                                                                            
-        "layout (location = 0) out vec4 color;\n"
-        "                                                                       \n"
-        "in VS_OUT                                                              \n"
-        "{                                                                      \n"
-        "	vec4 color; \n"
+																			
+		"layout (location = 0) out vec4 color;\n"
+		"                                                                       \n"
+		"in VS_OUT                                                              \n"
+		"{                                                                      \n"
+		"	vec4 color; \n"
 		"	vec3 normal;\n"
 		"	vec2 tc;\n"
-        "} fs_in;                                                               \n"
-        
-        "void main(void)                                                        \n"
-        "{                                                                      \n"
+		"} fs_in;                                                               \n"
+		
+		"void main(void)                                                        \n"
+		"{                                                                      \n"
 		"    color = vec4(1.0,1.0,0.0,1.0);   \n"
-        "}\n"      
+		"}\n"      
 	};
 
 	fragmentShader = materialMan.CompileShaderFromSource( fsCode, GL_FRAGMENT_SHADER );
