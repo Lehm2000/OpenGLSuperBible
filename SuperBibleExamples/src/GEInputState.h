@@ -28,6 +28,11 @@
 #define GE_ENGINE_ACTION_NONE				0
 #define GE_ENGINE_ACTION_CHANGERENDERMODE	1
 #define GE_ENGINE_ACTION_SHOWBOUNDINGBOX	2
+#define GE_ENGINE_ACTION_CHANGECURSORMODE	3
+
+// mouseModes
+#define GE_MOUSEMODE_LOOK		0
+#define GE_MOUSEMODE_POINT		1
 
 class GEInputState
 {
@@ -36,8 +41,9 @@ private:
 	// Members
 	bool keyboardKeys[ INPUTSTATE_MAX_KEY_BUTTONS ];
 	bool mouseButtons[ INPUTSTATE_MAX_MOUSE_BUTTONS ];
+	unsigned char mouseMode;							// What mode is the mouse? Member of GE_MOUSEMODE_*
 	GEvec2 mousePosition;
-	GEvec2 mousePositionPrev;  // Is this one necessary or will the controllers be responsible for tracking the previous position?
+	GEvec2 mousePositionPrev;  // TODO Is this one necessary or will the controllers be responsible for tracking the previous position?
 	GEvec2 mouseScrollOffset;	// how much the mouse scrolled, this needs to be reset at the beginning of each frame.
 
 	InputAction actionList[ GE_MAX_INPUT_ACTIONS ];		/* This holds the key/button combinations necessary to activate 
@@ -55,6 +61,7 @@ public:
 	void setMouseButton( const unsigned short button, bool pressed );
 	void setMousePosition( const GEvec2 mousePosition );
 	void setMouseScrollOffset( const GEvec2 mouseScrollOffset );
+	void setMouseMode( const unsigned char mouseMode );
 	/**
 		setInputAction
 		Uses provided index ( GE_ENGINE_ACTION_* ) to set an InputAction in the actionList array.
@@ -66,6 +73,7 @@ public:
 	bool getMouseButton( const unsigned short button ) const;
 	GEvec2 getMousePosition( ) const;
 	GEvec2 getMouseScrollOffset( ) const;
+	unsigned char getMouseMode( ) const;
 
 	// Functions
 

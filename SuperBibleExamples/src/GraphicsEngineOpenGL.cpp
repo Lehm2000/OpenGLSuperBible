@@ -544,9 +544,12 @@ bool GraphicsEngineOpenGL::Init()
 		glfwSetMouseButtonCallback( window, mouse_button_callback );
 		glfwSetScrollCallback( window, mouse_scroll_callback );
 
+		// set vsync on
+		glfwSwapInterval( 1 );
 
 		// set the window pointer to this graphics engine so the callback functions have access to it.
 		glfwSetWindowUserPointer( window, this ); 	
+		SetMouseMode( gameEngineSettings->getMouseMode() );
 	
 		//not sure this is the best place for these, but will work for now
 		InitShaders();
@@ -556,6 +559,7 @@ bool GraphicsEngineOpenGL::Init()
 		//Set some options
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
+
 
 		success = true;		// if we got here all must have gone well.
 
@@ -983,4 +987,16 @@ bool GraphicsEngineOpenGL::BufferTexture( std::string texturePath )
 	return success;
 }
 
+void GraphicsEngineOpenGL::SetMouseMode( unsigned char mouseMode )
+{
+	switch( mouseMode )
+	{
+	case GE_MOUSEMODE_LOOK:
+		glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+		break;
+	case GE_MOUSEMODE_POINT:
+		glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
+		break;
+	}
+}
 

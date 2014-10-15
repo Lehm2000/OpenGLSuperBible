@@ -12,8 +12,10 @@
 #include "InputItem.h"
 
 // render modes
-#define GE_RENDERMODE_FULL		1
-#define GE_RENDERMODE_WIRE		2
+#define GE_RENDERMODE_FULL		0
+#define GE_RENDERMODE_WIRE		1
+
+
 
 class InfoGameEngineSettings: public Info
 {
@@ -30,7 +32,10 @@ private:
 
 	// Render options ( That aren't exclusive to a specific render engine )
 	GESetting< unsigned char> renderMode; //unsigned char renderMode;
-	bool showBoundingBoxes;
+	GESetting< bool > showBoundingBoxes;
+
+	// Input Options
+	GESetting< unsigned char > mouseMode;
 
 public:
 
@@ -55,6 +60,7 @@ public:
 
 	unsigned char getRenderMode() const;
 	bool getShowBoundingBoxes() const;
+	unsigned char getMouseMode() const;
 
 
 	// Functions

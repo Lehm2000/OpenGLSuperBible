@@ -155,9 +155,16 @@ T GEControllerInputMousePositionY<T>::CalcTransform( T sourceValue )
 template <class T>
 void GEControllerInputMousePositionY<T>::ProcessInput( const GEInputState* inputState )
 {
-	this->mousePositionYPrev = this->mousePositionY;
+	if( inputState->getMouseMode() == GE_MOUSEMODE_LOOK )
+	{
+		this->mousePositionYPrev = this->mousePositionY;
 
-	this->mousePositionY = inputState->getMousePosition().y;
+		this->mousePositionY = inputState->getMousePosition().y;
+	}
+	else
+	{
+		this->mousePositionYPrev = this->mousePositionY = inputState->getMousePosition().y;
+	}
 
 }
 

@@ -134,6 +134,14 @@ public:
 	virtual bool BufferMaterial( std::string materialPath ) = 0;
 	
 	virtual void QueueInputItem( InputItem input );
+
+	/**
+		SetMouseMode()
+		Changes the mouse input mode.
+		@param mouseMode - which mode to set.  Member of GE_MOUSEMODE_*
+		@return void
+	*/
+	virtual void SetMouseMode( unsigned char mouseMode ) = 0;
 	
 	
 };

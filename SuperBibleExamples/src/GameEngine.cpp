@@ -97,6 +97,15 @@ bool GameEngine::Initialize()
 	newInputAction.AddKey( GE_KEY_LEFT_ALT );
 	newInputAction.AddKey( GE_KEY_R );
 	inputState.setInputAction( GE_ENGINE_ACTION_CHANGERENDERMODE, newInputAction );
+
+	InputAction newInputAction2;
+	newInputAction2.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction2.AddKey( GE_KEY_B );
+	inputState.setInputAction( GE_ENGINE_ACTION_SHOWBOUNDINGBOX, newInputAction2 );
+
+	InputAction newInputAction3;
+	newInputAction3.AddMouseButton( GE_MOUSE_BUTTON_2 );
+	inputState.setInputAction( GE_ENGINE_ACTION_CHANGECURSORMODE, newInputAction3 );
 	
 	//GE_ENGINE_ACTION_SHOWBOUNDINGBOX	2
 
@@ -126,9 +135,9 @@ void GameEngine::Update()
 {
 	// Do input--------------------------------------------------------------------------------------------
 
-	// Get a reference to the input state
+	// Get a reference to the game settings
 
-	//GEInputState* inputState = (GEInputState*)gameEntities.GetObject( "SYS_Input_State" );
+	InfoGameEngineSettings* engineSettings = (InfoGameEngineSettings*)gameEntities.GetObject( "SYS_GameEngine_Settings" );
 
 	// Get pointer to the input queue in the graphics engine.
 	std::queue< InputItem >* inputList = graphics->getInputList();
@@ -177,6 +186,10 @@ void GameEngine::Update()
 		// remove the top item from the queue
 		inputList->pop();
 	}
+	
+	// check the current mousemode.  TODO only do this if mode changed rather than every frame.
+	inputState.setMouseMode( engineSettings->getMouseMode() );  // set the current mousemode in the input state (this is where most objects will check the mouse mode )
+	graphics->SetMouseMode( engineSettings->getMouseMode() ); // Tell the graphics engine to change mouse behavior
 
 	// Update game variables------------------------------------------------------------------------------
 	

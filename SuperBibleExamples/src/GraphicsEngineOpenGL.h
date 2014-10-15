@@ -163,6 +163,14 @@ public:
 	bool BufferMaterial( std::string materialPath );
 	bool BufferTexture( std::string texturePath );
 
+	/**
+		SetMouseMode()
+		Changes the mouse input mode.
+		@param mouseMode - which mode to set.  Member of GE_MOUSEMODE_*
+		@return void
+	*/
+	virtual void SetMouseMode( unsigned char mouseMode );
+
 	
 	// Callback Functions
 

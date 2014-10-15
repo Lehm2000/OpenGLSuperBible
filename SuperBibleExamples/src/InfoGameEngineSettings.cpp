@@ -9,16 +9,29 @@ InfoGameEngineSettings::InfoGameEngineSettings()
 
 	// Initialize Settings here
 	this->renderMode.setValueIndex( 0 );
-	std::vector< unsigned char> modeList;
-	modeList.push_back( GE_RENDERMODE_FULL );
-	modeList.push_back( GE_RENDERMODE_WIRE );
-	this->renderMode.setValueList( modeList );
+	std::vector< unsigned char > renderModeList;
+	renderModeList.push_back( GE_RENDERMODE_FULL );
+	renderModeList.push_back( GE_RENDERMODE_WIRE );
+	this->renderMode.setValueList( renderModeList );
 	this->renderMode.setEngineAction( GE_ENGINE_ACTION_CHANGERENDERMODE );
 	this->renderMode.setAction( GE_ACTION_PRESS	);
-	
 
-	//this->setRenderMode( GE_RENDERMODE_FULL );
-	this->setShowBoundingBoxes( false );
+	this->showBoundingBoxes.setValueIndex( 0 );
+	std::vector< bool > showBoundingList;
+	showBoundingList.push_back( false );	// best to have only two options for bools.
+	showBoundingList.push_back( true );
+	this->showBoundingBoxes.setValueList( showBoundingList );
+	this->showBoundingBoxes.setEngineAction( GE_ENGINE_ACTION_SHOWBOUNDINGBOX );
+	this->showBoundingBoxes.setAction( GE_ACTION_PRESS );
+
+	this->mouseMode.setValueIndex( 0 );
+	std::vector< unsigned char > mouseModeList;
+	mouseModeList.push_back( GE_MOUSEMODE_LOOK );
+	mouseModeList.push_back( GE_MOUSEMODE_POINT );
+	this->mouseMode.setValueList( mouseModeList );
+	this->mouseMode.setEngineAction( GE_ENGINE_ACTION_CHANGECURSORMODE );
+	this->mouseMode.setAction( GE_ACTION_PRESS );
+
 }
 
 InfoGameEngineSettings::InfoGameEngineSettings( const InfoGameEngineSettings& source )
@@ -30,7 +43,7 @@ InfoGameEngineSettings::InfoGameEngineSettings( const InfoGameEngineSettings& so
 	this->setRenderCam( source.renderCam );
 
 	this->renderMode = renderMode;
-	this->setShowBoundingBoxes( source.showBoundingBoxes );
+	this->showBoundingBoxes = source.showBoundingBoxes;
 }
 
 // Setters
@@ -56,7 +69,7 @@ void InfoGameEngineSettings::setRenderMode( unsigned char renderMode )
 
 void InfoGameEngineSettings::setShowBoundingBoxes( bool showBoundingBoxes )
 {
-	this->showBoundingBoxes = showBoundingBoxes;
+	//this->showBoundingBoxes = showBoundingBoxes;
 }
 
 
@@ -85,7 +98,12 @@ unsigned char InfoGameEngineSettings::getRenderMode() const
 
 bool InfoGameEngineSettings::getShowBoundingBoxes() const
 {
-	return this->showBoundingBoxes;
+	return this->showBoundingBoxes.getValue();
+}
+
+unsigned char InfoGameEngineSettings::getMouseMode() const
+{
+	return this->mouseMode.getValue();
 }
 
 
@@ -101,6 +119,8 @@ void InfoGameEngineSettings::ProcessInput( const GEInputState* inputState)
 
 	// pass it on to the settings
 	renderMode.ProcessInput( inputState );
+	showBoundingBoxes.ProcessInput( inputState );
+	mouseMode.ProcessInput( inputState );
 }
 
 /**

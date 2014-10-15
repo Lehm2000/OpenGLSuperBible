@@ -57,6 +57,8 @@ GEInputState::GEInputState( const GEInputState& source )
 	this->setMousePosition( source.mousePosition );
 }
 
+
+
 // Setters
 void GEInputState::setKeyboardKey( const unsigned short key, bool pressed )
 {
@@ -86,6 +88,14 @@ void GEInputState::setInputAction( const unsigned int index, const InputAction i
 	}
 }
 
+void GEInputState::setMouseMode( const unsigned char mouseMode )
+{
+	if( mouseMode >= 0 )
+	{
+		this->mouseMode = mouseMode;
+	}
+}
+
 // Getters
 bool GEInputState::getKeyboardKey( const unsigned short key ) const
 {
@@ -107,7 +117,10 @@ GEvec2 GEInputState::getMouseScrollOffset( ) const
 	return this->mouseScrollOffset;
 }
 
-
+unsigned char GEInputState::getMouseMode( ) const
+{
+	return this->mouseMode;
+}
 
 // Functions
 
