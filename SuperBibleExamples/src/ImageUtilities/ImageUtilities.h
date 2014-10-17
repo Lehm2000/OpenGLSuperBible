@@ -51,8 +51,12 @@ struct BITMAPINFOHEADER //Bitmap info for Windows NT & 3.1x or later
 #define TGA_COMPRESSED_PALETTE		32
 #define TGA_COMPRESSED_PALETTE_QT	33
 
+#define TGA_DIRECTION_RIGHTTOLEFT	8				// set bit 4
+#define TGA_DIRECTION_TOPTOBOTTOM	16				// set bit 5
 
-#define TGA_RLE_PACKET 128				//	set bit 7
+#define TGA_RLE_PACKET				128				// set bit 7
+
+
 
 //targa header
 

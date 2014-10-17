@@ -339,6 +339,8 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 {
 	// Testing text output
 
+
+
 	// get the viewport info out of the game entities
 	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 	
@@ -346,6 +348,8 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 	{
 		// always draw text filled
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		glEnable( GL_BLEND );
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 		glViewportIndexedf(0, 0, 0, gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight());
 
@@ -475,6 +479,8 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 			glVertexAttribDivisor(0, 1);
 			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
 			glVertexAttribDivisor(0, 0);
+
+			glDisable( GL_BLEND );
 		}
 		
 	}
@@ -793,7 +799,7 @@ void GraphicsEngineOpenGL::InitTextures(void)
 	unsigned char returnType = 0;
 
 	// Load the font Texture
-	GLuint fontTexture = textureMan.LoadTexture( "font01.bmp" );
+	GLuint fontTexture = textureMan.LoadTexture( "font01.tga" );
 	
 	if( fontTexture != 0 )
 		resTexture.AddResource( "SYS_Font01", fontTexture );

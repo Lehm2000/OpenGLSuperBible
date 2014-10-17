@@ -115,18 +115,6 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 							// No need to reverse the source as well.
 							unsigned int locSource = (i * paddedFileRowSize) + (j * (dibHeader.bitDepth/8) ) + k;
 
-							// R & B channels are reversed.  Endianness
-							if (k == 0)
-							{
-								locSource += 2;
-								
-							}
-							else if (k == 2)
-							{
-								locSource -= 2;
-								
-							}
-
 							// read and place in destination.
 							tempData[locDest] = imageFileData[locSource];
 						}
@@ -134,8 +122,8 @@ IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
 					
 				}
 
-				// put the loaded and converted image data into the return image.
-				returnImage.setData(dibHeader.width, dibHeader.height, dibHeader.bitDepth/8 , tempData);
+				// put the loaded and converted image data into the return image... reminder windows bitmaps are BGR
+				returnImage.setData( IUI_FORMAT_BGR, dibHeader.width, dibHeader.height, dibHeader.bitDepth/8 , tempData);
 
 				//do some cleanup
 				free (tempData );  // allocated with malloc
@@ -251,7 +239,7 @@ IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 		else if (header.imageType == TGA_RLE_RGB)	//	Runlength encoded RGB images.
 		{
 			
-			unsigned int readAmount = 0;														//	how many bytes have been read so far.
+			unsigned int readAmount = 0;			//	how many bytes have been read so far.
 			
 			unsigned char imagePacketHeader;	//	place to hold the 1 byte packet header.
 			unsigned char* imagePacketData=nullptr;		//	place to hold the packet data.  Can vary in size.
@@ -322,28 +310,44 @@ IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 		//allocate a new buffer for the final image data to go.
 		unsigned char* tempData = (unsigned char*)malloc( dataSize );
 
-		//now convert the data to GEImage format.
-		for (unsigned int i = 0; i < (unsigned int)header.width * (unsigned int)header.height; i++)	//	iterate through pixels
+		//now convert the data to GEImage format and reorder the pixels if necessary.
+		for (unsigned int i = 0; i < (unsigned int)header.width; i++)	//	iterate through pixels
 		{
-			for (unsigned int j = 0; j < numChannels ; j++)	//	iterate through channels
+			for( unsigned int j = 0; j < (unsigned int)header.height; j++ )
 			{
-				//	set copy source and dest locations
-				unsigned int locSource= (i * numChannels )+j;
-				unsigned int locDest = (i * numChannels )+j;
-				
-				//	We must change the order of the channels.  Targa stores it BGRA for some reason.  Endianess most likely.
-				if (j == 0)
-					locSource+=2;
-				else if (j == 2)
-					locSource-=2;
+				for (unsigned int k = 0; k < numChannels ; k++)	//	iterate through channels
+				{
+					// change read order if necessary
+					unsigned int sourceX = i;
+					unsigned int sourceY = j;
 
-				//	copy the data to the tempData buffer.
-				tempData[locDest] = imageData[locSource];// / 255.0f;
+					if ( !( header.imageDesc & TGA_DIRECTION_TOPTOBOTTOM ) )
+						sourceY = ( ( unsigned int )header.height - sourceY ) - 1;
+					if ( !( header.imageDesc & TGA_DIRECTION_RIGHTTOLEFT ) )
+						sourceX = ( ( unsigned int )header.width - sourceX ) - 1;	// untested... don't have image written right to left.
+
+					//	set copy source and dest locations
+					unsigned int locSource =( ( sourceX + ( sourceY * (unsigned int)header.width ) ) * numChannels) + k;
+					unsigned int locDest =( ( i + ( j * (unsigned int)header.width ) ) * numChannels) + k;
+
+					//	copy the data to the tempData buffer.
+					tempData[locDest] = imageData[locSource];
+				}
 			}
 		}
 			
-		//put the loaded and converted image data into the return image.
-		returnImage.setData( header.width, header.height, numChannels, tempData);
+		//put the loaded and converted image data into the return image.  Reminder tga is either BGRA or BGR
+		unsigned char imageFormat;
+		if ( numChannels == 3 )
+		{
+			imageFormat = IUI_FORMAT_BGR;
+		}
+		else // is 4 the only other option?
+		{
+			imageFormat = IUI_FORMAT_BGRA;
+		}	
+		returnImage.setData( imageFormat, header.width, header.height, numChannels, tempData);
+		
 			
 		//do some cleanup
 		free( tempData );	// allocated with malloc

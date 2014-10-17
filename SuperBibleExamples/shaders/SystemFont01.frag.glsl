@@ -14,5 +14,6 @@ uniform sampler2D fontTexture;
 void main (void)
 {
 	color = texture( fontTexture, fs_in.tc) * fontColor;
+	//color = vec4( tcolor.r, tcolor.g, tcolor.b, tcolor.a );
 	//color = vec4( 1.0, 1.0, 1.0, 1.0 );
 }

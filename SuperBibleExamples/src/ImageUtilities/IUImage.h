@@ -3,14 +3,22 @@
 
 /**
 	IUImage (Image Utilities Image) class.
-	Purpose: Templated class for returning data from loaded images.
+	Purpose: Templated class for returning data from loaded images.  Uncompresses images when loaded.
 	Author: Jeff Adams
 */
+
+#define IUI_FORMAT_NONE		0
+#define IUI_FORMAT_RGB		1
+#define IUI_FORMAT_RGBA		2
+#define IUI_FORMAT_BGR		3
+#define IUI_FORMAT_BGRA		4
+
 
 template <class T>
 class IUImage
 {
 private:
+	unsigned char format;		// Format of the image Member of IUI_FORMAT_*
 	unsigned int width;			//image width
 	unsigned int height;		//image height
 	unsigned char numChannels;		//number of channels
@@ -21,7 +29,7 @@ public:
 
 	//Constructors
 	IUImage();
-	IUImage(unsigned int width, unsigned int height, unsigned char channels, T* data);
+	IUImage(unsigned char format, unsigned int width, unsigned int height, unsigned char channels, T* data);
 	IUImage(const IUImage<T>& sourceImage);  // copy constructor
 
 	//destructor
@@ -31,6 +39,9 @@ public:
 	IUImage& operator=( IUImage sourceImage );	// assignment operator
 
 	//setters
+
+	void setFormat( const unsigned char format );
+
 	// void setHeight(const unsigned int height);
 	// void setWidth(const unsigned int width);
 	// void setNumChannels(const unsigned char numChannels);
@@ -40,9 +51,10 @@ public:
 		@param data - pointer to the image data that will be copied to the private member data.
 		@return void
 	*/
-	void setData(const unsigned int width, const unsigned int height, const unsigned char channels, const T* data);
+	void setData( const unsigned char format, const unsigned int width, const unsigned int height, const unsigned char channels, const T* data);
 
 	//getters
+	unsigned char getFormat( ) const;
 	unsigned int getHeight() const;
 	unsigned int getWidth() const;
 	unsigned char getNumChannels() const;
@@ -64,6 +76,7 @@ public:
 template <class T>
 IUImage<T>::IUImage()
 {
+	format = IUI_FORMAT_NONE;
 	width = 0;
 	height = 0;
 	numChannels = 0;
@@ -71,8 +84,9 @@ IUImage<T>::IUImage()
 }
 
 template <class T>
-IUImage<T>::IUImage(unsigned int width, unsigned int height, unsigned char numChannels, T* data)
+IUImage<T>::IUImage( unsigned char format, unsigned int width, unsigned int height, unsigned char numChannels, T* data)
 {
+	this->format = format;
 	this->width = width;
 	this->height = height;
 	this->numChannels = numChannels;
@@ -82,6 +96,7 @@ IUImage<T>::IUImage(unsigned int width, unsigned int height, unsigned char numCh
 template <class T>
 IUImage<T>::IUImage(const IUImage& sourceImage)
 {
+	this->format = sourceImage.format;
 	height = sourceImage.height;
 	width = sourceImage.height;
 	numChannels = sourceImage.numChannels;
@@ -108,6 +123,7 @@ IUImage<T>& IUImage<T>::operator=( IUImage<T> sourceImage )
 	//we passed the sourceImage as a copy which called the copy constructor
 
 	//now swap the copied members from the copied GEImage
+	std::swap( format, sourceImage.format );
 	std::swap(height, sourceImage.height);
 	std::swap(width, sourceImage.width);
 	std::swap(numChannels, sourceImage.numChannels);
@@ -117,6 +133,12 @@ IUImage<T>& IUImage<T>::operator=( IUImage<T> sourceImage )
 }
 
 //setters
+
+template <class T>
+void IUImage<T>::setFormat( const unsigned char format )
+{
+	this->format = format;
+}
 
 /*
 template <class T>
@@ -139,8 +161,9 @@ void IUImage<T>::setNumChannels(const unsigned char numChannels)
 */
 
 template <class T>
-void IUImage<T>::setData(const unsigned int width, const unsigned int height, const unsigned char channels, const T* data)
+void IUImage<T>::setData(const unsigned char format, const unsigned int width, const unsigned int height, const unsigned char channels, const T* data)
 {
+	this->format = format;
 	this->width = width;
 	this->height = height;
 	this->numChannels = channels;
@@ -156,6 +179,12 @@ void IUImage<T>::setData(const unsigned int width, const unsigned int height, co
 }
 
 // getters
+
+template <class T>
+unsigned char IUImage<T>::getFormat( ) const
+{
+	return this->format;
+}
 
 template <class T>
 unsigned int IUImage<T>::getHeight() const
