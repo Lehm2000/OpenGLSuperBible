@@ -76,7 +76,7 @@ bool GameEngine::Initialize()
 	// Add the game engine settings object
 	InfoGameEngineSettings* gameEngineSettings = new InfoGameEngineSettings();
 	gameEngineSettings->setRenderMode( GE_RENDERMODE_FULL );
-	gameEngineSettings->setShowBoundingBoxes( true );
+	gameEngineSettings->setShowBoundingBoxes( false );
 	gameEngineSettings->setViewportWidth( 1280 );
 	gameEngineSettings->setViewportHeight( 720 );
 	AddEntity( "SYS_GameEngine_Settings", gameEngineSettings );  //add the options to the entity list.
@@ -92,20 +92,25 @@ bool GameEngine::Initialize()
 	GEObject* inputStateHolder = new InputStateHolder( &inputState );
 	AddEntity( "SYS_Input_State", inputStateHolder );
 
-	// setup inputs necessary for InputActions... probably want new function for this... needs ability to load from file.
-	InputAction newInputAction;
-	newInputAction.AddKey( GE_KEY_LEFT_ALT );
-	newInputAction.AddKey( GE_KEY_R );
-	inputState.setInputAction( GE_ENGINE_ACTION_CHANGERENDERMODE, newInputAction );
+	// setup inputs necessary for InputActions... TODO probably want new function for this... and needs ability to load from file.
+	InputAction newInputAction1;
+	newInputAction1.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction1.AddKey( GE_KEY_R );
+	inputState.setInputAction( GE_ENGINE_ACTION_CHANGERENDERMODE, newInputAction1 );
 
 	InputAction newInputAction2;
 	newInputAction2.AddKey( GE_KEY_LEFT_ALT );
 	newInputAction2.AddKey( GE_KEY_B );
-	inputState.setInputAction( GE_ENGINE_ACTION_SHOWBOUNDINGBOX, newInputAction2 );
+	inputState.setInputAction( GE_ENGINE_ACTION_TOGGLEBOUNDINGBOX, newInputAction2 );
 
 	InputAction newInputAction3;
 	newInputAction3.AddMouseButton( GE_MOUSE_BUTTON_2 );
 	inputState.setInputAction( GE_ENGINE_ACTION_CHANGECURSORMODE, newInputAction3 );
+
+	InputAction newInputAction4;
+	newInputAction4.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction4.AddKey( GE_KEY_M );
+	inputState.setInputAction( GE_ENGINE_ACTION_TOGGLEMULTISAMPLE, newInputAction4 );
 	
 	//GE_ENGINE_ACTION_SHOWBOUNDINGBOX	2
 
@@ -199,6 +204,8 @@ void GameEngine::Update()
 	//update the game time
 	gameVars->setCurrentFrameTime( getGameTime() );
 	
+	// check mouse over stuff  TODO best place to put this??
+	graphics->MouseOver();
 
 	// Update entities--------------------------------------------------------------------------------------
 	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime(), &inputState );

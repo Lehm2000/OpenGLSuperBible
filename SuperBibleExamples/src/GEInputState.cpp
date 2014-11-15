@@ -541,25 +541,31 @@ std::string GEInputState::ButtonToString( unsigned int buttonIndex ) const
 
 bool GEInputState::ActionToggled( unsigned int actionIndex ) const
 {
-	bool toggled = true;
+	bool toggled = false;
 
 	// go through list of ActionInput requirements and see if all met
 
 	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumKeys(); i++ )
 	{
-		if( !keyboardKeys[ actionList[ actionIndex ].getKey(i) ] )
+		if( keyboardKeys[ actionList[ actionIndex ].getKey(i) ] )
 		{
-			toggled = false;
-			break;
+			toggled = true;  // must manually set to true in the event of an empty actionList... there shouldn't ever be one but just in case.
+		}
+		else
+		{
+			return false;
 		}
 	}
 
-	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumMouseButtons() && toggled; i++ )
+	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumMouseButtons(); i++ )
 	{
-		if( !mouseButtons[ actionList[ actionIndex ].getMouseButton(i) ] )
+		if( mouseButtons[ actionList[ actionIndex ].getMouseButton(i) ] )
 		{
-			toggled = false;
-			break;
+			toggled = true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 

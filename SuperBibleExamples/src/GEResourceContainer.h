@@ -29,6 +29,10 @@ public:
 	bool AddResource( const std::string resourceName, const T resource );
 
 	// getters
+	
+	/**
+		Returns a copy of the resource if found.  Otherwise returns a copy of the default resource.
+	*/
 	T GetResource( const std::string resourceName ) const;
 
 	// Functions

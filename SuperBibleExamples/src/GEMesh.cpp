@@ -2,6 +2,7 @@
 
 
 #include "GEMesh.h"
+#include "GEBoundingBox.h"
 
 // Structors
 GEMesh::GEMesh()

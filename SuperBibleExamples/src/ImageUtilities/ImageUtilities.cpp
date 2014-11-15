@@ -12,6 +12,7 @@
 #include "ImageUtilities.h"
 //#include "..\GEImage.h"
 #include "IUImage.h"
+#include "../BitReader.h"
 
 
 IUImage<unsigned char> ImageUtilities::LoadBitmap(const char* filename)
@@ -386,6 +387,244 @@ IUImage<unsigned char> ImageUtilities::LoadTarga(const char* filename)
 
 	free( imageData );	// allocated with malloc
 	imageData = nullptr;
+
+	return returnImage;
+}
+
+IUImage<unsigned char> ImageUtilities::LoadPNG(const char* filename)
+{
+	IUImage<unsigned char> returnImage;
+
+	std::ifstream inFile;	//input file stream for reading file.
+
+	inFile.open (filename, std::ifstream::in | std::ifstream::binary);
+
+	if (inFile.is_open())
+	{
+		// read the file header.  8 bytes
+		unsigned char pngHeader[8];
+		inFile.read((char*) &pngHeader, 8);
+
+		// next start reading the chunks
+		while( true ) // ... need stop condition
+		{
+			// each chunk starts with a 4 byte length
+			unsigned int chunkLen;
+			inFile.read( (char*) &chunkLen, sizeof( chunkLen ) );
+			chunkLen = ReverseBytes( chunkLen, sizeof( chunkLen ) );  // stored big endian so reverse it
+
+			// next get the chunk type
+
+			unsigned char chunkType[4];
+			inFile.read( (char*) &chunkType, sizeof( chunkType ) );
+
+			// how we read the chunk will differ
+			if( chunkType[0] == 'I' && chunkType[1] == 'H' && chunkType[2] == 'D' && chunkType[3] == 'R'  ) // IHDR
+			{
+				// IHDR. Image Header.
+				PNGChunkIHDR chunkIHDR;
+
+				// read the chunk.
+				inFile.read( ( char* ) &chunkIHDR.width, sizeof( chunkIHDR.width ) );
+				inFile.read( ( char* ) &chunkIHDR.height, sizeof( chunkIHDR.height ) );
+				inFile.read( ( char* ) &chunkIHDR.bitDepth, sizeof( chunkIHDR.bitDepth ) );
+				inFile.read( ( char* ) &chunkIHDR.colortype, sizeof( chunkIHDR.colortype ) );
+				inFile.read( ( char* ) &chunkIHDR.compressionMethod, sizeof( chunkIHDR.compressionMethod ) );
+				inFile.read( ( char* ) &chunkIHDR.filterMethod, sizeof( chunkIHDR.filterMethod ) );
+				inFile.read( ( char* ) &chunkIHDR.interlaceMethod, sizeof( chunkIHDR.interlaceMethod ) );
+
+				// reverse the bytes on the width/hight
+				chunkIHDR.width = ReverseBytes( chunkIHDR.width, sizeof( chunkIHDR.width ) );
+				chunkIHDR.height = ReverseBytes( chunkIHDR.height, sizeof( chunkIHDR.height ) );
+			}
+			else if( chunkType[0] == 'I' && chunkType[1] == 'D' && chunkType[2] == 'A' && chunkType[3] == 'T'  ) // IDAT
+			{
+				// IDAT. Image Data
+				unsigned char* imageData = (unsigned char*)malloc( chunkLen );
+				inFile.read( ( char* ) imageData, chunkLen );
+
+				// get the compression method and info located in the first byte
+
+				unsigned char cmf = imageData[0];
+				unsigned char cm = cmf & 9;						// compression method: lower 4 bits... this should be 8
+				unsigned char cinfo = cmf >> 4;					// compression info: upper 4 bits... bitshift to get these... this is the number bits used for the window size.  max is 7.
+				unsigned int windowSize = pow( 2, cinfo + 8 );		// convert cinfo into proper window size.
+
+				// get the flags located in the second byte
+
+				unsigned char flg = imageData[1];
+				unsigned char fCheck = flg & 17;				// check bits for cmf and flg (not sure what that means yet) bits 0-4
+				unsigned char fDict = ( flg >> 5) & 1;			// has preset dictionary? ( for PNG this should always be 0 )  bit 5.
+				unsigned char fLevel = ( flg >> 6 ) & 3;		// Compression Level... not needed if we are merely decompressing.
+
+				// next comes the compressed (DEFLATE) data.
+
+				// http://www.ietf.org/rfc/rfc1951.txt
+
+				/*do
+					read block header from input stream.
+					if stored with no compression
+						skip any remaining bits in current partially processed byte
+						read LEN and NLEN (see next section)
+						copy LEN bytes of data to output
+					otherwise
+						if compressed with dynamic Huffman codes
+							read representation of code trees (see subsection below)
+						loop (until end of block code recognized)
+							decode literal/length value from input stream
+							if value < 256
+								copy value (literal byte) to output stream
+							otherwise
+								if value = end of block (256)
+									break from loop
+								otherwise (value = 257..285)
+									decode distance from input stream
+
+									move backwards distance bytes in the output
+									stream, and copy length bytes from this
+									position to the output stream.
+						end loop
+				while not last block*/
+
+				// Create a BitReader Object to read the individual bits
+
+				BitReader<unsigned char> imageBits( imageData, chunkLen );
+				imageBits.Seek( 16 );  // set the read head at the beginning of the 3rd byte.
+				
+				// 
+				unsigned int bFinal = 0;
+
+				do
+				{
+					// read first byte
+					//unsigned char firstByte = imageData[2];
+					//unsigned char bFinal = firstByte & 1;
+					// unsigned char bType = ( firstByte >> 1 ) & 3;
+
+					// read header
+
+					bFinal = imageBits.ReadBits( 1, false );	// first bit of header is set if its the final block.
+					unsigned int bType = imageBits.ReadBits( 2, false );	// next to bits of header contain compression type.
+
+
+					if ( bType == 0 )
+					{
+					}
+					else
+					{
+						if( bType == 2)
+						{
+						}
+						while ( true /* not end of block */ )
+						{
+							if ( bType == 1 )
+							{
+								// this is a hardcoded way of decoding fixed huffman tree based on value ranges.
+								// should really but the info in a tree and traverse that.
+
+								// grab first seven bits
+								unsigned int code = imageBits.ReadBits( 7, true );
+								
+								int litVal;
+
+								if ( code >= 0 && code <=23 )
+								{
+									litVal = code + 256;
+								}
+								else // not a seven bit code
+								{
+									code = ( code << 1 ) | imageBits.ReadBits( 1, false );
+
+									if ( code >= 48 && code <= 199 )
+									{
+										if (code < 192)
+										{
+											litVal = code - 48;
+										}
+										else
+										{
+											litVal = code + ( 280 - 192 );
+										}
+									}
+									else // not a 8 bit code.
+									{
+										code = ( code << 1 ) | imageBits.ReadBits( 1, false );
+
+										if ( code >= 400 && code <= 511 )
+										{
+											litVal = code - ( 400 - 144 );
+										}
+										else
+										{
+											// something went wrong.
+										}
+									}
+
+									
+								}
+
+
+								/*
+								if ( litVal > 256 )
+								{
+									// we have a length... next five bits should be the dist
+									unsigned int distCode = imageBits.ReadBits( 5, true );
+									
+									unsigned int distance;
+
+									switch ( distCode )
+									{
+									case 0:
+									case 1:
+									case 2:
+									case 3:
+										distance = distCode + 1;
+										break;
+									case 4:
+									case 5:
+										// 1 extra bit
+										unsigned int extraCode = imageBits.ReadBits( 1, true );
+										distance = ( distCode + 1 ) + extraCode;
+									case 6:
+									case 7:
+										// 2 extra bit
+										unsigned int extraCode = imageBits.ReadBits( 1, true );
+										distance = ( distCode + 1 ) + extraCode;
+
+									}
+								}*/
+
+								litVal = litVal;
+							}
+						}
+					}
+
+				}
+				while ( bFinal == 0 /* not last block */ );
+
+				free (imageData);
+			}
+			else
+			{
+				// anything else just read past it.
+				unsigned char* chunkData = (unsigned char*)malloc( chunkLen );
+				inFile.read( (char*) chunkData, chunkLen );
+
+				free( chunkData );
+			}
+
+			// read the CRC at the end of the chunk
+			unsigned char chunkCRC[4];
+			inFile.read( (char*) &chunkCRC, sizeof( chunkCRC ) );
+			
+		}
+		
+
+
+
+		//close the open file.
+		inFile.close();
+	}
 
 	return returnImage;
 }

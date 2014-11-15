@@ -81,6 +81,10 @@ GLuint TextureManager::LoadTexture( std::string filename )
 			{
 				image = imageUtilities.LoadTarga( fullFileName.c_str() );
 			}
+			else if( ext == "png" ) // targa
+			{
+				image = imageUtilities.LoadPNG( fullFileName.c_str() );
+			}
 
 
 			// verify that the texture was loaded

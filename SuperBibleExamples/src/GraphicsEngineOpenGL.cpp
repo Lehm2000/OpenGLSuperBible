@@ -13,6 +13,8 @@
 #include "InfoGameEngineSettings.h"
 #include "GEInputState.h"
 #include "InputStateHolder.h"
+#include "GEBoundingBox.h"
+#include "GERay.h"
 
 
 GraphicsEngineOpenGL::GraphicsEngineOpenGL()
@@ -238,6 +240,8 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 		glClearBufferfv(GL_COLOR, 0, bkColor);
 		glClearBufferfv(GL_DEPTH,0, &one);
 
+		// Set Render Modes
+
 		// Set the draw mode
 		switch ( gameEngineSettings->getRenderMode() )
 		{
@@ -251,6 +255,14 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 
 		// set the depth mode
 		glDepthFunc( GL_LEQUAL );
+
+		// set sampling
+		if( gameEngineSettings->getEnableMultiSample() )
+		{
+			glEnable( GL_MULTISAMPLE );
+		}
+		else
+			glDisable( GL_MULTISAMPLE );
 
 		// Iterate throught game entities here.
 	
@@ -314,8 +326,8 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 					glUniformMatrix4fv( boundingworldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
 					glUniformMatrix4fv( boundingviewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
 
-					glUniform3fv( boundingMinLocation, 1, &boundingBox.min[0] );
-					glUniform3fv( boundingMaxLocation, 1, &boundingBox.max[0] );
+					glUniform3fv( boundingMinLocation, 1, &boundingBox.getMin()[0] );
+					glUniform3fv( boundingMaxLocation, 1, &boundingBox.getMax()[0] );
 
 					glDrawArrays( GL_LINES, 0, 24 );
 
@@ -324,6 +336,9 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 			}
 	
 		}
+
+		// unset render modoes
+		glDisable( GL_MULTISAMPLE );
 	}
 	// TODO... what happens if nullptr?
 	
@@ -513,6 +528,7 @@ bool GraphicsEngineOpenGL::Init()
 		// set window hints
 		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 		glfwWindowHint( GLFW_STENCIL_BITS, GL_TRUE );
+		glfwWindowHint( GLFW_SAMPLES, 32 );
 
 		// create the window
 		window = glfwCreateWindow( gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight(), "OpenGL Super Bible", NULL,NULL);
@@ -810,6 +826,12 @@ void GraphicsEngineOpenGL::InitTextures(void)
 	if( displaceTexture != 0 )
 		resTexture.AddResource( "DisplaceTest", displaceTexture );
 
+	// PNG test image
+	/*GLuint pngTest = textureMan.LoadTexture( "testPNG.png" );
+	
+	if( pngTest != 0 )
+		resTexture.AddResource( "pngTest", pngTest );*/
+
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
 	GLuint sampler;
 	glGenSamplers(1, &sampler);
@@ -1006,3 +1028,98 @@ void GraphicsEngineOpenGL::SetMouseMode( unsigned char mouseMode )
 	}
 }
 
+std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsigned char collisionMode )
+{
+	// list of objects the mouse is over
+	std::vector<std::string> objectList;
+
+	// get a reference to the input object
+
+	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
+	const GEObject* gesObject = gameEntities->GetObject( "SYS_GameEngine_Settings" );
+	
+	if ( isObject != nullptr )
+	{
+		const InputStateHolder* inputStateHolder = (InputStateHolder*)isObject;
+		const GEInputState* inputState = inputStateHolder->getInputState();
+
+		if( inputState->getMouseMode() == GE_MOUSEMODE_POINT )
+		{
+
+			const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gesObject;
+
+			const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( gameEngineSettings->getRenderCam() );
+
+			if( renderCam != nullptr )
+			{
+				if (renderCam->getClassName() == "CameraPerspective" )
+				{
+					// construct a ray from the position of the mouse that shoots into the scene.
+
+					// get the camera view and projection
+					glm::mat4 projMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f);
+					glm::mat4 viewMatrix = renderCam->GetViewMatrix();
+
+					// the the mouse position on the screen.
+					GEvec2 mousePosition = inputState->getMousePosition();
+
+					// unproject the mouse position twice...
+
+					// first at a near point
+					glm::vec4 viewport = glm::vec4(0, 0, gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight() );
+					glm::vec3 winCoord = GEvec3(mousePosition.x,  gameEngineSettings->getViewportHeight() - mousePosition.y - 1, 0.0f);
+					glm::vec3 mouseRayPoint01 = glm::unProject(winCoord, viewMatrix, projMatrix, viewport);
+
+					// then at a distant point
+					winCoord = GEvec3(mousePosition.x,  gameEngineSettings->getViewportHeight() - mousePosition.y - 1, 1.0f);
+					GEvec3 mouseRayPoint02 = glm::unProject(winCoord, viewMatrix, projMatrix, viewport);
+
+					// subtract them to get the distance.
+					//GEvec3 mouseRay = mouseRayPoint02 - mouseRayPoint01;
+
+					GERay mouseRay = GERay( mouseRayPoint01, mouseRayPoint02 - mouseRayPoint01 );
+
+
+					// go through all the objects... to find which it hits.  TODO optimize so that it doesnt need to go through them all.  Some kind of BSP tree perhaps.
+					for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->First(); it != gameEntities->Last(); it++ )
+					{
+						// make sure that it can be seen.  mouse can't hit something invisible after all can it?
+						if( it->second->isVisible() )
+						{
+							if( collisionMode == GE_COLLIDE_BOUNDINGBOX )
+							{
+								// we're going to be doing ray-box collision obviously.
+								// we have our ray already... we need to get the box.
+
+								// find what mesh this object uses
+								std::string meshName = it->second->getMesh();
+
+								// then we need to get the mesh itself
+								GEMesh mesh = resMesh.GetResource( meshName );
+
+								// now get its bounding box.
+								GEBoundingBox meshBB = mesh.getBoundingBox();
+
+								// the bounding box is in object space, the ray is in world space.  We need to transform
+								// one of them.  Its easier to check for collision if the box is in object space so we'll
+								// transform the ray into object space.  We need to construct an inverse matrix of the 
+								// objects transforms to do this.
+								glm::mat4 rayTransMatrix = glm::inverse( it->second->GetTransformMatrix() );
+
+								// transform the ray
+								GERay tMouseRay = mouseRay * rayTransMatrix;  // these may appear backwards but are multiplied in the correct order in the operator.
+
+								
+							}
+
+						}
+					}
+				}
+			}
+		}
+
+		
+	}
+
+	return objectList;
+}

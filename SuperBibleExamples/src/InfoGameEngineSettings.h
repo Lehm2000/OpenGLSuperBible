@@ -33,6 +33,7 @@ private:
 	// Render options ( That aren't exclusive to a specific render engine )
 	GESetting< unsigned char> renderMode; //unsigned char renderMode;
 	GESetting< bool > showBoundingBoxes;
+	GESetting< bool > enableMultiSample;
 
 	// Input Options
 	GESetting< unsigned char > mouseMode;
@@ -43,24 +44,26 @@ public:
 	InfoGameEngineSettings();
 	InfoGameEngineSettings( const InfoGameEngineSettings& source );
 
-	// Setters
+	// Setters and Getters
 	void setViewportWidth( const unsigned short viewportWidth );
-	void setViewportHeight( const unsigned short viewportHeight );
-	
-	void setRenderCam( const std::string renderCam );
-
-	void setRenderMode( unsigned char renderMode );
-	void setShowBoundingBoxes( bool showBoundingBoxes );
-
-	// Getters
 	unsigned short getViewportWidth() const;
+
+	void setViewportHeight( const unsigned short viewportHeight );
 	unsigned short getViewportHeight() const;
 	
+	void setRenderCam( const std::string renderCam );
 	std::string getRenderCam() const;
 
+	void setRenderMode( unsigned char renderMode );
 	unsigned char getRenderMode() const;
+
+	void setShowBoundingBoxes( bool showBoundingBoxes );
 	bool getShowBoundingBoxes() const;
+
 	unsigned char getMouseMode() const;
+
+	void setEnableMultiSample( bool showBoundingBoxes );
+	bool getEnableMultiSample() const;
 
 
 	// Functions

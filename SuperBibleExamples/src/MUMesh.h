@@ -11,6 +11,7 @@
 */
 
 #include "TypeDefinitions.h"
+#include "GEBoundingBox.h"
 
 #define GE_MESH_NONE			0
 #define GE_MESH_TRIANGLE_LIST	1
@@ -38,13 +39,6 @@ struct GEVertex
 	// Texture 
 	float u;
 	float v;
-};
-
-// definition of the basic bounding box... TODO is this the best place for it?
-struct GEBoundingBox
-{
-	GEvec3 max;
-	GEvec3 min;
 };
 
 class MUMesh

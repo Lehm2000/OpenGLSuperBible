@@ -397,9 +397,9 @@ void MeshUtilities::ColorizeMesh( MUMesh* mesh )
 		//const GEVertex* curVert = mesh->getVerticies();
 
 		GEvec3 vertColor( 
-			(mesh->getVerticies()[i].x - meshBounds.min.x) / ( meshBounds.max.x - meshBounds.min.x ), 
-			(mesh->getVerticies()[i].y - meshBounds.min.y) / ( meshBounds.max.y - meshBounds.min.y ), 
-			(mesh->getVerticies()[i].z - meshBounds.min.z) / ( meshBounds.max.z - meshBounds.min.z )
+			(mesh->getVerticies()[i].x - meshBounds.getMin().x) / ( meshBounds.getMax().x - meshBounds.getMin().x ), 
+			(mesh->getVerticies()[i].y - meshBounds.getMin().y) / ( meshBounds.getMax().y - meshBounds.getMin().y ), 
+			(mesh->getVerticies()[i].z - meshBounds.getMin().z) / ( meshBounds.getMax().z - meshBounds.getMin().z )
 			);
 
 		mesh->SetVertexColor( i, vertColor );

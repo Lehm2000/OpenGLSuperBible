@@ -33,7 +33,7 @@ private:
 	GLuint indexBuffer;			// Index Buffer for the mesh
 	GLuint indirectBuffer;		// Indirect Buffer	
 
-	GEBoundingBox boundingBox;	// boundingBox for the mesh.  Most of the time will match the extents of the mesh, however any size mesh could be applied.
+	GEBoundingBox boundingBox;	// boundingBox for the mesh.  Most of the time will match the extents of the mesh, however can be overridden if desired
 
 public:
 

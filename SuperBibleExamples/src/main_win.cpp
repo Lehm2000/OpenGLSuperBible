@@ -19,6 +19,9 @@
 #include "MeshUtilities.h"
 #include "InfoGameEngineSettings.h"
 #include "Orbiter.h"
+#include "BitReader.h"
+#include "GERay.h"
+#include "GEPlane.h"
 
 
 int main(void)
@@ -26,8 +29,18 @@ int main(void)
 	
 	bool gameRunning = true;
 
-	// testing math stuff here
+	// testing stuff goes here
+
+	// Plane-Ray intersection
+
+	GERay ray = GERay( GEvec3( 0.0f, 0.0f, -5.0f ), GEvec3( 1.0f, 0.0f, 10.0f ) );
+	//GEPlane plane = GEPlane( GEvec3( -10.0f, 0.0f, -3.0f ), GEvec3( 0.0f, 10.0f, -3.0f ), GEvec3( 0.0f, 0.0f, -3.0f ) );
+	GEBoundingBox box = GEBoundingBox( GEvec3(-3.0f, -3.0f, -3.0f), GEvec3(3.0f, 3.0f, 3.0f) ); 
+
+	GEvec3* rvIntersect = box.intersectRay( ray );
 	
+	// initialize the game engine.
+
 	GameEngine gameEngine; //make pointer?... this will go inside the game class eventually
 
 	gameEngine.Initialize();
@@ -96,6 +109,27 @@ int main(void)
 	
 	testObject3->addRotationController( new GEControllerLookAt( "testObject"), testObject3 );
 	gameEngine.AddEntity( "testObject3", testObject3 );
+
+
+	//back object
+	GEObject* testObject4 = new GEObject( GEvec3( 0.0f, -0.0f, 6.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ) );
+	testObject4->setMesh( "cube" );
+	testObject4->setMaterial( "default" );
+	gameEngine.AddEntity( "testObject4", testObject4 );
+
+	// right object
+	GEObject* testObject5 = new GEObject( GEvec3( 6.0f, -0.0f, 3.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ) );
+	testObject5->setMesh( "cube" );
+	testObject5->setMaterial( "default" );
+	gameEngine.AddEntity( "testObject5", testObject5 );
+
+	// left object
+	GEObject* testObject6 = new GEObject( GEvec3( -6.0f, -0.0f, 3.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ) );
+	testObject6->setMesh( "cube" );
+	testObject6->setMaterial( "default" );
+	gameEngine.AddEntity( "testObject6", testObject6 );
+	
+	
 
 	while (gameRunning)
 	{

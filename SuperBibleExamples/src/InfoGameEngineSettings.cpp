@@ -21,8 +21,16 @@ InfoGameEngineSettings::InfoGameEngineSettings()
 	showBoundingList.push_back( false );	// best to have only two options for bools.
 	showBoundingList.push_back( true );
 	this->showBoundingBoxes.setValueList( showBoundingList );
-	this->showBoundingBoxes.setEngineAction( GE_ENGINE_ACTION_SHOWBOUNDINGBOX );
+	this->showBoundingBoxes.setEngineAction( GE_ENGINE_ACTION_TOGGLEBOUNDINGBOX );
 	this->showBoundingBoxes.setAction( GE_ACTION_PRESS );
+
+	this->enableMultiSample.setValueIndex( 0 );
+	std::vector< bool > enableMultiSampleList;
+	enableMultiSampleList.push_back( false );
+	enableMultiSampleList.push_back( true );
+	this->enableMultiSample.setValueList( enableMultiSampleList );
+	this->enableMultiSample.setEngineAction( GE_ENGINE_ACTION_TOGGLEMULTISAMPLE );
+	this->enableMultiSample.setAction( GE_ACTION_PRESS );
 
 	this->mouseMode.setValueIndex( 0 );
 	std::vector< unsigned char > mouseModeList;
@@ -42,14 +50,20 @@ InfoGameEngineSettings::InfoGameEngineSettings( const InfoGameEngineSettings& so
 
 	this->setRenderCam( source.renderCam );
 
-	this->renderMode = renderMode;
+	this->renderMode = source.renderMode;
 	this->showBoundingBoxes = source.showBoundingBoxes;
+	this->enableMultiSample = source.enableMultiSample;
 }
 
-// Setters
+// Setters and Getters
 void InfoGameEngineSettings::setViewportWidth( const unsigned short viewportWidth )
 {
 	this->viewportWidth = viewportWidth;
+}
+
+unsigned short InfoGameEngineSettings::getViewportWidth() const
+{
+	return this->viewportWidth;
 }
 
 void InfoGameEngineSettings::setViewportHeight( const unsigned short viewportHeight )
@@ -57,33 +71,14 @@ void InfoGameEngineSettings::setViewportHeight( const unsigned short viewportHei
 	this->viewportHeight = viewportHeight;
 }
 
-void InfoGameEngineSettings::setRenderCam( const std::string renderCam )
-{
-	this->renderCam = renderCam;
-}
-
-void InfoGameEngineSettings::setRenderMode( unsigned char renderMode )
-{
-	//this->renderMode = renderMode;
-}
-
-void InfoGameEngineSettings::setShowBoundingBoxes( bool showBoundingBoxes )
-{
-	//this->showBoundingBoxes = showBoundingBoxes;
-}
-
-
-// Getters
-
-
-unsigned short InfoGameEngineSettings::getViewportWidth() const
-{
-	return this->viewportWidth;
-}
-
 unsigned short InfoGameEngineSettings::getViewportHeight() const
 {
 	return this->viewportHeight;
+}
+
+void InfoGameEngineSettings::setRenderCam( const std::string renderCam )
+{
+	this->renderCam = renderCam;
 }
 
 std::string InfoGameEngineSettings::getRenderCam() const
@@ -91,9 +86,19 @@ std::string InfoGameEngineSettings::getRenderCam() const
 	return this->renderCam;
 }
 
+void InfoGameEngineSettings::setRenderMode( unsigned char renderMode )
+{
+	this->renderMode.setValue( renderMode );
+}
+
 unsigned char InfoGameEngineSettings::getRenderMode() const
 {
 	return this->renderMode.getValue();
+}
+
+void InfoGameEngineSettings::setShowBoundingBoxes( bool showBoundingBoxes )
+{
+	this->showBoundingBoxes.setValue( showBoundingBoxes );
 }
 
 bool InfoGameEngineSettings::getShowBoundingBoxes() const
@@ -106,7 +111,15 @@ unsigned char InfoGameEngineSettings::getMouseMode() const
 	return this->mouseMode.getValue();
 }
 
+void InfoGameEngineSettings::setEnableMultiSample( bool showBoundingBoxes )
+{
+	this->enableMultiSample.setValue( showBoundingBoxes );
+}
 
+bool InfoGameEngineSettings::getEnableMultiSample() const
+{
+	return this->enableMultiSample.getValue();
+}
 
 // Functions
 	
@@ -120,6 +133,8 @@ void InfoGameEngineSettings::ProcessInput( const GEInputState* inputState)
 	// pass it on to the settings
 	renderMode.ProcessInput( inputState );
 	showBoundingBoxes.ProcessInput( inputState );
+	enableMultiSample.ProcessInput( inputState );
+
 	mouseMode.ProcessInput( inputState );
 }
 

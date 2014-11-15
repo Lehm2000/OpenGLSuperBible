@@ -133,6 +133,16 @@ void GESetting<T>::setValueIndex( const unsigned char valueIndex )
 template <class T>
 void GESetting<T>::setValue( const T value )
 {
+	// go through the list of values and see if one matches
+
+	for( unsigned int i = 0; i < valueList.size(); i++ )
+	{
+		if( valueList[i] == value )
+		{
+			this->setValueIndex( i );
+			return;
+		}
+	}
 }
 
 

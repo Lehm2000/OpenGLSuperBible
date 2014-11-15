@@ -39,8 +39,7 @@ private:
 	GLFWwindow* window;
 				
 	GEResourceContainer< GEMesh> resMesh;				// Holds all the mesh information for the Graphics Engine.
-	GEResourceContainer< GEMaterial> resMaterial;		// Holds all materials for the game.  Materials hold the shader plus references to the textures used.
-	//std::map< std::string, GLuint > textureMap;			
+	GEResourceContainer< GEMaterial> resMaterial;		// Holds all materials for the game.  Materials hold the shader plus references to the textures used.			
 	GEResourceContainer< GLuint > resTexture;			// Holds textures for the game.
 	
 	MaterialManager materialMan;	// for material operations
@@ -171,6 +170,17 @@ public:
 	*/
 	virtual void SetMouseMode( unsigned char mouseMode );
 
+	/**
+		MouseOver
+		Finds what object(s) the mouse is over.  This must be part of the graphics engine as its the only class that has
+		access to both the object data and mesh data.
+		TODO: investigate if its possible to implement this function in this class so we don't need a different version 
+		for each render engine.  i.e. all the mesh types will at least have a bounding box.
+		@param findClosest - only returns the closest object the mouse is over if true, false returns everyobject the mouse is over
+		@param collisionMode - what type of geometry to collide against for the mesh.
+		@return object(s) the mouse is over
+	*/
+	virtual std::vector<std::string> MouseOver( bool findClosest = true, unsigned char collisionMode = GE_COLLIDE_BOUNDINGBOX );
 	
 	// Callback Functions
 

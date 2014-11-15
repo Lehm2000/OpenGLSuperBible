@@ -195,22 +195,28 @@ GEBoundingBox MUMesh::GetMeshBounds() const
 		
 
 		// initialize all the max/mins to the first vertex.
-		meshBounds.min.x = meshBounds.max.x = this->vertices[0].x;
-		meshBounds.min.y = meshBounds.max.y = this->vertices[0].y;
-		meshBounds.min.z = meshBounds.max.z = this->vertices[0].z;
+		GEvec3 meshMin;
+		GEvec3 meshMax;
+
+		meshMin.x = meshMax.x = this->vertices[0].x;
+		meshMin.y = meshMax.y = this->vertices[0].y;
+		meshMin.z = meshMax.z = this->vertices[0].z;
 
 		// find the min/max value for each axis
 		for( unsigned int i = 1; i < this->getNumVerts(); i++ )
 		{
-			meshBounds.min.x = glm::min( meshBounds.min.x, this->vertices[i].x );
-			meshBounds.max.x = glm::max( meshBounds.max.x, this->vertices[i].x );
+			meshMin.x = glm::min( meshMin.x, this->vertices[i].x );
+			meshMax.x = glm::max( meshMax.x, this->vertices[i].x );
 
-			meshBounds.min.y = glm::min( meshBounds.min.y, this->vertices[i].y );
-			meshBounds.max.y = glm::max( meshBounds.max.y, this->vertices[i].y );
+			meshMin.y = glm::min( meshMin.y, this->vertices[i].y );
+			meshMax.y = glm::max( meshMax.y, this->vertices[i].y );
 
-			meshBounds.min.z = glm::min( meshBounds.min.z, this->vertices[i].z );
-			meshBounds.max.z = glm::max( meshBounds.max.z, this->vertices[i].z );	
+			meshMin.z = glm::min( meshMin.z, this->vertices[i].z );
+			meshMax.z = glm::max( meshMax.z, this->vertices[i].z );	
 		}
+
+		meshBounds.setMin( meshMin );
+		meshBounds.setMax( meshMax );
 	}
 
 	return meshBounds;
