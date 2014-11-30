@@ -196,6 +196,9 @@ void GameEngine::Update()
 	inputState.setMouseMode( engineSettings->getMouseMode() );  // set the current mousemode in the input state (this is where most objects will check the mouse mode )
 	graphics->SetMouseMode( engineSettings->getMouseMode() ); // Tell the graphics engine to change mouse behavior
 
+	// check mouse over stuff  TODO best place to put this??
+	inputState.setMouseOverObjects( graphics->MouseOver() );
+
 	// Update game variables------------------------------------------------------------------------------
 	
 	// get a reference to the game vars.
@@ -203,9 +206,6 @@ void GameEngine::Update()
 	
 	//update the game time
 	gameVars->setCurrentFrameTime( getGameTime() );
-	
-	// check mouse over stuff  TODO best place to put this??
-	graphics->MouseOver();
 
 	// Update entities--------------------------------------------------------------------------------------
 	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime(), &inputState );

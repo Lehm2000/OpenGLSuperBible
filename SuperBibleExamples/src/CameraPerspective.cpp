@@ -40,19 +40,16 @@ std::string CameraPerspective::getClassName() const
 void CameraPerspective::Update( const double gameTime, const double deltaTime)
 {
 	// Let property controllers do their thing.
+	CameraObject::Update( gameTime, deltaTime); // update the parent first.
 
-	position.Update( gameTime, deltaTime);
-	rotation.Update( gameTime, deltaTime);
-	scale.Update( gameTime, deltaTime);
-	fov.Update( gameTime, deltaTime);
+	fov.Update( gameTime, deltaTime);  
 }
 
 void CameraPerspective::ProcessInput( const GEInputState* inputState)
 {
 	// pass it on to the controllers to do their thing.
-	position.ProcessInput( inputState );
-	rotation.ProcessInput( inputState );
-	scale.ProcessInput( inputState );
+	CameraObject::ProcessInput( inputState );  // send it to the parent object first
+	
 	fov.ProcessInput( inputState );
 }
 

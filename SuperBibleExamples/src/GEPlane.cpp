@@ -66,11 +66,16 @@ GEvec3* GEPlane::intersectRay( GERay ray )
 		// they are not parallel.  Find scalar value of the line where the plane intercepts it.
 		float d = numerator / denominator;
 
-		// now use the scalar to find the coordinates of the intersection
+		// make sure the intersect is not behind the origin of the ray.
+		// TODO optionally allow intersect before origin of ray?
+		if( d > 0.0f )
+		{
+			// now use the scalar to find the coordinates of the intersection
 
-		intersectPos = new GEvec3();
+			intersectPos = new GEvec3();
 
-		*intersectPos = ( d * ray.getDirection() ) + ray.getOrigin();
+			*intersectPos = ( d * ray.getDirection() ) + ray.getOrigin();
+		}
 	}
 	
 	return intersectPos;

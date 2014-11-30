@@ -96,6 +96,11 @@ void GEInputState::setMouseMode( const unsigned char mouseMode )
 	}
 }
 
+void GEInputState::setMouseOverObjects( const std::vector< std::string > mouseOverObjects )
+{
+	this->mouseOverObjects = mouseOverObjects;
+}
+
 // Getters
 bool GEInputState::getKeyboardKey( const unsigned short key ) const
 {
@@ -120,6 +125,11 @@ GEvec2 GEInputState::getMouseScrollOffset( ) const
 unsigned char GEInputState::getMouseMode( ) const
 {
 	return this->mouseMode;
+}
+
+std::vector< std::string > GEInputState::getMouseOverObjects() const
+{
+	return this->mouseOverObjects;
 }
 
 // Functions

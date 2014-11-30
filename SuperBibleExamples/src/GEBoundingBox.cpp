@@ -44,14 +44,17 @@ GEvec3 GEBoundingBox::getMax() const
 
 GEvec3* GEBoundingBox::intersectRay( const GERay ray )
 {
-	GEvec3* intersectPos = nullptr;
+	
 
 	// We must go through each of the 6 sides of the boundingbox and see if the ray hits any of them.
+	// This probably isn't the fastest way... but it was fairly straight forward to implement.
+	// TODO investigate faster ways.
 
 	GEPlane iPlane;
 	GEvec3* tempIPos = nullptr; 
-	
-	// x-min plane
+	GEvec3* intersectPos = nullptr;
+
+	float hitDist = 0.0f;  // temporary place to store how far away from the ray origin the hit happened.
 
 	for( char i = 0; i < 6; i++ )
 	{
@@ -100,23 +103,55 @@ GEvec3* GEBoundingBox::intersectRay( const GERay ray )
 		// did it hit plane?
 		if( tempIPos != nullptr )
 		{
-			// check if it hit plane within bounds of box
-			if( (*tempIPos).x >= min.x && (*tempIPos).x <= max.x &&
-				(*tempIPos).y >= min.y && (*tempIPos).y <= max.y &&
-				(*tempIPos).z >= min.z && (*tempIPos).z <= max.z )
-			{
+			
+			float newHitDist = glm::distance( ray.getOrigin(), *tempIPos ) ;
 
+			// it hit the plane... check if it hit plane within bounds of box.  Don't check the bounds of the axis of the
+			// current plane.  It can result in false negatives for thin objects.  Besides if it hit this plane we already
+			// know its within the bounds of this axis anyway.  
+
+			bool inBounds;
+
+			if( i == 0 || i == 1 )
+			{
+				inBounds = (*tempIPos).y >= min.y && (*tempIPos).y <= max.y &&
+					(*tempIPos).z >= min.z && (*tempIPos).z <= max.z ;
+			}
+			else if( i == 2 || i == 3 )
+			{
+				inBounds = (*tempIPos).x >= min.x && (*tempIPos).x <= max.x &&
+					(*tempIPos).z >= min.z && (*tempIPos).z <= max.z ;
+			}
+			else
+			{
+				inBounds = (*tempIPos).x >= min.x && (*tempIPos).x <= max.x &&
+					(*tempIPos).y >= min.y && (*tempIPos).y <= max.y ;
+			}
+			
+			
+			if( inBounds )
+			{
+				// did we already find an intsection?
 				if( intersectPos != nullptr)
 				{
-					// compare distance and see which is closer
-					// TODO... could be memory leak here if we don't delete the pointer
-					intersectPos = glm::distance( ray.getOrigin(), *tempIPos ) < glm::distance( ray.getOrigin(), *intersectPos ) ? tempIPos : intersectPos;
+					// compare new distance to old and see which is closer
+
+					if( newHitDist < hitDist )
+					{
+						delete intersectPos;  // prevent memory leaking
+						intersectPos = tempIPos;
+						// TODO if this is our second hit should we break out... in theory it can only hit a cube twice.
+					}
+					// otherwise keep the existing pointer.
+					
 				}
 				else
 				{
+					hitDist = newHitDist;
 					intersectPos = tempIPos;
 				}
 			}
+			
 		}
 	}
 

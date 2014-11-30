@@ -12,6 +12,7 @@
 */
 
 #include <string>
+#include <vector>
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
@@ -50,6 +51,9 @@ private:
 	InputAction actionList[ GE_MAX_INPUT_ACTIONS ];		/* This holds the key/button combinations necessary to activate 
 			actions. The index matches GE_ENGINE_ACTION_* */
 
+	std::vector<std::string> mouseOverObjects;  /* list of objects the mouse is over.  Not technically an input state... but
+		seemed to fit best here */
+
 public:
 
 	// Structors
@@ -63,6 +67,7 @@ public:
 	void setMousePosition( const GEvec2 mousePosition );
 	void setMouseScrollOffset( const GEvec2 mouseScrollOffset );
 	void setMouseMode( const unsigned char mouseMode );
+	void setMouseOverObjects( const std::vector< std::string > mouseOverObjects);
 	/**
 		setInputAction
 		Uses provided index ( GE_ENGINE_ACTION_* ) to set an InputAction in the actionList array.
@@ -75,6 +80,7 @@ public:
 	GEvec2 getMousePosition( ) const;
 	GEvec2 getMouseScrollOffset( ) const;
 	unsigned char getMouseMode( ) const;
+	std::vector< std::string > getMouseOverObjects() const;
 
 	// Functions
 

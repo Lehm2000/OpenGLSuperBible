@@ -138,9 +138,8 @@ void Orbiter::Update( const double gameTime, const double deltaTime)
 {
 	// Let property controllers do their thing.
 
-	position.Update( gameTime, deltaTime);
-	rotation.Update( gameTime, deltaTime);
-	scale.Update( gameTime, deltaTime);
+	GEObject::Update( gameTime, deltaTime );
+
 	orbitAngle.Update( gameTime, deltaTime );
 	orbitDistance.Update( gameTime, deltaTime );
 }
@@ -149,9 +148,9 @@ void Orbiter::Update( const double gameTime, const double deltaTime)
 void Orbiter::ProcessInput( const GEInputState* inputState )
 {
 	// pass it on to the controllers to do their thing.
-	position.ProcessInput( inputState );
-	rotation.ProcessInput( inputState );
-	scale.ProcessInput( inputState );
+
+	GEObject::ProcessInput( inputState );
+
 	orbitAngle.ProcessInput( inputState );
 	orbitDistance.ProcessInput( inputState );
 }

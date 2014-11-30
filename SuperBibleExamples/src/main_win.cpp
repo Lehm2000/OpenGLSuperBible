@@ -33,7 +33,7 @@ int main(void)
 
 	// Plane-Ray intersection
 
-	GERay ray = GERay( GEvec3( 0.0f, 0.0f, -5.0f ), GEvec3( 1.0f, 0.0f, 10.0f ) );
+	GERay ray = GERay( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 1.0f, 0.0f, -10.0f ) );
 	//GEPlane plane = GEPlane( GEvec3( -10.0f, 0.0f, -3.0f ), GEvec3( 0.0f, 10.0f, -3.0f ), GEvec3( 0.0f, 0.0f, -3.0f ) );
 	GEBoundingBox box = GEBoundingBox( GEvec3(-3.0f, -3.0f, -3.0f), GEvec3(3.0f, 3.0f, 3.0f) ); 
 

@@ -3,7 +3,7 @@
 
 /**
 	GEProperty
-	Purpose:  To hold a value that can be modified through a list of controllers.
+	Purpose:  To hold a value (scalar/vector )that can be modified through a list of controllers.
 	Author: Jeff Adams
 */
 

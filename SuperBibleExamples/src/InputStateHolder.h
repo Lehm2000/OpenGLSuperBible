@@ -4,8 +4,8 @@
 /**
 	InputStateHolder
 	Holds a pointer to the input state object.  It was easier to pass to other 
-	objects if GEInputState was not a child of GEObject but still needed a way 
-	to pass it to the graphics engine in the gameEntities list
+	objects if GEInputState was not a child of GEObject ( circular includes were causing problems compiling ) but still 
+	needed a way to pass it to the graphics engine in the gameEntities list
 
 	Author: Jeff Adams
 */

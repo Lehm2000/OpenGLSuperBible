@@ -1074,9 +1074,7 @@ std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsi
 					winCoord = GEvec3(mousePosition.x,  gameEngineSettings->getViewportHeight() - mousePosition.y - 1, 1.0f);
 					GEvec3 mouseRayPoint02 = glm::unProject(winCoord, viewMatrix, projMatrix, viewport);
 
-					// subtract them to get the distance.
-					//GEvec3 mouseRay = mouseRayPoint02 - mouseRayPoint01;
-
+					// build the ray out of it.
 					GERay mouseRay = GERay( mouseRayPoint01, mouseRayPoint02 - mouseRayPoint01 );
 
 
@@ -1109,7 +1107,14 @@ std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsi
 								// transform the ray
 								GERay tMouseRay = mouseRay * rayTransMatrix;  // these may appear backwards but are multiplied in the correct order in the operator.
 
-								
+								// check for collision
+								GEvec3* intersectPoint = meshBB.intersectRay( tMouseRay );
+
+								if( intersectPoint != nullptr )
+								{
+									objectList.push_back( it->first );  // push back the name of the object.
+									delete intersectPoint;
+								}
 							}
 
 						}
@@ -1119,6 +1124,16 @@ std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsi
 		}
 
 		
+	}
+
+	// report if the mouse is over
+	if( !objectList.empty() )
+	{
+		printf( "mouse over\t\r" );
+	}
+	else
+	{
+		printf( "mouse not over\r" );
 	}
 
 	return objectList;

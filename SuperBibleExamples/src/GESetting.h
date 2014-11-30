@@ -3,7 +3,7 @@
 
 /**
 	GESetting
-	Class to hold a controllable setting.  Similar to GEController but intended to cycle through a list of specified values
+	Class to hold a controllable setting.  Similar to GEProperty but intended to cycle through a list of specified values
 	when the specified GE_ENGINE_ACTION is toggled.  Keeps track of how it was toggled to generate its own GE_ACTION
 */
 
@@ -212,7 +212,7 @@ void GESetting<T>::ProcessInput( const GEInputState* inputState )
 		}
 		else if ( this->action == GE_ACTION_REPEAT )
 		{
-			if( toggled ) // if combination down
+			if( toggled ) // if combination down... doesn't matter what the previous frame was
 			{
 				this->CycleSetting();
 			}
