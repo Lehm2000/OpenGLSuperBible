@@ -17,6 +17,7 @@
 #include "GEProperty.h"
 #include "GEObjectContainer.h"
 #include "TypeDefinitions.h"
+#include "GESettingSelectMouseState.h"
 
 
 template <class T>
@@ -39,14 +40,19 @@ protected:
 	// Display
 	bool visible;				// draw it?
 	std::string mesh;			// path to the mesh.
-	std::string material;		// path to the material
+	//std::string material;		// path to the material
+	GESetting< std::string >* material;	
+
+	// Mouse over stuff.  TODO Not sure if this is the best place. Put it in inputState somehow?  Have subclass for mouse over objects?
+	bool mouseOver;
+	bool mousePrevOver;
 
 	// other
-	const GEObjectContainer* gameEntities;  /* pointer to the master gameEntity 
+	// const GEObjectContainer* gameEntities;  
+	/* pointer to the master gameEntity 
 		list.  In case the controller needs to know the properties of some 
 		other object in the world.  This one scares me a bit... I know its 
 		const... but is there a better way to get this info? */
-
 	
 public:
 	// Structors
@@ -59,9 +65,11 @@ public:
 
 	void setVisible( const bool visible );
 	void setMesh( const std::string mesh );
-	void setMaterial( const std::string material );
+	void setMaterial( const GESetting< std::string >* material );
+	void setMaterialValue( const std::string materialValue );
+	void setMaterialValueList( const std::vector< std::string > valueList );
 
-	void setGameEntities( const GEObjectContainer* gameEntities );
+	//void setGameEntities( const GEObjectContainer* gameEntities );
 
 	void setPositionStart( const GEvec3 positionStart ) { this->position.setValue( positionStart ); };
 	void setPositionMin( const GEvec3 positionMin ) { this->position.setMin( positionMin ); };
@@ -81,44 +89,43 @@ public:
 	void setScaleMax( const GEvec3 max ) { this->scale.setMax( max ); };
 	void setScaleUseMax( const bool useMax ) { this->scale.setUseMax( useMax ); };
 
+	void setMouseOver( const bool mouseOver ) { this->mousePrevOver = this->mouseOver; this->mouseOver = mouseOver; };
+
 
 	// Getters
 	std::string getID() const;
 	
 	GEvec3 getPositionStart() const { return this->position.getBaseValue(); };
-	virtual GEvec3 getPositionFinal() const { return this->position.getFinalValue(); };
+	virtual GEvec3 getPositionFinal( const GEObjectContainer* gameEntities ) const { return this->position.getFinalValue( gameEntities ); };
+	
 	GEvec3 getPositionMin() const { return this->position.getMinValue(); };
 	bool getPositionUseMin() const { return this->position.getUseMin(); };
 	GEvec3 getPositionMax() const { return this->position.getMaxValue(); };
 	bool getPositionUseMax() const { return this->position.getUseMax(); };
 
 	GEvec3 getRotationStart() const { return this->rotation.getBaseValue(); };
-	virtual GEvec3 getRotationFinal() const { return this->rotation.getFinalValue(); };
+	virtual GEvec3 getRotationFinal( const GEObjectContainer* gameEntities ) const { return this->rotation.getFinalValue( gameEntities ); };
 	GEvec3 getRotationMin() const { return this->rotation.getMinValue(); };
 	bool getRotationUseMin() const { return this->rotation.getUseMin(); };
 	GEvec3 getRotationMax() const { return this->rotation.getMaxValue(); };
 	bool getRotationUseMax() const { return this->rotation.getUseMax(); };
 
 	GEvec3 getScaleStart() const { return this->scale.getBaseValue(); };
-	virtual GEvec3 getScaleFinal() const { return this->scale.getFinalValue(); };
+	virtual GEvec3 getScaleFinal( const GEObjectContainer* gameEntities ) const { return this->scale.getFinalValue( gameEntities ); };
 	GEvec3 getScaleMin() const { return this->scale.getMinValue(); };
 	bool getScaleUseMin() const { return this->scale.getUseMin(); };
 	GEvec3 getScaleMax() const { return this->scale.getMaxValue(); };
 	bool getScaleUseMax() const { return this->scale.getUseMax(); };
 
 
-	/*
-	GEPropertyv3* getPositionProp();
-	const GEPropertyv3* getPositionProp() const;
-	GEPropertyv3* getRotationProp();
-	const GEPropertyv3* getRotationProp() const;
-	GEPropertyv3* getScaleProp();
-	const GEPropertyv3* getScaleProp() const;
-	*/
-
 	bool isVisible() const;
 	std::string getMesh() const;
-	std::string getMaterial() const;
+	const GESetting< std::string >* getMaterial( ) const;
+	std::string getMaterialValue( ) const;
+	std::vector< std::string> getMaterialValueList( ) const;
+	//std::string getMaterial() const;
+
+	bool isMouseOver() const { return this->mouseOver; };
 
 
 
@@ -134,23 +141,23 @@ public:
 	void GenerateID();
 	virtual std::string getClassName() const;
 
-	void addPositionController( GEControllerv3* controller, const GEObject* parent );
+	void addPositionController( GEControllerv3* controller );
 	void removePositionController( const unsigned int index );
-	void addRotationController( GEControllerv3* controller, const GEObject* parent );
+	void addRotationController( GEControllerv3* controller);
 	void removeRotationController( const unsigned int index );
-	void addScaleController( GEControllerv3* controller, const GEObject* parent );
+	void addScaleController( GEControllerv3* controller );
 	void removeScaleController( const unsigned int index );
 
 	/**
 	*/
-	virtual glm::mat4 GetTransformMatrix() const;
+	virtual glm::mat4 GetTransformMatrix( const GEObjectContainer* gameEntities ) const;
 
 	/**
 		Update()
 		@param gameTime - time (in seconds) passed since game began.
 		@param deltaTime - time (in seconds) passed since last frame.
 	*/
-	virtual void Update( const double gameTime, const double deltaTime);
+	virtual void Update( const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime);
 	
 	/**
 		ProcessInput
@@ -172,7 +179,7 @@ public:
 		@ param gameEntities - pointer to the gameEntities
 		@ return void
 	*/
-	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
+	// virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 };
 

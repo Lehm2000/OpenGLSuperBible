@@ -81,9 +81,17 @@ std::map< std::string, GEObject*>::const_iterator GEObjectContainer::Last() cons
 
 void GEObjectContainer::UpdateObjects( double gameTime, double deltaTime, const GEInputState* inputState )
 {
+	std::vector< std::string> mouseOverObjects = inputState->getMouseOverObjects();
+
 	for ( std::map< std::string, GEObject* >::const_iterator it = objects.begin(); it != objects.end(); it++ )
 	{
+		
+
+		// Tell object the mouse is over it based on if its name is in the list.
+		it->second->setMouseOver( std::find( mouseOverObjects.begin(), mouseOverObjects.end(), it->first  ) != mouseOverObjects.end() );
+	
 		it->second->ProcessInput( inputState );
-		it->second->Update( gameTime, deltaTime );
+		it->second->Update( this, gameTime, deltaTime );
+
 	}
 }

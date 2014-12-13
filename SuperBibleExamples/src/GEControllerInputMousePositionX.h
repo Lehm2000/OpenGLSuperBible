@@ -29,7 +29,7 @@ public:
 	virtual ~GEControllerInputMousePositionX();
 
 	// Setters
-	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
+	// virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -49,7 +49,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -95,7 +95,7 @@ GEControllerInputMousePositionX<T>::GEControllerInputMousePositionX( const GECon
 }
 
 // Setters
-
+/*
 template <class T>
 void GEControllerInputMousePositionX<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
@@ -116,7 +116,7 @@ void GEControllerInputMousePositionX<T>::setGameEntities( const GEObjectContaine
 		this->mousePositionXPrev = this->mousePositionX;
 	}
 }
-
+*/
 // Functions
 
 template <class T>
@@ -133,7 +133,7 @@ GEControllerInputMousePositionX<T>* GEControllerInputMousePositionX<T>::clone() 
 
 
 template <class T>
-T GEControllerInputMousePositionX<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerInputMousePositionX<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	
 	// find the change
@@ -159,8 +159,8 @@ void GEControllerInputMousePositionX<T>::ProcessInput( const GEInputState* input
 {
 	if( inputState->getMouseMode() == GE_MOUSEMODE_LOOK )
 	{
-		this->mousePositionXPrev = this->mousePositionX;
-
+		//this->mousePositionXPrev = this->mousePositionX;
+		this->mousePositionXPrev = inputState->getMousePositionPrev().x;
 		this->mousePositionX = inputState->getMousePosition().x;
 	}
 	else

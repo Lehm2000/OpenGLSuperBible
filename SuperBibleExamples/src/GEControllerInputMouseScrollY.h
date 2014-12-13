@@ -27,7 +27,7 @@ public:
 	virtual ~GEControllerInputMouseScrollY();
 
 	// Setters
-	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
+	//virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -47,7 +47,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -89,7 +89,7 @@ GEControllerInputMouseScrollY<T>::GEControllerInputMouseScrollY( const GEControl
 }
 
 // Setters
-
+/*
 template <class T>
 void GEControllerInputMouseScrollY<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
@@ -100,7 +100,7 @@ void GEControllerInputMouseScrollY<T>::setGameEntities( const GEObjectContainer*
 
 
 }
-
+*/
 // Functions
 
 template <class T>
@@ -117,7 +117,7 @@ GEControllerInputMouseScrollY<T>* GEControllerInputMouseScrollY<T>::clone() cons
 
 
 template <class T>
-T GEControllerInputMouseScrollY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerInputMouseScrollY<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	
 	// apply the change. x = y rotation, y = x rotation

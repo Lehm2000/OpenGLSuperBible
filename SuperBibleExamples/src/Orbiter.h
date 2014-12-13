@@ -52,17 +52,17 @@ public:
 
 	std::string getOrbitTargetName() const;
 
-	virtual GEvec3 getPositionFinal() const { return this->GetOrbitPosition(); };
+	virtual GEvec3 getPositionFinal( const GEObjectContainer* gameEntities ) const { return this->GetOrbitPosition( gameEntities ); };
 
 	GEvec3 getOrbitAngleStart() const { return this->orbitAngle.getBaseValue(); };
-	GEvec3 getOrbitAngleFinal() const { return this->orbitAngle.getFinalValue(); };
+	GEvec3 getOrbitAngleFinal( const GEObjectContainer* gameEntities ) const { return this->orbitAngle.getFinalValue( gameEntities ); };
 	GEvec3 getOrbitAngleMin() const { return this->orbitAngle.getMinValue(); };
 	bool getOrbitAngleUseMin() const { return this->orbitAngle.getUseMin(); };
 	GEvec3 getOrbitAngleMax() const { return this->orbitAngle.getMaxValue(); };
 	bool getOrbitAngleUseMax() const { return this->orbitAngle.getUseMax(); };
 
 	float getOrbitDistanceStart() const { return this->orbitDistance.getBaseValue(); };
-	float getOrbitDistanceFinal() const { return this->orbitDistance.getFinalValue(); };
+	float getOrbitDistanceFinal( const GEObjectContainer* gameEntities ) const { return this->orbitDistance.getFinalValue( gameEntities ); };
 	float getOrbitDistanceMin() const { return this->orbitDistance.getMinValue(); };
 	bool getOrbitDistanceUseMin() const { return this->orbitDistance.getUseMin(); };
 	float getOrbitDistanceMax() const { return this->orbitDistance.getMaxValue(); };
@@ -72,27 +72,27 @@ public:
 
 	virtual std::string getClassName() const;
 
-	void addOrbitAngleController( GEControllerv3* controller, const GEObject* parent );
+	void addOrbitAngleController( GEControllerv3* controller );
 	void removeOrbitAngleController( const unsigned int index );
-	void addOrbitDistanceController( GEControllerf1* controller, const GEObject* parent );
+	void addOrbitDistanceController( GEControllerf1* controller );
 	void removeOrbitDistanceController( const unsigned int index );
 	
 	/**
 	*/
-	GEvec3 GetOrbitPosition() const;
+	GEvec3 GetOrbitPosition( const GEObjectContainer* gameEntities ) const;
 
 	/**
 		GetTransformMatrix()
 		Must override this as it will behave completely differently from the base version.
 	*/
-	virtual glm::mat4 GetTransformMatrix() const;
+	virtual glm::mat4 GetTransformMatrix( const GEObjectContainer* gameEntities ) const;
 
 	/**
 		Update()
 		@param gameTime - time (in seconds) passed since game began.
 		@param deltaTime - time (in seconds) passed since last frame.
 	*/
-	virtual void Update( const double gameTime, const double deltaTime);
+	virtual void Update( const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime);
 	
 	/**
 		ProcessInput
@@ -114,7 +114,7 @@ public:
 		@ param gameEntities - pointer to the gameEntities
 		@ return void
 	*/
-	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
+	//virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 };
 
 #endif /* ORBITER_H */

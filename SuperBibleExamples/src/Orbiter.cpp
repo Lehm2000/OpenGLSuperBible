@@ -15,8 +15,8 @@ Orbiter::Orbiter()
 	this->setOrbitDistanceStart( 0.0f );
 
 	// Initialize the controller list... add base "static" controller to the as the first
-	this->addOrbitAngleController( new GEControllerv3(), this );
-	this->addOrbitDistanceController( new GEControllerf1(), this );	
+	this->addOrbitAngleController( new GEControllerv3() );
+	this->addOrbitDistanceController( new GEControllerf1() );	
 }
 
 Orbiter::Orbiter( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string orbitTargetName, GEvec3 orbitAngle, float orbitDistance )
@@ -27,8 +27,8 @@ Orbiter::Orbiter( GEvec3 position, GEvec3 rotation, GEvec3 scale, std::string or
 	this->setOrbitDistanceStart( orbitDistance );
 
 	// Initialize the controller list... add base "static" controller to the as the first
-	this->addOrbitAngleController( new GEControllerv3(), this );
-	this->addOrbitDistanceController( new GEControllerf1(), this );	
+	this->addOrbitAngleController( new GEControllerv3() );
+	this->addOrbitDistanceController( new GEControllerf1() );	
 }
 
 Orbiter::Orbiter( const Orbiter& source )
@@ -65,9 +65,9 @@ std::string Orbiter::getClassName() const
 	return "Orbiter";
 }
 
-void Orbiter::addOrbitAngleController( GEControllerv3* controller, const GEObject* parent )
+void Orbiter::addOrbitAngleController( GEControllerv3* controller )
 {
-	this->orbitAngle.addController( controller, parent );
+	this->orbitAngle.addController( controller );
 }
 
 void Orbiter::removeOrbitAngleController( const unsigned int index )
@@ -75,9 +75,9 @@ void Orbiter::removeOrbitAngleController( const unsigned int index )
 	this->orbitAngle.removeController( index );
 }
 
-void Orbiter::addOrbitDistanceController( GEControllerf1* controller, const GEObject* parent )
+void Orbiter::addOrbitDistanceController( GEControllerf1* controller )
 {
-	this->orbitDistance.addController( controller, parent );
+	this->orbitDistance.addController( controller );
 }
 
 void Orbiter::removeOrbitDistanceController( const unsigned int index )
@@ -85,20 +85,20 @@ void Orbiter::removeOrbitDistanceController( const unsigned int index )
 	this->orbitDistance.removeController( index );
 }
 
-GEvec3 Orbiter::GetOrbitPosition() const
+GEvec3 Orbiter::GetOrbitPosition( const GEObjectContainer* gameEntities ) const
 {
 	GEvec3 orbitPosition;
 	const GEObject* targetObject = gameEntities->GetObject( this->orbitTargetName );
 	
 	if ( targetObject != nullptr )
 	{
-		const GEvec3 targetPos = targetObject->getPositionFinal();
+		const GEvec3 targetPos = targetObject->getPositionFinal( gameEntities );
 		
 		// Create a new starting vector based on the distance.
-		glm::vec4 distVector( 0.0f, 0.0f, orbitDistance.getFinalValue(), 1.0f );
+		glm::vec4 distVector( 0.0f, 0.0f, orbitDistance.getFinalValue( gameEntities ), 1.0f );
 
 		// create a rotation matrix and rotate the distVector by it.
-		glm::vec4 newPos = glm::rotate( glm::mat4(), orbitAngle.getFinalValue().z, glm::vec3( 0.0f, 0.0f, 1.0f ) ) * glm::rotate( glm::mat4(), orbitAngle.getFinalValue().y, glm::vec3( 0.0f, 1.0f, 0.0f ) ) * glm::rotate( glm::mat4(), orbitAngle.getFinalValue().x, glm::vec3( 1.0f, 0.0f, 0.0f ) ) * distVector;
+		glm::vec4 newPos = glm::rotate( glm::mat4(), orbitAngle.getFinalValue( gameEntities ).z, glm::vec3( 0.0f, 0.0f, 1.0f ) ) * glm::rotate( glm::mat4(), orbitAngle.getFinalValue( gameEntities ).y, glm::vec3( 0.0f, 1.0f, 0.0f ) ) * glm::rotate( glm::mat4(), orbitAngle.getFinalValue( gameEntities ).x, glm::vec3( 1.0f, 0.0f, 0.0f ) ) * distVector;
 		
 		// next transform the position to target.
 		orbitPosition = targetPos + glm::vec3( newPos.x, newPos.y, newPos.z );
@@ -114,16 +114,16 @@ GEvec3 Orbiter::GetOrbitPosition() const
 	return orbitPosition;
 }
 
-glm::mat4 Orbiter::GetTransformMatrix() const
+glm::mat4 Orbiter::GetTransformMatrix( const GEObjectContainer* gameEntities ) const
 {
 	glm::mat4 transformMatrix;
 	GEvec3 transformedPosition;
 	GEvec3 transformedRotation;
 	GEvec3 transformedScale;
 
-	transformedPosition = this->GetOrbitPosition();								// calculated based on orbit distance and orbit angle
-	transformedRotation = rotation.getFinalValue();		// get value after controllers applied
-	transformedScale = scale.getFinalValue();			// get value after controllers applied
+	transformedPosition = this->GetOrbitPosition( gameEntities );								// calculated based on orbit distance and orbit angle
+	transformedRotation = rotation.getFinalValue( gameEntities );		// get value after controllers applied
+	transformedScale = scale.getFinalValue( gameEntities );			// get value after controllers applied
 
 	transformMatrix = glm::translate( glm::mat4(), transformedPosition ) * 
 		glm::rotate( glm::mat4(), transformedRotation.z, GEvec3( 0.0f, 0.0f, 1.0f ) ) * 
@@ -134,14 +134,14 @@ glm::mat4 Orbiter::GetTransformMatrix() const
 	return transformMatrix;
 }
 
-void Orbiter::Update( const double gameTime, const double deltaTime)
+void Orbiter::Update( const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime)
 {
 	// Let property controllers do their thing.
 
-	GEObject::Update( gameTime, deltaTime );
+	GEObject::Update( gameEntities, gameTime, deltaTime ); // call the parent update function.
 
-	orbitAngle.Update( gameTime, deltaTime );
-	orbitDistance.Update( gameTime, deltaTime );
+	orbitAngle.Update( this, gameEntities, gameTime, deltaTime );
+	orbitDistance.Update( this, gameEntities, gameTime, deltaTime );
 }
 
 	
@@ -161,7 +161,7 @@ GEObject* Orbiter::clone() const
 	return new Orbiter(*this);
 }
 
-
+/*
 void Orbiter::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities)
 {
 	this->setGameEntities( gameEntities );
@@ -173,4 +173,4 @@ void Orbiter::setControllerGameEntitiesPointer( const GEObjectContainer* gameEnt
 	scale.setControllerGameEntitiesPointer( gameEntities );
 	orbitAngle.setControllerGameEntitiesPointer( gameEntities );
 	orbitDistance.setControllerGameEntitiesPointer( gameEntities );
-}
+}*/

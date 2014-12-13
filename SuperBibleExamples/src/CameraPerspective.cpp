@@ -37,12 +37,12 @@ std::string CameraPerspective::getClassName() const
 	return "CameraPerspective";
 }
 
-void CameraPerspective::Update( const double gameTime, const double deltaTime)
+void CameraPerspective::Update( const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime)
 {
 	// Let property controllers do their thing.
-	CameraObject::Update( gameTime, deltaTime); // update the parent first.
+	CameraObject::Update( gameEntities, gameTime, deltaTime); // update the parent first.
 
-	fov.Update( gameTime, deltaTime);  
+	fov.Update( this, gameEntities, gameTime, deltaTime);  
 }
 
 void CameraPerspective::ProcessInput( const GEInputState* inputState)
@@ -53,9 +53,9 @@ void CameraPerspective::ProcessInput( const GEInputState* inputState)
 	fov.ProcessInput( inputState );
 }
 
-void CameraPerspective::addFovController( GEControllerf1* fovController, const GEObject* parent)
+void CameraPerspective::addFovController( GEControllerf1* fovController)
 {
-	this->fov.addController( fovController, parent );
+	this->fov.addController( fovController );
 }
 
 void CameraPerspective::removeFovController( const unsigned int index )
@@ -68,6 +68,7 @@ CameraPerspective* CameraPerspective::clone() const
 	return new CameraPerspective( *this );
 }
 
+/*
 void CameraPerspective::setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities)
 {
 	this->setGameEntities( gameEntities );
@@ -79,3 +80,4 @@ void CameraPerspective::setControllerGameEntitiesPointer( const GEObjectContaine
 	scale.setControllerGameEntitiesPointer( gameEntities );
 	fov.setControllerGameEntitiesPointer( gameEntities );
 }
+*/

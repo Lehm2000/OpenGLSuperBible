@@ -149,7 +149,8 @@ void GameEngine::Update()
 	
 	// do the input here.
 
-	inputState.ResetMouseScrollOffset();  // mouse offset needs to be reset at the beginning.
+	inputState.UpdateMousePrev();			// mouse prev needs to be updated bofre input processing occurs
+	inputState.ResetMouseScrollOffset();	// mouse offset needs to be reset before input processing occurs.
 
 	while (inputList->size() > 0 )
 	{
@@ -192,12 +193,49 @@ void GameEngine::Update()
 		inputList->pop();
 	}
 	
-	// check the current mousemode.  TODO only do this if mode changed rather than every frame.
-	inputState.setMouseMode( engineSettings->getMouseMode() );  // set the current mousemode in the input state (this is where most objects will check the mouse mode )
-	graphics->SetMouseMode( engineSettings->getMouseMode() ); // Tell the graphics engine to change mouse behavior
+	// check the current mousemode. 
 
-	// check mouse over stuff  TODO best place to put this??
-	inputState.setMouseOverObjects( graphics->MouseOver() );
+	if( inputState.getMouseMode() != engineSettings->getMouseMode() )  // did the mouse mode change.
+	{
+		inputState.setMouseMode( engineSettings->getMouseMode() );		// set the current mousemode in the input state (this is where most objects will check the mouse mode )
+		graphics->SetMouseMode( engineSettings->getMouseMode() );		// Tell the graphics engine to change mouse behavior
+		inputState.ResetMousePosition( graphics->GetMousePosition() );	
+	}
+
+	// check mouse over stuff  
+	
+	// TODO best place to put this??  Alternate solution: instead of telling the objects explicitly that the mouse is or is
+	// not over them... just have the objects look up in the inputState to see if the mouse is over them.  The problem with
+	// that is that the object currently is not aware of its own name.  So it has no way to look into inputState and find
+	// that data.
+
+	// get the list of objects the mouse is over
+	std::vector< std::string > moList = graphics->MouseOver();
+
+	/*  This section probably not needed... handled in UpdateObjects
+	// first set all the objects to not mouse over.
+	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.First(); it != gameEntities.Last(); it++ )
+	{
+		it->second->setMouseOver( false );
+	}
+
+	
+	
+
+	// tell those objects that the mouse is over it
+	for( int i = 0; i < moList.size(); i++ )
+	{
+		GEObject* curObject = gameEntities.GetObject( moList[i] );
+
+		if( curObject != nullptr )
+		{
+			curObject->setMouseOver( true );
+		}
+	}*/
+
+	// also give it to the inputState
+	inputState.setMouseOverObjects( moList );
+	
 
 	// Update game variables------------------------------------------------------------------------------
 	
@@ -244,7 +282,7 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 			// if it is not, add it.
 
 			// pass the gameEntities pointer to the entity here... which it will pass to the controllers.
-			entity->setControllerGameEntitiesPointer( &gameEntities );
+			//entity->setControllerGameEntitiesPointer( &gameEntities );
 
 			success = gameEntities.AddObject( entityName, entity );
 
@@ -254,10 +292,13 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 				LoadMesh( entity->getMesh() );
 			}
 
-			// do the same with the material.
-			if ( !entity->getMaterial().empty() )
+			// load the list of materials for the entity... if it has any.
+
+			std::vector< std::string> matList = entity->getMaterialValueList();
+
+			for( unsigned int i = 0; i < matList.size(); i++ )
 			{
-				LoadMaterial( entity->getMaterial() );
+				LoadMaterial( matList[i] );
 			}
 
 		}

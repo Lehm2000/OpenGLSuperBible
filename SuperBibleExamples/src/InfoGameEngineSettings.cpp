@@ -53,6 +53,7 @@ InfoGameEngineSettings::InfoGameEngineSettings( const InfoGameEngineSettings& so
 	this->renderMode = source.renderMode;
 	this->showBoundingBoxes = source.showBoundingBoxes;
 	this->enableMultiSample = source.enableMultiSample;
+	this->mouseMode = source.mouseMode;
 }
 
 // Setters and Getters
@@ -125,17 +126,13 @@ bool InfoGameEngineSettings::getEnableMultiSample() const
 	
 void InfoGameEngineSettings::ProcessInput( const GEInputState* inputState)
 {
-	// pass it on to the controllers to do their thing.
-	position.ProcessInput( inputState );
-	rotation.ProcessInput( inputState );
-	scale.ProcessInput( inputState );
+	GEObject::ProcessInput( inputState );	// pass to parent object first.
 
-	// pass it on to the settings
+	// then let this guys members deal with it as well.
 	renderMode.ProcessInput( inputState );
 	showBoundingBoxes.ProcessInput( inputState );
 	enableMultiSample.ProcessInput( inputState );
-
-	mouseMode.ProcessInput( inputState );
+	mouseMode.ProcessInput( inputState );	
 }
 
 /**

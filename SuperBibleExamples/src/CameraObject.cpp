@@ -33,12 +33,12 @@ std::string CameraObject::getClassName() const
 	return "CameraObject";
 }
 
-glm::mat4 CameraObject::GetViewMatrix() const
+glm::mat4 CameraObject::GetViewMatrix( const GEObjectContainer* gameEntities ) const
 {
 	glm::mat4 viewMatrix;
 
 	// First guess at this matrix... probably could be more efficient.
-	viewMatrix = glm::inverse( glm::translate( glm::mat4(), this->getPositionFinal() ) * glm::rotate(glm::mat4(), this->getRotationFinal()[1], GEvec3(0,1,0) ) * glm::rotate(glm::mat4(), this->getRotationFinal()[0], GEvec3(1,0,0) ) );
+	viewMatrix = glm::inverse( glm::translate( glm::mat4(), this->getPositionFinal( gameEntities ) ) * glm::rotate(glm::mat4(), this->getRotationFinal( gameEntities )[1], GEvec3(0,1,0) ) * glm::rotate(glm::mat4(), this->getRotationFinal( gameEntities )[0], GEvec3(1,0,0) ) );
 	
 	return viewMatrix;
 }

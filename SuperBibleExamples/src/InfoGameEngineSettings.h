@@ -9,6 +9,7 @@
 
 #include "Info.h"
 #include "GESetting.h"
+#include "GESettingCycleInputToggle.h"
 #include "InputItem.h"
 
 // render modes
@@ -31,12 +32,12 @@ private:
 		//rendering from.  TODO how to allow more than one render cam?
 
 	// Render options ( That aren't exclusive to a specific render engine )
-	GESetting< unsigned char> renderMode; //unsigned char renderMode;
-	GESetting< bool > showBoundingBoxes;
-	GESetting< bool > enableMultiSample;
+	GESettingCycleInputToggle< unsigned char> renderMode; //unsigned char renderMode;
+	GESettingCycleInputToggle< bool > showBoundingBoxes;
+	GESettingCycleInputToggle< bool > enableMultiSample;
 
 	// Input Options
-	GESetting< unsigned char > mouseMode;
+	GESettingCycleInputToggle< unsigned char > mouseMode;
 
 public:
 

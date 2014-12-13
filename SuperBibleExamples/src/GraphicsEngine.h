@@ -152,6 +152,11 @@ public:
 	virtual void SetMouseMode( unsigned char mouseMode ) = 0;
 
 	/**
+		Gets the current position of the mouse from the graphics engine.
+	*/
+	virtual GEvec2 GetMousePosition() const = 0;
+
+	/**
 		MouseOver
 		Finds what object(s) the mouse is over.  This must be part of the graphics engine as its the only class that has
 		access to both the object data and mesh data.

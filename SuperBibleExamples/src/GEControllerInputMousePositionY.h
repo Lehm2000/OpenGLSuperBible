@@ -25,7 +25,7 @@ public:
 	virtual ~GEControllerInputMousePositionY();
 
 	// Setters
-	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
+	//virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -45,7 +45,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -92,7 +92,7 @@ GEControllerInputMousePositionY<T>::GEControllerInputMousePositionY( const GECon
 }
 
 // Setters
-
+/*
 template <class T>
 void GEControllerInputMousePositionY<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
@@ -114,7 +114,7 @@ void GEControllerInputMousePositionY<T>::setGameEntities( const GEObjectContaine
 		this->mousePositionYPrev = this->mousePositionY;
 	}
 }
-
+*/
 // Functions
 
 template <class T>
@@ -131,7 +131,7 @@ GEControllerInputMousePositionY<T>* GEControllerInputMousePositionY<T>::clone() 
 
 
 template <class T>
-T GEControllerInputMousePositionY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerInputMousePositionY<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	
 	// find the change
@@ -157,7 +157,7 @@ void GEControllerInputMousePositionY<T>::ProcessInput( const GEInputState* input
 {
 	if( inputState->getMouseMode() == GE_MOUSEMODE_LOOK )
 	{
-		this->mousePositionYPrev = this->mousePositionY;
+		this->mousePositionYPrev = inputState->getMousePositionPrev().y;
 
 		this->mousePositionY = inputState->getMousePosition().y;
 	}
@@ -165,6 +165,7 @@ void GEControllerInputMousePositionY<T>::ProcessInput( const GEInputState* input
 	{
 		this->mousePositionYPrev = this->mousePositionY = inputState->getMousePosition().y;
 	}
+	
 
 }
 

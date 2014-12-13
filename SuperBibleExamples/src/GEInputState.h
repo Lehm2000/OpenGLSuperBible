@@ -45,7 +45,7 @@ private:
 	bool mouseButtons[ INPUTSTATE_MAX_MOUSE_BUTTONS ];
 	unsigned char mouseMode;							// What mode is the mouse? Member of GE_MOUSEMODE_*
 	GEvec2 mousePosition;
-	GEvec2 mousePositionPrev;  // TODO Is this one necessary or will the controllers be responsible for tracking the previous position?
+	GEvec2 mousePositionPrev;  
 	GEvec2 mouseScrollOffset;	// how much the mouse scrolled, this needs to be reset at the beginning of each frame.
 
 	InputAction actionList[ GE_MAX_INPUT_ACTIONS ];		/* This holds the key/button combinations necessary to activate 
@@ -65,6 +65,7 @@ public:
 	void setKeyboardKey( const unsigned short key, bool pressed );
 	void setMouseButton( const unsigned short button, bool pressed );
 	void setMousePosition( const GEvec2 mousePosition );
+	//void setMousePositionPrev( const GEvec2 mousePosition );
 	void setMouseScrollOffset( const GEvec2 mouseScrollOffset );
 	void setMouseMode( const unsigned char mouseMode );
 	void setMouseOverObjects( const std::vector< std::string > mouseOverObjects);
@@ -78,12 +79,26 @@ public:
 	bool getKeyboardKey( const unsigned short key ) const;
 	bool getMouseButton( const unsigned short button ) const;
 	GEvec2 getMousePosition( ) const;
+	GEvec2 getMousePositionPrev( ) const;
 	GEvec2 getMouseScrollOffset( ) const;
 	unsigned char getMouseMode( ) const;
+	unsigned char getMouseModePrev( ) const;
 	std::vector< std::string > getMouseOverObjects() const;
 
 	// Functions
 
+	/**
+	 * Sets the current mouse position and prev mouse posiiton to the specified position.  This allows you to move the
+	 * mouse position without it registering as a mouse move.
+	 */
+	void ResetMousePosition( const GEvec2 mousePosition );
+	
+	/**
+	 * Sets the mouse prev position to the mouse position.  Must be called at the beginning of each frame.
+	 */
+	void UpdateMousePrev();
+
+	
 
 	void ResetMouseScrollOffset();
 	

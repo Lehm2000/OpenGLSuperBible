@@ -87,7 +87,7 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 		
 		// create a camera.
 		const CameraObject* renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), 1.0f, 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), 1.0f, 0.1f, 1000.0f) * renderCam->GetViewMatrix( gameEntities );
 		
 		GEMesh renderMesh = resMesh.GetResource( "plane" );
 
@@ -139,7 +139,7 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 
 		// create a camera and new view matrix
 		renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix( gameEntities );
 
 		// reset the viewport
 		glViewport( 0, 0,  (float)gameEngineSettings->getViewportWidth(), (float)gameEngineSettings->getViewportHeight() );
@@ -188,9 +188,6 @@ void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 		delete renderCam;
 		
 	}
-	
-	
-
 
 	RenderFPS( currentTime );
 
@@ -224,14 +221,14 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 		{
 			if (renderCam->getClassName() == "CameraPerspective" )
 			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix( gameEntities );
 			}
 		}
 		else
 		{
 			// if can't find renderCam build a generic one.
 			renderCam = new CameraPerspective( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
+			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix( gameEntities );
 		}
 
 		const GLfloat bkColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
@@ -270,8 +267,13 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 		{
 			if ( it->second->isVisible() )
 			{
+				if( it->first == "testOrbiter2" )
+				{
+					printf("test");
+				}
+
 				GEMaterial renderMaterial;
-				std::string renderMaterialName = it->second->getMaterial();
+				std::string renderMaterialName = it->second->getMaterialValue();
 
 				renderMaterial = resMaterial.GetResource( renderMaterialName );
 			
@@ -284,7 +286,7 @@ void GraphicsEngineOpenGL::Render( const double currentTime )
 
 				glBindVertexArray( renderMesh.getVertexArrayObject() );
 			
-				glm::mat4 worldMatrix = it->second->GetTransformMatrix();
+				glm::mat4 worldMatrix = it->second->GetTransformMatrix( gameEntities );
 
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 				glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
@@ -1028,6 +1030,22 @@ void GraphicsEngineOpenGL::SetMouseMode( unsigned char mouseMode )
 	}
 }
 
+
+GEvec2 GraphicsEngineOpenGL::GetMousePosition() const
+{
+	GEvec2 returnPos;
+
+	double xPos;
+	double yPos;
+
+	glfwGetCursorPos( window, &xPos, &yPos );
+
+	returnPos.x = (float)xPos;
+	returnPos.y = (float)yPos;
+
+	return returnPos;
+}
+
 std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsigned char collisionMode )
 {
 	// list of objects the mouse is over
@@ -1057,8 +1075,8 @@ std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsi
 					// construct a ray from the position of the mouse that shoots into the scene.
 
 					// get the camera view and projection
-					glm::mat4 projMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal(), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f);
-					glm::mat4 viewMatrix = renderCam->GetViewMatrix();
+					glm::mat4 projMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f);
+					glm::mat4 viewMatrix = renderCam->GetViewMatrix( gameEntities );
 
 					// the the mouse position on the screen.
 					GEvec2 mousePosition = inputState->getMousePosition();
@@ -1102,7 +1120,7 @@ std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsi
 								// one of them.  Its easier to check for collision if the box is in object space so we'll
 								// transform the ray into object space.  We need to construct an inverse matrix of the 
 								// objects transforms to do this.
-								glm::mat4 rayTransMatrix = glm::inverse( it->second->GetTransformMatrix() );
+								glm::mat4 rayTransMatrix = glm::inverse( it->second->GetTransformMatrix( gameEntities ) );
 
 								// transform the ray
 								GERay tMouseRay = mouseRay * rayTransMatrix;  // these may appear backwards but are multiplied in the correct order in the operator.

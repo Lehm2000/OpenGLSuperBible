@@ -44,7 +44,7 @@ public:
 
 	// Getters
 	float getFovStart() const { return this->fov.getBaseValue(); };
-	float getFovFinal() const { return this->fov.getFinalValue(); };
+	float getFovFinal( const GEObjectContainer* gameEntities ) const { return this->fov.getFinalValue( gameEntities ); };
 	float getFovnMin() const { return this->fov.getMinValue(); };
 	bool getFovUseMin() const { return this->fov.getUseMin(); };
 	float getFovMax() const { return this->fov.getMaxValue(); };
@@ -61,9 +61,9 @@ public:
 		@param gameTime - time (in seconds) passed since game began.
 		@param deltaTime - time (in seconds) passed since last frame.
 	*/
-	virtual void Update( const double gameTime, const double deltaTime);
+	virtual void Update(  const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime);
 
-	virtual void addFovController( GEControllerf1* fovController, const GEObject* parent );
+	virtual void addFovController( GEControllerf1* fovController );
 	virtual void removeFovController( const unsigned int index );
 	
 	/**
@@ -86,7 +86,7 @@ public:
 		@ param gameEntities - pointer to the gameEntities
 		@ return void
 	*/
-	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
+	//virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 };
 

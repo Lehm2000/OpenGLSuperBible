@@ -117,6 +117,11 @@ GEvec2 GEInputState::getMousePosition( ) const
 	return this->mousePosition;
 }
 
+GEvec2 GEInputState::getMousePositionPrev( ) const
+{
+	return this->mousePositionPrev;
+}
+
 GEvec2 GEInputState::getMouseScrollOffset( ) const
 {
 	return this->mouseScrollOffset;
@@ -133,6 +138,19 @@ std::vector< std::string > GEInputState::getMouseOverObjects() const
 }
 
 // Functions
+
+void GEInputState::ResetMousePosition( const GEvec2 mousePosition )
+{
+	this->mousePosition = mousePosition;
+	this->mousePositionPrev = mousePosition;
+}
+
+void GEInputState::UpdateMousePrev()
+{
+	this->mousePositionPrev = this->mousePosition;
+}
+
+
 
 void GEInputState::ResetMouseScrollOffset()
 {
