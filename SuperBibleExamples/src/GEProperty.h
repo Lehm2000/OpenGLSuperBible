@@ -64,7 +64,7 @@ public:
 	void removeController( const unsigned int index );
 	void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
-	void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime);
+	void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime );
 
 	/**
 		ProcessInput

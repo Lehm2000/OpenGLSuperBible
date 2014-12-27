@@ -104,17 +104,25 @@ int main(void)
 	testOrbiter2->addOrbitAngleController( new GEControllerConstantv3( GEvec3( 0.0f, -2.0f, 0.0f ) ) );
 	gameEngine.AddEntity( "testOrbiter2", testOrbiter2 );
 
+	//====================================================================================================================
 	GEObject* testObject2 = new GEObject( GEvec3( 1.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 1.0f, 1.0f, 1.0f ) );
 	testObject2->setMesh( "cube" );
 
 	testObject2->setMaterialValueList( defaultMatList );
 	testObject2->setMaterialValue( "default" );
 
-	//testObject2->addRotationController( new GEControllerInputMousePosition( GEvec3( 0.01f, 0.01f, 0.0f ) ) );
-	//testObject2->getRotation()->addController( new GEControllerConstantv3( GEvec3( 1.0f, 0.0f, 0.0f ) ), testObject2 );
 	testObject2->addPositionController( new GEControllerInputKeyv3( GEvec3( 1.0f, 0.0f, 0.0f ), GE_KEY_D) );
 	testObject2->addPositionController( new GEControllerInputKeyv3( GEvec3( -1.0f, 0.0f, 0.0f ), GE_KEY_A) );
 	testObject2->addScaleController( new GEControllerOscillatorv3( GEvec3( 0.2f, -0.5f, 0.5f ) , 3.0f ) );
+
+	std::vector< std::string> matList;
+	matList.push_back( "default" );
+	matList.push_back( "solid_red");
+
+	GESettingSelectMouseState<std::string>* mouseOverMat = new GESettingSelectMouseState<std::string>( 0, matList );
+	mouseOverMat->setMouseStateValueIndex( GE_MOUSE_NOTOVER, 0 );
+	mouseOverMat->setMouseStateValueIndex( GE_MOUSE_OVER, 1 );
+	testObject2->setMaterial( mouseOverMat );
 	
 	gameEngine.AddEntity( "testObject2", testObject2 );
 

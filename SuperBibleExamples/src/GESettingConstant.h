@@ -31,6 +31,8 @@ public:
 
 
 	// Functions
+	virtual void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime );
+
 	virtual void ProcessInput( const GEInputState* inputState );
 
 	virtual GESetting<T>* clone() const;
@@ -72,6 +74,13 @@ GESettingConstant<T>::~GESettingConstant()
 
 
 // Functions
+
+template <class T>
+void GESettingConstant<T>::Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime )
+{
+	// this setting is constant... do nothing.
+}
+
 template <class T>
 void GESettingConstant<T>::ProcessInput( const GEInputState* inputState )
 {

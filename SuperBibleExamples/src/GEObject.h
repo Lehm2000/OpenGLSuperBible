@@ -43,7 +43,7 @@ protected:
 	//std::string material;		// path to the material
 	GESetting< std::string >* material;	
 
-	// Mouse over stuff.  TODO Not sure if this is the best place. Put it in inputState somehow?  Have subclass for mouse over objects?
+	// Mouse over stuff.  TODO Not sure if this is the best place ( in the base GEObject class). Put it in inputState somehow?  Have subclass for mouse over objects?
 	bool mouseOver;
 	bool mousePrevOver;
 

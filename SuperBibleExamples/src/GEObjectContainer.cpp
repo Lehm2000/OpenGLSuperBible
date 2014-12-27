@@ -86,7 +86,6 @@ void GEObjectContainer::UpdateObjects( double gameTime, double deltaTime, const 
 	for ( std::map< std::string, GEObject* >::const_iterator it = objects.begin(); it != objects.end(); it++ )
 	{
 		
-
 		// Tell object the mouse is over it based on if its name is in the list.
 		it->second->setMouseOver( std::find( mouseOverObjects.begin(), mouseOverObjects.end(), it->first  ) != mouseOverObjects.end() );
 	

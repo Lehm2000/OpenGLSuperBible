@@ -260,6 +260,9 @@ void GEObject::Update( const GEObjectContainer* gameEntities, const double gameT
 	position.Update( this, gameEntities, gameTime, deltaTime);
 	rotation.Update( this, gameEntities, gameTime, deltaTime);
 	scale.Update( this, gameEntities, gameTime, deltaTime);
+
+	// settings too
+	material->Update( this, gameEntities, gameTime, deltaTime );
 }
 
 void GEObject::ProcessInput( const GEInputState* inputState)
@@ -268,6 +271,9 @@ void GEObject::ProcessInput( const GEInputState* inputState)
 	position.ProcessInput( inputState );
 	rotation.ProcessInput( inputState );
 	scale.ProcessInput( inputState );
+
+	// then the settings
+	material->ProcessInput( inputState );
 }
 
 GEObject* GEObject::clone() const

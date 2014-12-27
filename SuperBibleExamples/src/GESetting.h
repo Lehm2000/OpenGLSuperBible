@@ -62,6 +62,8 @@ public:
 	
 
 	// Functions
+	virtual void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime ) = 0;
+
 	virtual void ProcessInput( const GEInputState* inputState ) = 0;
 
 	virtual GESetting<T>* clone() const = 0;

@@ -56,6 +56,9 @@ public:
 	unsigned char getAction() const;
 
 	// Functions
+
+	virtual void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime );
+
 	virtual void ProcessInput( const GEInputState* inputState );
 
 	virtual GESetting<T>* clone() const;
@@ -134,6 +137,12 @@ unsigned char GESettingCycleInputToggle<T>::getAction() const
 
 
 // Functions
+template <class T>
+void GESettingCycleInputToggle<T>::Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime )
+{
+	// nothing to update for this GESetting
+}
+
 template <class T>
 void GESettingCycleInputToggle<T>::ProcessInput( const GEInputState* inputState )
 {

@@ -3,7 +3,7 @@
 
 /**
 	GESettingSelectMouseState
-	GESetting class that selects the value to use based on the mouse state of the object.
+	GESetting class that selects the value to use based on the mouse state of the parent object.
 */
 
 #include <vector>
@@ -42,7 +42,12 @@ public:
 	int getMouseStateValueIndex( const int index ) const;
 	
 	// Functions
+
+	virtual void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime );
+
 	virtual void ProcessInput( const GEInputState* inputState );
+
+	virtual GESetting<T>* clone() const;
 		
 };
 
@@ -103,6 +108,24 @@ int GESettingSelectMouseState<T>::getMouseStateValueIndex( const int index ) con
 
 
 // Functions
+
+template <class T>
+void GESettingSelectMouseState<T>::Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime )
+{
+	// Update the material based on the parent objects mouse over setting
+	if( parent != nullptr )
+	{
+		if( parent->isMouseOver() )
+		{
+			valueIndex = getMouseStateValueIndex( GE_MOUSE_OVER );
+		}
+		else
+		{
+			valueIndex = getMouseStateValueIndex( GE_MOUSE_NOTOVER );
+		}
+	}
+}
+
 template <class T>
 void GESettingSelectMouseState<T>::ProcessInput( const GEInputState* inputState )
 {
@@ -112,6 +135,10 @@ void GESettingSelectMouseState<T>::ProcessInput( const GEInputState* inputState 
 	}
 }
 
-
+template <class T>
+GESetting<T>* GESettingSelectMouseState<T>::clone() const
+{
+	return new GESettingSelectMouseState<T>(*this);
+}
 
 #endif /* GESETTINGSELECTMOUSESTATE_H */
