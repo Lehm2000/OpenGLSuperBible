@@ -1,0 +1,5 @@
+vertex_shader = boundingBox.vert.glsl
+tess_control_shader = 
+tess_eval_shader = 
+geometry_shader = 
+fragment_shader = boundingBox.frag.glsl

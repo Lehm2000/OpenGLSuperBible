@@ -1,0 +1,6 @@
+vertex_shader = default_wTexture.vert.glsl
+tess_control_shader = 
+tess_eval_shader = 
+geometry_shader = 
+fragment_shader = default_wTexture.frag.glsl
+texture01 = tiles.bmp

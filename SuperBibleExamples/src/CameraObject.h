@@ -41,7 +41,13 @@ public:
 
 	// Functions
 	virtual std::string getClassName() const;
-	virtual GEmat4 GetViewMatrix() const;
+
+	/**
+	 * Calculates the view matrix for the mesh
+	 * 
+	 * @param gameEntities - A reference to the gameEntities container.  Needed for some object types.
+	 */
+	virtual GEmat4 GetViewMatrix( const GEObjectContainer* gameEntities ) const;
 
 	/**
 		clone()

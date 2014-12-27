@@ -9,9 +9,12 @@
 #include "TextureManager.h"
 #include "ImageUtilities\ImageUtilities.h"
 #include "CameraPerspective.h"
-#include "InfoViewport.h"
 #include "InfoGameVars.h"
+#include "InfoGameEngineSettings.h"
 #include "GEInputState.h"
+#include "InputStateHolder.h"
+#include "GEBoundingBox.h"
+#include "GERay.h"
 
 
 GraphicsEngineOpenGL::GraphicsEngineOpenGL()
@@ -57,96 +60,133 @@ GraphicsEngineOpenGL::~GraphicsEngineOpenGL()
 
 
 // this version of render is for tutorial code.
-void GraphicsEngineOpenGL::Render(const double currentTime)
+void GraphicsEngineOpenGL::RenderTut(const double currentTime)
 {
-	// get the viewport info out of the game entities
-	//std::map< std::string, GEObject* >::const_iterator vpIt = gameEntities->find("SYS_Viewport_Options");
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	
 
-	if ( viewportInfo != nullptr )
+	// get the viewport info out of the game entities
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
+
+	if ( gameEngineSettings != nullptr )
 	{
+		const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		const GLfloat green[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+		const GLfloat one = 1.0f;
+		const GLfloat zero = 0.0f; 
+
+		// Bind our FBO
+		glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+
+		// Set the fiewport and clear the depth and color buffers
+		glViewport( 0, 0, 512, 512 );
+		glClearBufferfv( GL_COLOR, 0, green );
+		glClearBufferfv( GL_DEPTH, 0, &one );
+
 		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 		glm::mat4 viewMatrix;
 		
-		// find the rendercam
-		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( viewportInfo->getRenderCam() );
-
-		if( renderCam != nullptr )
-		{
-			if (renderCam->getClassName() == "CameraPerspective" )
-			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
-			}
-		}
-		else
-		{
-			// if can't find renderCam build a generic one.
-			renderCam = new CameraPerspective( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
-		}
-	
-		const GLfloat bkColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		const GLfloat one = 1.0f;
-	
-		glClearBufferfv(GL_COLOR, 0, bkColor);
-		glClearBufferfv(GL_DEPTH,0, &one);
-
-		//std::map< std::string, GEMesh>::const_iterator meshIt = meshMap.find("sphere");
-
-		//GEMesh renderMesh = meshIt->second;
-		GEMesh renderMesh = resMesh.GetResource( "sphere" );
+		// create a camera.
+		const CameraObject* renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), 1.0f, 0.1f, 1000.0f) * renderCam->GetViewMatrix( gameEntities );
+		
+		GEMesh renderMesh = resMesh.GetResource( "plane" );
 
 		glBindVertexArray( renderMesh.getVertexArrayObject() );
 	
 		GEMaterial renderMaterial;
 		
-		renderMaterial = resMaterial.GetResource( "geometry_testNormals" );
-
-		//renderMaterial = materialMap.find("geometry_testNormals")->second;
-
-
+		renderMaterial = resMaterial.GetResource( "default_wTexture" );
 
 		glUseProgram ( renderMaterial.getProgram() );
 			
 		GLint worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "worldMatrix" );
 		GLint viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "viewMatrix" );
-		//GLint tessLevelLocation = glGetUniformLocation( renderMaterial.getProgram(), "tessLevel" );
-		//GLint displaceTextureLoc = glGetUniformLocation( renderMaterial.getProgram(), "displaceTexture");
-
-		//bind the displace texture
-		//glBindTexture( GL_TEXTURE_2D, textureMap.find("DisplaceTest")->second );
-
-		//glm::mat4 worldMatrix = it->second->GetTransformMatrix();
-		glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 4.0f,GEvec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
+		
+		glm::mat4 worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / 1.0f,GEvec3(0.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
 
 		glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
 		glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
 	
-		//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		// bind the required textures
+		for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
+		{
+			glActiveTexture( GL_TEXTURE0 + i );
+			GLuint renderTex = resTexture.GetResource( renderMaterial.getTextures()[i] );
+			glBindTexture( GL_TEXTURE_2D, renderTex );
+
+			std::string textureString = "texture";
+			textureString.append( std::to_string(i) );
+
+			GLint texLoc = glGetUniformLocation( renderMaterial.getProgram(), textureString.c_str() );
+			glUniform1i( texLoc, i );
+
+		}
+		
 
 		glEnable( GL_PRIMITIVE_RESTART );
 		glPrimitiveRestartIndex( 0xFFFF );
-		glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
+		glDrawElements( renderMesh.getMeshType(), renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
 		glDisable( GL_PRIMITIVE_RESTART );
-	
-		// switch materials and render again to visualize normals.
 
-		renderMaterial = resMaterial.GetResource( "geometry_testNormalsRay" );
+		// cleanup
 
-		glUseProgram ( renderMaterial.getProgram() );
+		delete renderCam;
+		
+		// draw a cube with the rendered texture.
 
-		worldMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "worldMatrix" );
-		viewMatrixLocation = glGetUniformLocation( renderMaterial.getProgram(), "viewMatrix" );
+		// return to default framebuffer
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+		// create a camera and new view matrix
+		renderCam =  new CameraPerspective( GEvec3( 0.0f, 0.0f, 5.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
+		viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix( gameEntities );
+
+		// reset the viewport
+		glViewport( 0, 0,  (float)gameEngineSettings->getViewportWidth(), (float)gameEngineSettings->getViewportHeight() );
+
+		// clear the color and depth buffers
+		glClearBufferfv( GL_COLOR, 0, bkColor );
+		glClearBufferfv( GL_DEPTH, 0, &one );
+
+		
+
+		worldMatrix = glm::rotate( glm::mat4(),(float)currentTime / -4.0f,GEvec3(1.0f, 1.0f, 0.0f ) )* glm::scale( glm::mat4(), GEvec3(1.5f, 1.5f, 1.5f));
 
 		glUniformMatrix4fv( worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
 		glUniformMatrix4fv( viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
 	
+		// bind the required textures
+		/*for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
+		{
+			glActiveTexture( GL_TEXTURE0 + i );
+			GLuint renderTex = resTexture.GetResource( renderMaterial.getTextures()[i] );
+			glBindTexture( GL_TEXTURE_2D, renderTex );
+
+			std::string textureString = "texture";
+			textureString.append( std::to_string(i) );
+
+			GLint texLoc = glGetUniformLocation( renderMaterial.getProgram(), textureString.c_str() );
+			glUniform1i( texLoc, i );
+
+		}*/
+
+		renderMesh = resMesh.GetResource( "testBox" );
+
+		glBindVertexArray( renderMesh.getVertexArrayObject() );
+
+		// bind the texture we just wrote to.
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, color_texture );
+
 		glEnable( GL_PRIMITIVE_RESTART );
 		glPrimitiveRestartIndex( 0xFFFF );
-		glDrawElements( GL_TRIANGLE_STRIP,renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
+		glDrawElements( renderMesh.getMeshType(),renderMesh.getNumIndices(),GL_UNSIGNED_INT, 0 );
 		glDisable( GL_PRIMITIVE_RESTART );
-
-		//glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		
+		
+		// clean up
+		delete renderCam;
+		
 	}
 
 	RenderFPS( currentTime );
@@ -156,32 +196,39 @@ void GraphicsEngineOpenGL::Render(const double currentTime)
 }
 
 // this version of render is for the actual game engine.
-void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContainer* gameEntities_notused)
+void GraphicsEngineOpenGL::Render( const double currentTime )
 {
 	
-	// get the viewport info out of the game entities
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	// get the viewport info and gameengine settings out of the game entities
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 	
-	if ( viewportInfo != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
-		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
+		// declare some variables
 		glm::mat4 viewMatrix;
+		GEMaterial boundingMaterial = resMaterial.GetResource( "boundingBox" );										// get bounding box material incase we are showing that.
+		GLint boundingworldMatrixLocation = glGetUniformLocation( boundingMaterial.getProgram(), "worldMatrix" );
+		GLint boundingviewMatrixLocation = glGetUniformLocation( boundingMaterial.getProgram(), "viewMatrix" );
+		GLint boundingMinLocation = glGetUniformLocation( boundingMaterial.getProgram(), "bmin" );
+		GLint boundingMaxLocation = glGetUniformLocation( boundingMaterial.getProgram(), "bmax" );
+
+		// calculate the view matrix... which is constant for all objects... only need to calc once per frame.
 
 		// find the rendercam
-		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( viewportInfo->getRenderCam() );
+		const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( gameEngineSettings->getRenderCam() );
 
 		if( renderCam != nullptr )
 		{
 			if (renderCam->getClassName() == "CameraPerspective" )
 			{
-				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix();
+				viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f) * renderCam->GetViewMatrix( gameEntities );
 			}
 		}
 		else
 		{
 			// if can't find renderCam build a generic one.
 			renderCam = new CameraPerspective( GEvec3( 0.0f, 0.0f, 0.0f ), GEvec3( 0.0f, 0.0f, 0.0f ), glm::radians( 45.0f ) );
-			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFinalFov(), (float)viewportInfo->getViewportWidth()/(float)viewportInfo->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix();
+			viewMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 4.0f) * renderCam->GetViewMatrix( gameEntities );
 		}
 
 		const GLfloat bkColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
@@ -190,14 +237,43 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 		glClearBufferfv(GL_COLOR, 0, bkColor);
 		glClearBufferfv(GL_DEPTH,0, &one);
 
+		// Set Render Modes
+
+		// Set the draw mode
+		switch ( gameEngineSettings->getRenderMode() )
+		{
+		case GE_RENDERMODE_WIRE:
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			break;
+		case GE_RENDERMODE_FULL:
+		default:
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		};
+
+		// set the depth mode
+		glDepthFunc( GL_LEQUAL );
+
+		// set sampling
+		if( gameEngineSettings->getEnableMultiSample() )
+		{
+			glEnable( GL_MULTISAMPLE );
+		}
+		else
+			glDisable( GL_MULTISAMPLE );
+
 		// Iterate throught game entities here.
 	
 		for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->First(); it != gameEntities->Last(); it++ )
 		{
 			if ( it->second->isVisible() )
 			{
+				if( it->first == "testOrbiter2" )
+				{
+					printf("test");
+				}
+
 				GEMaterial renderMaterial;
-				std::string renderMaterialName = it->second->getMaterial();
+				std::string renderMaterialName = it->second->getMaterialValue();
 
 				renderMaterial = resMaterial.GetResource( renderMaterialName );
 			
@@ -210,11 +286,11 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 
 				glBindVertexArray( renderMesh.getVertexArrayObject() );
 			
-				glm::mat4 worldMatrix = it->second->GetTransformMatrix();
+				glm::mat4 worldMatrix = it->second->GetTransformMatrix( gameEntities );
 
 				glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0]);
 				glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-            
+			
 				// bind the required textures
 				for( unsigned int i = 0; i < renderMaterial.getTextures().size(); i++ )
 				{
@@ -230,8 +306,6 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 
 				}
 
-
-
 				glEnable( GL_PRIMITIVE_RESTART );
 				glPrimitiveRestartIndex( 0xFFFF );
 				for (int j = 0; j<1; j++ )  // just to test performance
@@ -242,11 +316,33 @@ void GraphicsEngineOpenGL::Render(const double currentTime, const GEObjectContai
 					//glDrawElementsInstanced(  renderMesh.getMeshType(), renderMesh.getNumIndices(), GL_UNSIGNED_SHORT, 0, 10000);
 				}
 				glDisable( GL_PRIMITIVE_RESTART );
+
+				// Now render the bounding box if necessary
+
+				if( gameEngineSettings->getShowBoundingBoxes() )
+				{
+					GEBoundingBox boundingBox = renderMesh.getBoundingBox();
+			
+					glUseProgram ( boundingMaterial.getProgram() );
+
+					glUniformMatrix4fv( boundingworldMatrixLocation, 1, GL_FALSE, &worldMatrix[0][0] );
+					glUniformMatrix4fv( boundingviewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0] );
+
+					glUniform3fv( boundingMinLocation, 1, &boundingBox.getMin()[0] );
+					glUniform3fv( boundingMaxLocation, 1, &boundingBox.getMax()[0] );
+
+					glDrawArrays( GL_LINES, 0, 24 );
+
+				}
 				
 			}
 	
 		}
+
+		// unset render modoes
+		glDisable( GL_MULTISAMPLE );
 	}
+	// TODO... what happens if nullptr?
 	
 	RenderFPS( currentTime );
 
@@ -260,19 +356,24 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 {
 	// Testing text output
 
+
+
 	// get the viewport info out of the game entities
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 	
-	if ( viewportInfo != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
-	
-		//std::map< std::string, GEObject* >::const_iterator fontIt = gameEntities->find("SYS_FONT");
-		//GEMesh fontMesh = meshMap[ "SYS_FONT" ];
+		// always draw text filled
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		glEnable( GL_BLEND );
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+		glViewportIndexedf(0, 0, 0, gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight());
+
 		GEMesh fontMesh = resMesh.GetResource( "SYS_FONT" );
 	
 		glBindVertexArray( fontMesh.getVertexArrayObject() );
 
-		//GEMaterial fontMaterial = materialMap[ "SystemFont01" ];
 		GEMaterial fontMaterial = resMaterial.GetResource( "SystemFont01" );
 
 		glUseProgram( fontMaterial.getProgram() );
@@ -288,7 +389,7 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 		glUniform2f( startPosLoc, 0.0075f, 0.0075f );
 		glUniform4f( fontColorLoc, 1.0f, 0.0f, 0.0f, 1.0f );
 
-		glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)viewportInfo->getViewportHeight()/(float)viewportInfo->getViewportWidth(), 0.0f );
+		glm::mat4 screenMatrix = glm::ortho( 0.0f, 1.0f, (float)gameEngineSettings->getViewportHeight()/(float)gameEngineSettings->getViewportWidth(), 0.0f );
 
 		glUniformMatrix4fv(screenMatrixLocation, 1, GL_FALSE, &screenMatrix[0][0]);
 	
@@ -318,15 +419,17 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 		glVertexAttribDivisor(0, 0);
 
 		// temp render the pressed inputs.------------------------------------------
-
+		
 		// get pointer to the input state
-		const GEInputState* inputState = (GEInputState*)gameEntities->GetObject( "SYS_Input_State" );
-		
-
-		std::string inputString = "";
-		
-		if( inputState != nullptr )
+		const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
+	
+		if ( isObject != nullptr )
 		{
+			const InputStateHolder* inputStateHolder = (InputStateHolder*)isObject;
+			const GEInputState* inputState = inputStateHolder->getInputState();
+
+			std::string inputString = "";
+		
 			for ( unsigned int i = 0; i < INPUTSTATE_MAX_KEY_BUTTONS; i++ )
 			{
 				if (inputState->getKeyboardKey( i ) )  // if key pressed
@@ -335,67 +438,68 @@ void GraphicsEngineOpenGL::RenderFPS(const double currentTime)
 					inputString.append( " " );
 				}
 			}
-		}
-		else
-		{
-			inputString = "Error: Cannot find SYS_Input_State";
-		}
+		
+		
 
-		glUniform2f( startPosLoc, 0.0075f, 0.04f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.04f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
 
-		// now render the mouse position
-		inputString = "";
+			// now render the mouse position
+			inputString = "";
 	
-		inputString = std::to_string( (int)inputState->getMousePosition().x ) + ", " + std::to_string( (int)inputState->getMousePosition().y );
+			inputString = std::to_string( (int)inputState->getMousePosition().x ) + ", " + std::to_string( (int)inputState->getMousePosition().y );
 
-		glUniform2f( startPosLoc, 0.0075f, 0.0275f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.0275f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
 
-		// now the mouse buttons
+			// now the mouse buttons
 
-		inputString = "";
+			inputString = "";
 	
-		for ( unsigned int i = 0; i < INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
-		{
-			if (inputState->getMouseButton( i ) )  // if key pressed
+			for ( unsigned int i = 0; i < INPUTSTATE_MAX_MOUSE_BUTTONS; i++ )
 			{
-				inputString.append( inputState->ButtonToString( i ) );  // get the string representation of it
-				inputString.append( " " );
+				if (inputState->getMouseButton( i ) )  // if key pressed
+				{
+					inputString.append( inputState->ButtonToString( i ) );  // get the string representation of it
+					inputString.append( " " );
+				}
 			}
-		}
 
-		glUniform2f( startPosLoc, 0.0075f, 0.05f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.05f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
 
-		// now the mouse scroll
+			// now the mouse scroll
 
-		inputString = "";
+			inputString = "";
 	
-		inputString = std::to_string( (int)inputState->getMouseScrollOffset().x ) + ", " + std::to_string( (int)inputState->getMouseScrollOffset().y );
+			inputString = std::to_string( (int)inputState->getMouseScrollOffset().x ) + ", " + std::to_string( (int)inputState->getMouseScrollOffset().y );
 
-		glUniform2f( startPosLoc, 0.0075f, 0.06f );
-		glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
-		glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
-		glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
-		glVertexAttribDivisor(0, 1);
-		glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
-		glVertexAttribDivisor(0, 0);
+			glUniform2f( startPosLoc, 0.0075f, 0.06f );
+			glUniform4f( fontColorLoc, 0.0f, 1.0f, 0.0f, 1.0f );
+			glBindBuffer( GL_ARRAY_BUFFER, fontMesh.getVertexBuffer() );  // need to manually bind the buffer if we are altering it.
+			glBufferSubData( GL_ARRAY_BUFFER, 0,sizeof(GLchar) * inputString.length(), inputString.c_str());
+			glVertexAttribDivisor(0, 1);
+			glDrawArraysInstanced( GL_TRIANGLE_STRIP, 0, 4, inputString.length() );
+			glVertexAttribDivisor(0, 0);
+
+			glDisable( GL_BLEND );
+		}
+		
 	}
 }
 
@@ -409,9 +513,9 @@ bool GraphicsEngineOpenGL::Init()
 	if( !glfwInit() )
 		return success;		// success is still false here.
 	
-	const InfoViewport* viewportInfo = (InfoViewport*)gameEntities->GetObject( "SYS_Viewport_Options" );
+	const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gameEntities->GetObject( "SYS_GameEngine_Settings" );
 
-	if ( viewportInfo != nullptr )
+	if ( gameEngineSettings != nullptr )
 	{
 
 	
@@ -425,9 +529,11 @@ bool GraphicsEngineOpenGL::Init()
 
 		// set window hints
 		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+		glfwWindowHint( GLFW_STENCIL_BITS, GL_TRUE );
+		glfwWindowHint( GLFW_SAMPLES, 32 );
 
 		// create the window
-		window = glfwCreateWindow( viewportInfo->getViewportWidth(), viewportInfo->getViewportHeight(), "OpenGL Super Bible", NULL,NULL);
+		window = glfwCreateWindow( gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight(), "OpenGL Super Bible", NULL,NULL);
 		if(!window)
 		{
 			glfwTerminate();
@@ -457,14 +563,17 @@ bool GraphicsEngineOpenGL::Init()
 		// specify some callback functions
 		glfwSetKeyCallback( window, key_callback );
 		glfwSetWindowSizeCallback( window, window_size_callback );
-		glfwSetCursorPos( window, viewportInfo->getViewportWidth() / 2, viewportInfo->getViewportHeight() / 2 );
+		glfwSetCursorPos( window, gameEngineSettings->getViewportWidth() / 2, gameEngineSettings->getViewportHeight() / 2 );
 		glfwSetCursorPosCallback( window, mouse_position_callback );
 		glfwSetMouseButtonCallback( window, mouse_button_callback );
 		glfwSetScrollCallback( window, mouse_scroll_callback );
 
+		// set vsync on
+		glfwSwapInterval( 1 );
 
 		// set the window pointer to this graphics engine so the callback functions have access to it.
 		glfwSetWindowUserPointer( window, this ); 	
+		SetMouseMode( gameEngineSettings->getMouseMode() );
 	
 		//not sure this is the best place for these, but will work for now
 		InitShaders();
@@ -475,9 +584,15 @@ bool GraphicsEngineOpenGL::Init()
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
+
 		success = true;		// if we got here all must have gone well.
 
 	}
+
+	// Some random stuff that can be removed
+	GLint texSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texSize );
+
 
 	
 	return success;
@@ -547,20 +662,20 @@ bool GraphicsEngineOpenGL::InitShaders(void)
 	const char* fsCode[] = 
 	{
 		"#version 430  \n"
-                                                                            
-        "layout (location = 0) out vec4 color;\n"
-        "                                                                       \n"
-        "in VS_OUT                                                              \n"
-        "{                                                                      \n"
-        "	vec4 color; \n"
+																			
+		"layout (location = 0) out vec4 color;\n"
+		"                                                                       \n"
+		"in VS_OUT                                                              \n"
+		"{                                                                      \n"
+		"	vec4 color; \n"
 		"	vec3 normal;\n"
 		"	vec2 tc;\n"
-        "} fs_in;                                                               \n"
-        
-        "void main(void)                                                        \n"
-        "{                                                                      \n"
+		"} fs_in;                                                               \n"
+		
+		"void main(void)                                                        \n"
+		"{                                                                      \n"
 		"    color = vec4(1.0,1.0,0.0,1.0);   \n"
-        "}\n"      
+		"}\n"      
 	};
 
 	fragmentShader = materialMan.CompileShaderFromSource( fsCode, GL_FRAGMENT_SHADER );
@@ -650,10 +765,42 @@ void GraphicsEngineOpenGL::InitBuffers(void)
 	glVertexAttribIPointer( 0, 1, GL_UNSIGNED_BYTE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0);  // the font mesh doesn't really fit the GEMesh type... new type?
+	GEMesh newMesh( GL_TRIANGLES, 0, 0, fontVOA, fontVBO, 0,0, GEBoundingBox() );  // the font mesh doesn't really fit the GEMesh type... new type?
 	//meshMap["SYS_FONT"] = newMesh;
 	resMesh.AddResource( "SYS_FONT", newMesh );
+
+	// Chapter 09 framebuffer objects'
+
+	glGenFramebuffers( 1, &fbo );
+	glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+
+	// Create a texture for out color buffer
+	glGenTextures( 1, &color_texture );
+	glBindTexture( GL_TEXTURE_2D, color_texture );
+	glTexStorage2D( GL_TEXTURE_2D, 1, GL_RGBA8, 512, 512 );
+
+	// turn off mipmaps
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+	// Create texture for depth buffer
+	glGenTextures( 1, &depth_texture );
+	glBindTexture( GL_TEXTURE_2D, depth_texture );
+	glTexStorage2D( GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, 512, 512 );
+
+	// Attach the color and depth to the fbo
+	glFramebufferTexture( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
+	glFramebufferTexture( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+
+	// Draw into the buffer
+	static const GLenum draw_buffers[] = 
+	{
+		GL_COLOR_ATTACHMENT0
+	};
+	glDrawBuffers( 1, draw_buffers );
 	
+	// once new framebuffer is setup... return to the default
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 }
 
@@ -670,7 +817,7 @@ void GraphicsEngineOpenGL::InitTextures(void)
 	unsigned char returnType = 0;
 
 	// Load the font Texture
-	GLuint fontTexture = textureMan.LoadTexture( "font01.bmp" );
+	GLuint fontTexture = textureMan.LoadTexture( "font01.tga" );
 	
 	if( fontTexture != 0 )
 		resTexture.AddResource( "SYS_Font01", fontTexture );
@@ -680,6 +827,12 @@ void GraphicsEngineOpenGL::InitTextures(void)
 	
 	if( displaceTexture != 0 )
 		resTexture.AddResource( "DisplaceTest", displaceTexture );
+
+	// PNG test image
+	/*GLuint pngTest = textureMan.LoadTexture( "testPNG.png" );
+	
+	if( pngTest != 0 )
+		resTexture.AddResource( "pngTest", pngTest );*/
 
 	//	now we generate the sampler... optional (a default sampler will be assigned otherwise)
 	GLuint sampler;
@@ -786,8 +939,7 @@ bool GraphicsEngineOpenGL::BufferMesh( std::string meshPath, MUMesh* mesh )
 	else
 		meshType = GL_TRIANGLES;
 
-	GEMesh newMesh( meshType, mesh->getNumVerts(), mesh->getNumIndicies(), newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer );
-	//meshMap[meshPath] = newMesh;
+	GEMesh newMesh( meshType, mesh->getNumVerts(), mesh->getNumIndicies(), newVertexArrayObject, newVertexBuffer, newIndexBuffer, newIndirectBuffer, mesh->getBoundingBox() );
 	resMesh.AddResource( meshPath, newMesh );
 
 	// Unbind voa??  Don't for now.
@@ -865,4 +1017,142 @@ bool GraphicsEngineOpenGL::BufferTexture( std::string texturePath )
 	return success;
 }
 
+void GraphicsEngineOpenGL::SetMouseMode( unsigned char mouseMode )
+{
+	switch( mouseMode )
+	{
+	case GE_MOUSEMODE_LOOK:
+		glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+		break;
+	case GE_MOUSEMODE_POINT:
+		glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_NORMAL );
+		break;
+	}
+}
 
+
+GEvec2 GraphicsEngineOpenGL::GetMousePosition() const
+{
+	GEvec2 returnPos;
+
+	double xPos;
+	double yPos;
+
+	glfwGetCursorPos( window, &xPos, &yPos );
+
+	returnPos.x = (float)xPos;
+	returnPos.y = (float)yPos;
+
+	return returnPos;
+}
+
+std::vector<std::string> GraphicsEngineOpenGL::MouseOver( bool findClosest, unsigned char collisionMode )
+{
+	// list of objects the mouse is over
+	std::vector<std::string> objectList;
+
+	// get a reference to the input object
+
+	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
+	const GEObject* gesObject = gameEntities->GetObject( "SYS_GameEngine_Settings" );
+	
+	if ( isObject != nullptr )
+	{
+		const InputStateHolder* inputStateHolder = (InputStateHolder*)isObject;
+		const GEInputState* inputState = inputStateHolder->getInputState();
+
+		if( inputState->getMouseMode() == GE_MOUSEMODE_POINT )
+		{
+
+			const InfoGameEngineSettings* gameEngineSettings = (InfoGameEngineSettings*)gesObject;
+
+			const CameraObject* renderCam = (CameraObject*)gameEntities->GetObject( gameEngineSettings->getRenderCam() );
+
+			if( renderCam != nullptr )
+			{
+				if (renderCam->getClassName() == "CameraPerspective" )
+				{
+					// construct a ray from the position of the mouse that shoots into the scene.
+
+					// get the camera view and projection
+					glm::mat4 projMatrix = glm::perspective( ((CameraPerspective*)renderCam)->getFovFinal( gameEntities ), (float)gameEngineSettings->getViewportWidth()/(float)gameEngineSettings->getViewportHeight(), 0.1f, 1000.0f);
+					glm::mat4 viewMatrix = renderCam->GetViewMatrix( gameEntities );
+
+					// the the mouse position on the screen.
+					GEvec2 mousePosition = inputState->getMousePosition();
+
+					// unproject the mouse position twice...
+
+					// first at a near point
+					glm::vec4 viewport = glm::vec4(0, 0, gameEngineSettings->getViewportWidth(), gameEngineSettings->getViewportHeight() );
+					glm::vec3 winCoord = GEvec3(mousePosition.x,  gameEngineSettings->getViewportHeight() - mousePosition.y - 1, 0.0f);
+					glm::vec3 mouseRayPoint01 = glm::unProject(winCoord, viewMatrix, projMatrix, viewport);
+
+					// then at a distant point
+					winCoord = GEvec3(mousePosition.x,  gameEngineSettings->getViewportHeight() - mousePosition.y - 1, 1.0f);
+					GEvec3 mouseRayPoint02 = glm::unProject(winCoord, viewMatrix, projMatrix, viewport);
+
+					// build the ray out of it.
+					GERay mouseRay = GERay( mouseRayPoint01, mouseRayPoint02 - mouseRayPoint01 );
+
+
+					// go through all the objects... to find which it hits.  TODO optimize so that it doesnt need to go through them all.  Some kind of BSP tree perhaps.
+					for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities->First(); it != gameEntities->Last(); it++ )
+					{
+						// make sure that it can be seen.  mouse can't hit something invisible after all can it?
+						if( it->second->isVisible() )
+						{
+							if( collisionMode == GE_COLLIDE_BOUNDINGBOX )
+							{
+								// we're going to be doing ray-box collision obviously.
+								// we have our ray already... we need to get the box.
+
+								// find what mesh this object uses
+								std::string meshName = it->second->getMesh();
+
+								// then we need to get the mesh itself
+								GEMesh mesh = resMesh.GetResource( meshName );
+
+								// now get its bounding box.
+								GEBoundingBox meshBB = mesh.getBoundingBox();
+
+								// the bounding box is in object space, the ray is in world space.  We need to transform
+								// one of them.  Its easier to check for collision if the box is in object space so we'll
+								// transform the ray into object space.  We need to construct an inverse matrix of the 
+								// objects transforms to do this.
+								glm::mat4 rayTransMatrix = glm::inverse( it->second->GetTransformMatrix( gameEntities ) );
+
+								// transform the ray
+								GERay tMouseRay = mouseRay * rayTransMatrix;  // these may appear backwards but are multiplied in the correct order in the operator.
+
+								// check for collision
+								GEvec3* intersectPoint = meshBB.intersectRay( tMouseRay );
+
+								if( intersectPoint != nullptr )
+								{
+									objectList.push_back( it->first );  // push back the name of the object.
+									delete intersectPoint;
+								}
+							}
+
+						}
+					}
+				}
+			}
+		}
+
+		
+	}
+
+	// report if the mouse is over
+	if( !objectList.empty() )
+	{
+		printf( "mouse over\t\r" );
+	}
+	else
+	{
+		printf( "mouse not over\r" );
+	}
+
+	return objectList;
+}

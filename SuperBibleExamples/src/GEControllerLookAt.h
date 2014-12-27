@@ -58,7 +58,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual GEvec3 Control( const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin );
+	virtual GEvec3 Control( const GEObject* parent, const GEObjectContainer* gameEntities, const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -84,7 +84,7 @@ GEControllerLookAt::GEControllerLookAt( const std::string targetName )
 }
 
 GEControllerLookAt::GEControllerLookAt( const GEControllerLookAt& source )
-	:GEController<GEvec3>( source.parent, source.gameEntities )
+	:GEController<GEvec3>(  )
 {
 	this->targetName = source.targetName;
 }
@@ -102,7 +102,7 @@ GEControllerLookAt* GEControllerLookAt::clone() const
 	return new GEControllerLookAt( *this );
 }
 
-GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin )
+GEvec3 GEControllerLookAt::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const GEvec3 prevValue, const double gameTime, const double deltaTime, GEvec3 max, bool useMax, GEvec3 min, bool useMin )
 {
 
 	// We need to calculate the x and y rotations.  The z rotation is left alone to allow tilt/roll.
@@ -118,9 +118,9 @@ GEvec3 GEControllerLookAt::Control( const GEvec3 prevValue, const double gameTim
 	if ( targetObject != nullptr && parent != nullptr )
 	{
 	
-		const GEvec3 targetPos = targetObject->getPosition()->getFinalValue();
-		const GEPropertyv3* tempPosProp = parent->getPosition();
-		GEvec3 parentPos = tempPosProp->getFinalValue();
+		const GEvec3 targetPos = targetObject->getPositionFinal( gameEntities );
+		//const GEPropertyv3* tempPosProp = parent->getPosition();
+		GEvec3 parentPos = parent->getPositionFinal( gameEntities );
 		GEvec3 deltaPos = targetPos - parentPos;
 
 		// get the distance in the xz plane

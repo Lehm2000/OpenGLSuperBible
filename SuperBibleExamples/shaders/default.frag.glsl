@@ -2,11 +2,10 @@
 
 out vec4 color;
 
-vec4 myColor( vec4 inColor);	// debug test.
+vec4 myColor( vec4 inColor);
 
 in VS_OUT
 {
-	//vec2 tc;
 	vec4 color;
 } fs_in;
 
@@ -14,7 +13,5 @@ in VS_OUT
 
 void main(void)
 {
-	//color = fs_in.color;
-	color = myColor( fs_in.color );		//debug link test.
-	//color = gl_FragCoord;
+	color = myColor( fs_in.color );	
 }

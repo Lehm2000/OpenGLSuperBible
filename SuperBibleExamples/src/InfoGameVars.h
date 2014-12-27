@@ -6,9 +6,9 @@
 	Place to hold game variables... is this wise??
 */
 
-#include "GEObject.h"
+#include "Info.h"
 
-class InfoGameVars: public GEObject
+class InfoGameVars: public Info
 {
 private:
 

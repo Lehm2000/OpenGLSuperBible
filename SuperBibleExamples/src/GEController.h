@@ -18,10 +18,12 @@
 #include <glm\glm.hpp>
 
 #include "GEObject.h"
-#include "TypeDefinitions.h"
 #include "GEObjectContainer.h"
+#include "GEInputState.h"
+#include "TypeDefinitions.h"
 
 class GEObject;
+class GEInputState;
 
 template <class T>
 class GEController
@@ -29,33 +31,32 @@ class GEController
 protected:
 	// Members
 	
-	const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example. 
+	// const GEObject* parent;  // in case the controller needs to access the properties of the parent.  Like the lookat controller needs to know the parents position for example. 
 		// TODO: parent should be const.  However we also need to get the final 
 		// position of the object... the only way to do that is to return the 
 		// GEproperty.  The function that returns the GEProperty can't return a
 		// const version of the property so that it can be modified.  
 		// Controllers need to be added to it for example.
-	const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This once scares me a bit... I know its const... but is there a better way to get this info?
+	// const GEObjectContainer* gameEntities;  // pointer to the master gameEntity list.  In case the controller needs to know the properties of some other object in the world.  This one scares me a bit... I know its const... but is there a better way to get this info?
 
 	T transformedValue;	// the transformed data.
 
 public:
 	// Structors
 	
-	GEController();
-	GEController( const GEObject* parent, const GEObjectContainer* gameEntities );
+	GEController( );
 	GEController( const GEController& source);
 	virtual ~GEController();
 
 	// Setters
 
-	virtual void setParent( const GEObject* parent );
-	virtual void setGameEntities( const GEObjectContainer* gameEntities );
+	//virtual void setParent( const GEObject* parent );
+	//virtual void setGameEntities( const GEObjectContainer* gameEntities );
 
 	// Getters
 
-	virtual const GEObject* getParent() const;
-	virtual const GEObjectContainer* getGameEntities() const;
+	//virtual const GEObject* getParent() const;
+	//virtual const GEObjectContainer* getGameEntities() const;
 
 	// Functions 
 
@@ -80,7 +81,7 @@ public:
 		@return - the result transformedValue + prevValuer, mainly so it can be
 			passed to the next controller in the stack.
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -89,6 +90,12 @@ public:
 			Usually the objects original transform.
 	*/
 	virtual T CalcTransform( const T sourceValue ); 
+
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the inputFunction list as a pointer.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
 
 	/**
 		ValidateRange
@@ -104,25 +111,16 @@ GEController<T>::GEController()
 {
 	this->transformedValue = T();
 
-	this->setParent( nullptr );
-	this->setGameEntities( nullptr );
-}
-
-template <class T>
-GEController<T>::GEController( const GEObject* parent, const GEObjectContainer* gameEntities )
-{
-	this->transformedValue = T();
-
-	this->setParent( parent );
-	this->setGameEntities( gameEntities );
+	//this->setParent( nullptr );
+	//this->setGameEntities( nullptr );
 }
 
 template <class T>
 GEController<T>::GEController( const GEController& source)
 {
 	this->transformedValue = source.transformedValue;
-	this->setParent( source.parent );	// okay to pass this pointer along
-	this->setGameEntities( source.gameEntities );	// okay to pass this pointer along
+	//this->setParent( source.parent );	// okay to pass this pointer along
+	//this->setGameEntities( source.gameEntities );	// okay to pass this pointer along
 }
 
 template <class T>
@@ -132,7 +130,7 @@ GEController<T>::~GEController()
 }
 
 // Setters
-
+/*
 template <class T>
 void GEController<T>::setParent( const GEObject* parent )
 {
@@ -144,10 +142,10 @@ void GEController<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
 	this->gameEntities = gameEntities;
 }
-
+*/
 
 // Getters
-
+/*
 template <class T>
 const GEObject* GEController<T>::getParent() const
 {
@@ -159,7 +157,7 @@ const GEObjectContainer* GEController<T>::getGameEntities() const
 {
 	return this->gameEntities;
 }
-
+*/
 
 // Functions
 
@@ -170,7 +168,7 @@ GEController<T>* GEController<T>::clone() const
 }
 
 template <class T>
-T GEController<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEController<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	// this version of the controller does nothing.  just pass the prevValue back
 	// shouldn't be a reason to check the max/min.
@@ -183,6 +181,13 @@ template <class T>
 T GEController<T>::CalcTransform( T sourceValue )
 {
 	return sourceValue;  //return the source as the transformed.
+}
+
+template <class T>
+void GEController<T>::ProcessInput( const GEInputState* inputState )
+{
+	// do nothing.
+	
 }
 
 template <class T>

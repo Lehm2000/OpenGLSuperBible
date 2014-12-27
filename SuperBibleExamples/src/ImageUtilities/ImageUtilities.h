@@ -51,8 +51,12 @@ struct BITMAPINFOHEADER //Bitmap info for Windows NT & 3.1x or later
 #define TGA_COMPRESSED_PALETTE		32
 #define TGA_COMPRESSED_PALETTE_QT	33
 
+#define TGA_DIRECTION_RIGHTTOLEFT	8				// set bit 4
+#define TGA_DIRECTION_TOPTOBOTTOM	16				// set bit 5
 
-#define TGA_RLE_PACKET 128				//	set bit 7
+#define TGA_RLE_PACKET				128				// set bit 7
+
+
 
 //targa header
 
@@ -74,6 +78,19 @@ struct TargaHeader
 	unsigned char imageDesc;			//	bits 3-0 give the alpha channel depth, bits 5-4 give direction
 };
 
+// PNG 
+
+struct PNGChunkIHDR
+{
+	unsigned int width;
+	unsigned int height;
+	unsigned char bitDepth;
+	unsigned char colortype;
+	unsigned char compressionMethod;
+	unsigned char filterMethod;
+	unsigned char interlaceMethod;
+
+};
 
 //Image functions
 
@@ -83,8 +100,32 @@ private:
 public:
 	IUImage<unsigned char> LoadBitmap(const char* filename);
 	IUImage<unsigned char> LoadTarga(const char* filename);
+	IUImage<unsigned char> LoadPNG(const char* filename);
+
+	template <class T>
+	T ReverseBytes( T data, unsigned int numBytes );
 
 };
 
+
+template <class T>
+T ImageUtilities::ReverseBytes( T source, unsigned int numBytes )
+{
+	T destination;
+
+	// we must use a pointer so that we can reverse types besides chars and ints
+
+	char* sourcePtr = (char*) ( &source );
+	char* destPtr = (char*) ( &destination );
+
+	// now go throught the bytes and reverse them
+	for( unsigned int i = 0; i < numBytes; i++ )
+	{
+		unsigned int sourcePos =  ( numBytes - i ) - 1;
+		destPtr[i] = sourcePtr[ ( numBytes - i ) - 1];
+	}
+
+	return destination;
+}
 
 #endif /*IMAGEUTILITIES_H */

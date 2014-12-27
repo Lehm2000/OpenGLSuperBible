@@ -55,7 +55,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -84,7 +84,7 @@ GEControllerOscillator<T>::GEControllerOscillator( T amplitude, float frequency 
 
 template <class T>
 GEControllerOscillator<T>::GEControllerOscillator( const GEControllerOscillator<T>& source )
-	:GEController<T>( source.parent, source.gameEntities )
+	:GEController<T>( )
 {
 	this->setAmplitude( source.amplitude );
 	this->frequency = source.frequency;	// can't use setter for this as it modifies incoming value.
@@ -136,7 +136,7 @@ GEControllerOscillator<T>* GEControllerOscillator<T>::clone() const
 }
 
 template <class T>
-T GEControllerOscillator<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerOscillator<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	float newFeq = frequency / ( 2.0f * GE_PI ); // convert the frequence to terms of PI
 	transformedValue = sin( (float)gameTime / newFeq ) * amplitude;

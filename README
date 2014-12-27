@@ -22,6 +22,28 @@ Must use preprocessor definition: GL_GLEXT_PROTOTYPES
 
 Updates
 =============================================================
+
+2014-12-27
+v0.0.3
+-Added bounding boxes to the MUMesh and GEMesh classes. Added ability to render them in the render options. 
+-Added ability to change render modes, currently support Full and Wireframe. 
+-Created new class InfoGameEngineSettings to hold settings for the GameEngine such as render mode. 
+-Created new class Info to be the base class for all Info classes.
+-Merged InfoViewport into InfoGameEngineSettings. Removed Infoviewport
+-Encapsulated the controllers for GEObjects. Direct access is not allowed. Modified all Objects that had custom properties to this new paradigm. 
+-Added a new GEObject, Orbiter to replace functionality of GEControllerOrbiter Functionality. GEControllerOrbiter removed as a result. 
+-Added new class GESetting to enable controllable settings, similar to how GEControllers work. Created new child Classes GESettingConstant, GESettingCycleInputToggle and GESettingSelectMouseState.
+-Added new class of input to GEInputState GE_ENGINE_ACTION. These are combinations of keys/buttons that an object can look for, rather than looking for specific key presses. These are given names so it is more flexible. These are held in a new class GEInputAction. 
+-Created class InputStateHolder to allow GEInputState to be placed in the gameEntities once again.
+-Added new mouseMode settings. Mouse can now be used as a pointer or as movement input.
+-Targa image loading works again.
+-Font rendering now supports alpha channel.
+-Converted the struct GEBoundingBox into a class.
+-Created the classes GEPlane and GERay. 
+-Added a togglable option for multisampling rendering.
+-Started work on deflate decompression for PNG image file format.
+-Removed the gameEntities member ofthe GEObject and GEController classes. gameEntities is now passed to the functions that need it instead.
+
 v0.0.2b
 -Added class GEProperty to make it easier to make object properties controllable.  All controllable object members were converted to this type.
 -Converted Most GEControllers to be templates so that they could be used on different types of properties.  LookAt was not templated, it requires a vec3.

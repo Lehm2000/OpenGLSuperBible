@@ -25,7 +25,7 @@ public:
 	virtual ~GEControllerInputMousePositionY();
 
 	// Setters
-	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
+	//virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -45,7 +45,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -54,6 +54,12 @@ public:
 			Usually the objects original transform.
 	*/
 	virtual T CalcTransform( const T sourceValue );
+
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the inputFunction list as a pointer.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
 
 	
 };
@@ -86,7 +92,7 @@ GEControllerInputMousePositionY<T>::GEControllerInputMousePositionY( const GECon
 }
 
 // Setters
-
+/*
 template <class T>
 void GEControllerInputMousePositionY<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
@@ -102,12 +108,13 @@ void GEControllerInputMousePositionY<T>::setGameEntities( const GEObjectContaine
 	
 	if ( isObject != nullptr )
 	{
-		const GEInputState* inputState = (GEInputState*)isObject;
+		const InputStateHolder* inputStateHolder = (InputStateHolder*)isObject;
+		const GEInputState* inputState = inputStateHolder->getInputState();
 		this->mousePositionY = inputState->getMousePosition().y;
 		this->mousePositionYPrev = this->mousePositionY;
 	}
 }
-
+*/
 // Functions
 
 template <class T>
@@ -124,21 +131,9 @@ GEControllerInputMousePositionY<T>* GEControllerInputMousePositionY<T>::clone() 
 
 
 template <class T>
-T GEControllerInputMousePositionY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerInputMousePositionY<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	// Start by updating the mouse position
-	this->mousePositionYPrev = this->mousePositionY;
-
-	// get the new mouse position
-	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
-	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
 	
-	if ( isObject != nullptr )
-	{
-		const GEInputState* inputState = (GEInputState*)isObject;
-		this->mousePositionY = inputState->getMousePosition().y;
-	}
-
 	// find the change
 	float mousePosXDelta = this->mousePositionY - this->mousePositionYPrev;
 
@@ -155,6 +150,23 @@ template <class T>
 T GEControllerInputMousePositionY<T>::CalcTransform( T sourceValue )
 {
 	return sourceValue + transformedValue;
+}
+
+template <class T>
+void GEControllerInputMousePositionY<T>::ProcessInput( const GEInputState* inputState )
+{
+	if( inputState->getMouseMode() == GE_MOUSEMODE_LOOK )
+	{
+		this->mousePositionYPrev = inputState->getMousePositionPrev().y;
+
+		this->mousePositionY = inputState->getMousePosition().y;
+	}
+	else
+	{
+		this->mousePositionYPrev = this->mousePositionY = inputState->getMousePosition().y;
+	}
+	
+
 }
 
 

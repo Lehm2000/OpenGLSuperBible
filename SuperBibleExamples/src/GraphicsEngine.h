@@ -15,6 +15,7 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <vector>
 
 #include "MaterialManager.h"
 #include "GEObject.h"
@@ -22,6 +23,13 @@
 #include "GEMaterial.h"
 #include "InputItem.h"
 #include "MUMesh.h"
+
+// Constants
+
+#define GE_COLLIDE_BOUNDINGBOX			1
+#define GE_COLLIDE_BOUNDINGCYLINDER		2
+#define GE_COLLIDE_BOUNDINGSPHERE		3
+#define GE_COLLIDE_MESH					4
 
 //temporary place to define vertex structs
 struct vertex
@@ -89,7 +97,7 @@ public:
 
 		@param currentTime - the time since the program started.
 	*/
-	virtual void Render(const double currentTime) = 0;
+	virtual void RenderTut(const double currentTime) = 0;
 
 	/**
 		Renders the scene. 
@@ -97,7 +105,7 @@ public:
 		@param currentTime - the time since the program started.
 		@param gameEntities - pointer to the game Engine entities.
 	*/
-	virtual void Render(const double currentTime, const GEObjectContainer* gameEntities) = 0;
+	virtual void Render(const double currentTime ) = 0;
 
 	/**
 		Updates the window size.  
@@ -134,6 +142,31 @@ public:
 	virtual bool BufferMaterial( std::string materialPath ) = 0;
 	
 	virtual void QueueInputItem( InputItem input );
+
+	/**
+		SetMouseMode()
+		Changes the mouse input mode.
+		@param mouseMode - which mode to set.  Member of GE_MOUSEMODE_*
+		@return void
+	*/
+	virtual void SetMouseMode( unsigned char mouseMode ) = 0;
+
+	/**
+		Gets the current position of the mouse from the graphics engine.
+	*/
+	virtual GEvec2 GetMousePosition() const = 0;
+
+	/**
+		MouseOver
+		Finds what object(s) the mouse is over.  This must be part of the graphics engine as its the only class that has
+		access to both the object data and mesh data.
+		TODO: investigate if its possible to implement this function in this class so we don't need a different version 
+		for each render engine.  i.e. all the mesh types will at least have a bounding box.
+		@param findClosest - only returns the closest object the mouse is over if true, false returns everyobject the mouse is over
+		@param collisionMode - what type of geometry to collide against for the mesh.
+		@return object(s) the mouse is over
+	*/
+	virtual std::vector<std::string> MouseOver( bool findClosest = true, unsigned char collisionMode = GE_COLLIDE_BOUNDINGBOX ) = 0;
 	
 	
 };

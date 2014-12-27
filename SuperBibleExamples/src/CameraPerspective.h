@@ -33,13 +33,25 @@ public:
 	~CameraPerspective();
 
 	// Setters
-	void setFov( const float fov );
+
+	void setFovStart( const float fov ) { this->fov.setValue( fov ); };
+	void setFovMin( const float min ) { this->fov.setMin( min ); };
+	void setFovUseMin( const bool useMin ) { this->fov.setUseMin( useMin ); };
+	void setFovMax( const float max ) { this->fov.setMax( max ); };
+	void setFovUseMax( const bool useMax ) { this->fov.setUseMax( useMax ); };
+
+	
 
 	// Getters
-	float getBaseFov() const;
-	float getFinalFov() const;
+	float getFovStart() const { return this->fov.getBaseValue(); };
+	float getFovFinal( const GEObjectContainer* gameEntities ) const { return this->fov.getFinalValue( gameEntities ); };
+	float getFovnMin() const { return this->fov.getMinValue(); };
+	bool getFovUseMin() const { return this->fov.getUseMin(); };
+	float getFovMax() const { return this->fov.getMaxValue(); };
+	bool getFovUseMax() const { return this->fov.getUseMax(); };
 
-	GEPropertyf1* getFOV();
+	//GEPropertyf1* getFOVProp();
+	//const GEPropertyf1* getFOVProp() const;
 
 	// Functions
 	virtual std::string getClassName() const;
@@ -49,16 +61,24 @@ public:
 		@param gameTime - time (in seconds) passed since game began.
 		@param deltaTime - time (in seconds) passed since last frame.
 	*/
-	virtual void Update( const double gameTime, const double deltaTime);
+	virtual void Update(  const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime);
 
-	virtual void addFOVController( GEControllerf1* fovController );
-	virtual void removeFOVController( const unsigned int index );
+	virtual void addFovController( GEControllerf1* fovController );
+	virtual void removeFovController( const unsigned int index );
 	
 	/**
 		clone()
 		Creates a copy of the object and returns it.
 	*/
 	virtual CameraPerspective* clone() const;
+	
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the
+		inputFunction list as a pointer.  Takes the input state and passes it
+		to the Controllable Properties.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
 
 	/**
 		setControllerGameEntitiesPointer()
@@ -66,7 +86,7 @@ public:
 		@ param gameEntities - pointer to the gameEntities
 		@ return void
 	*/
-	virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
+	//virtual void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
 };
 

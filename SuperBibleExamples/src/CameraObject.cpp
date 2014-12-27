@@ -33,20 +33,12 @@ std::string CameraObject::getClassName() const
 	return "CameraObject";
 }
 
-glm::mat4 CameraObject::GetViewMatrix() const
+glm::mat4 CameraObject::GetViewMatrix( const GEObjectContainer* gameEntities ) const
 {
 	glm::mat4 viewMatrix;
 
-	/*
-	if (targeted)
-	{
-		viewMatrix = glm::lookAt( getTransformedPosition(), getTargetPosition(), GEvec3( 0.0f, 1.0f, 0.0f ) );  //Currently does not support camera tilt... TODO need to figure up vector.
-	}
-	else
-	{*/
-		// First guess at this matrix... probably could be more efficient.
-	viewMatrix = glm::inverse( glm::translate( glm::mat4(), getPosition()->getFinalValue() ) * glm::rotate(glm::mat4(), getRotation()->getFinalValue()[1], GEvec3(0,1,0) ) * glm::rotate(glm::mat4(), getRotation()->getFinalValue()[0], GEvec3(1,0,0) ) );
-	//}
+	// First guess at this matrix... probably could be more efficient.
+	viewMatrix = glm::inverse( glm::translate( glm::mat4(), this->getPositionFinal( gameEntities ) ) * glm::rotate(glm::mat4(), this->getRotationFinal( gameEntities )[1], GEvec3(0,1,0) ) * glm::rotate(glm::mat4(), this->getRotationFinal( gameEntities )[0], GEvec3(1,0,0) ) );
 	
 	return viewMatrix;
 }

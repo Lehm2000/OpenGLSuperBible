@@ -18,7 +18,7 @@ template <class T>
 class GEControllerInputMouseScrollY: public GEControllerConstant<T>
 {
 private:
-	
+	float mouseScrollYDelta;
 
 public:
 	GEControllerInputMouseScrollY();
@@ -27,7 +27,7 @@ public:
 	virtual ~GEControllerInputMouseScrollY();
 
 	// Setters
-	virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
+	//virtual void setGameEntities( const GEObjectContainer* gameEntities );  // override from GEController
 
 	// Functions
 
@@ -47,7 +47,7 @@ public:
 		@param deltaTime - time since the last frame
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -57,6 +57,11 @@ public:
 	*/
 	virtual T CalcTransform( const T sourceValue );
 
+	/**
+		ProcessInput
+		Function for processing input from the user.  Meant to be stored in the inputFunction list as a pointer.
+	*/
+	virtual void ProcessInput( const GEInputState* inputState );
 	
 };
 
@@ -66,24 +71,25 @@ template <class T>
 GEControllerInputMouseScrollY<T>::GEControllerInputMouseScrollY()
 	:GEControllerConstant<T>()
 {
-
+	this->mouseScrollYDelta = 0.0f;
 }
 
 template <class T>
 GEControllerInputMouseScrollY<T>::GEControllerInputMouseScrollY( const T valueDelta )
 	:GEControllerConstant<T>( valueDelta )
 {
-	
+	this->mouseScrollYDelta = 0.0f;
 }
 
 template <class T>
 GEControllerInputMouseScrollY<T>::GEControllerInputMouseScrollY( const GEControllerInputMouseScrollY<T>& source )
 	:GEControllerConstant<T>( source.valueDelta )
 {
+	this->mouseScrollYDelta = 0.0f;
 }
 
 // Setters
-
+/*
 template <class T>
 void GEControllerInputMouseScrollY<T>::setGameEntities( const GEObjectContainer* gameEntities )
 {
@@ -94,7 +100,7 @@ void GEControllerInputMouseScrollY<T>::setGameEntities( const GEObjectContainer*
 
 
 }
-
+*/
 // Functions
 
 template <class T>
@@ -111,26 +117,15 @@ GEControllerInputMouseScrollY<T>* GEControllerInputMouseScrollY<T>::clone() cons
 
 
 template <class T>
-T GEControllerInputMouseScrollY<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerInputMouseScrollY<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
-	float mouseScrollYDelta = 0.0f;
 	
-
-	// get the new mouse position
-	//std::map< std::string, GEObject* >::const_iterator isIt = gameEntities->find( "SYS_Input_State" );
-
-	const GEObject* isObject = gameEntities->GetObject( "SYS_Input_State" );
-	
-	if ( isObject != nullptr )
-	{
-		const GEInputState* inputState = (GEInputState*)isObject;
-		mouseScrollYDelta = inputState->getMouseScrollOffset().y;
-	}
-
 	// apply the change. x = y rotation, y = x rotation
 	transformedValue += valueDelta * mouseScrollYDelta;
 
 	transformedValue = ValidateRange( transformedValue, prevValue, max, useMax, min, useMin );
+
+	mouseScrollYDelta = 0.0f;
 
 	return transformedValue + prevValue;
 }
@@ -140,6 +135,12 @@ template <class T>
 T GEControllerInputMouseScrollY<T>::CalcTransform( T sourceValue )
 {
 	return sourceValue + transformedValue;
+}
+
+template <class T>
+void GEControllerInputMouseScrollY<T>::ProcessInput( const GEInputState* inputState )
+{
+	this->mouseScrollYDelta = inputState->getMouseScrollOffset().y;
 }
 
 

@@ -1,8 +1,8 @@
 
 #include <glm\glm.hpp>
 
-#include "GEInputState.h"
 #include "InputItem.h"
+#include "GEInputState.h"
 
 // Structors
 GEInputState::GEInputState()
@@ -21,8 +21,6 @@ GEInputState::GEInputState()
 
 	this->setMousePosition( GEvec2( 0.0f, 0.0f ) );
 
-	// set other parameters
-	this->setVisible( false );	// this is not a visible game object.
 }
 
 GEInputState::GEInputState( GEvec2 mousePosition )
@@ -42,11 +40,9 @@ GEInputState::GEInputState( GEvec2 mousePosition )
 	this->setMousePosition( mousePosition );
 
 	// set other parameters
-	this->setVisible( false );	// this is not a visible game object.
 }
 
 GEInputState::GEInputState( const GEInputState& source )
-	:GEObject( source )
 {
 	for ( unsigned short i = 0; i< INPUTSTATE_MAX_KEY_BUTTONS; i++ )
 	{
@@ -60,6 +56,8 @@ GEInputState::GEInputState( const GEInputState& source )
 
 	this->setMousePosition( source.mousePosition );
 }
+
+
 
 // Setters
 void GEInputState::setKeyboardKey( const unsigned short key, bool pressed )
@@ -82,7 +80,26 @@ void GEInputState::setMouseScrollOffset( const GEvec2 mouseScrollOffset )
 	this->mouseScrollOffset +=  mouseScrollOffset;
 }
 
+void GEInputState::setInputAction( const unsigned int index, const InputAction inputAction )
+{
+	if( index >= 0 && index < GE_MAX_INPUT_ACTIONS )
+	{
+		actionList[ index ] = inputAction; 
+	}
+}
 
+void GEInputState::setMouseMode( const unsigned char mouseMode )
+{
+	if( mouseMode >= 0 )
+	{
+		this->mouseMode = mouseMode;
+	}
+}
+
+void GEInputState::setMouseOverObjects( const std::vector< std::string > mouseOverObjects )
+{
+	this->mouseOverObjects = mouseOverObjects;
+}
 
 // Getters
 bool GEInputState::getKeyboardKey( const unsigned short key ) const
@@ -100,24 +117,40 @@ GEvec2 GEInputState::getMousePosition( ) const
 	return this->mousePosition;
 }
 
+GEvec2 GEInputState::getMousePositionPrev( ) const
+{
+	return this->mousePositionPrev;
+}
+
 GEvec2 GEInputState::getMouseScrollOffset( ) const
 {
 	return this->mouseScrollOffset;
 }
 
+unsigned char GEInputState::getMouseMode( ) const
+{
+	return this->mouseMode;
+}
 
+std::vector< std::string > GEInputState::getMouseOverObjects() const
+{
+	return this->mouseOverObjects;
+}
 
 // Functions
 
-GEInputState* GEInputState::clone() const
+void GEInputState::ResetMousePosition( const GEvec2 mousePosition )
 {
-	return new GEInputState(*this);
+	this->mousePosition = mousePosition;
+	this->mousePositionPrev = mousePosition;
 }
 
-std::string GEInputState::getClassName() const
+void GEInputState::UpdateMousePrev()
 {
-	return "GEInputState";
+	this->mousePositionPrev = this->mousePosition;
 }
+
+
 
 void GEInputState::ResetMouseScrollOffset()
 {
@@ -532,4 +565,37 @@ std::string GEInputState::ButtonToString( unsigned int buttonIndex ) const
 	}
 
 	return returnString;
+}
+
+bool GEInputState::ActionToggled( unsigned int actionIndex ) const
+{
+	bool toggled = false;
+
+	// go through list of ActionInput requirements and see if all met
+
+	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumKeys(); i++ )
+	{
+		if( keyboardKeys[ actionList[ actionIndex ].getKey(i) ] )
+		{
+			toggled = true;  // must manually set to true in the event of an empty actionList... there shouldn't ever be one but just in case.
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	for( unsigned int i = 0; i < actionList[ actionIndex ].getNumMouseButtons(); i++ )
+	{
+		if( mouseButtons[ actionList[ actionIndex ].getMouseButton(i) ] )
+		{
+			toggled = true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return toggled;
 }

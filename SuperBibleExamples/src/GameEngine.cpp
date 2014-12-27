@@ -2,20 +2,22 @@
 
 #include "GraphicsEngineOpenGL.h"
 #include "GameEngine.h"
+#include "GEObject.h"
 #include "CameraObject.h"
 #include "CameraPerspective.h"
-#include "InfoViewport.h"
 #include "GEControllerOscillator.h"
 //#include "GEControllerLookAt.h"
 #include "GEControllerInputMousePositionX.h"
 #include "GEControllerInputMousePositionY.h"
 #include "GEControllerInputMouseScrollY.h"
 #include "InfoGameVars.h"
+#include "InfoGameEngineSettings.h"
 #include "GEConstants.h"
 #include "GEInputState.h"
 #include "TypeDefinitions.h"
 #include "MUMesh.h"
 #include "MeshUtilities.h"
+#include "InputStateHolder.h"
 
 // Structors
 GameEngine::GameEngine()
@@ -69,18 +71,49 @@ bool GameEngine::Initialize()
 
 	bool success = true;
 
-	// Setup the viewport options... is this the best place for this?
+	// Setup the engine settings objects
 
-	GEObject* viewportOptions = new InfoViewport( 1280, 720 );
-	AddEntity( "SYS_Viewport_Options", viewportOptions );  //add the options to the entity list.
+	// Add the game engine settings object
+	InfoGameEngineSettings* gameEngineSettings = new InfoGameEngineSettings();
+	gameEngineSettings->setRenderMode( GE_RENDERMODE_FULL );
+	gameEngineSettings->setShowBoundingBoxes( false );
+	gameEngineSettings->setViewportWidth( 1280 );
+	gameEngineSettings->setViewportHeight( 720 );
+	AddEntity( "SYS_GameEngine_Settings", gameEngineSettings );  //add the options to the entity list.
 
 	// Add the game variable object
 	GEObject* gameVars = new InfoGameVars();
 	AddEntity( "SYS_Game_Vars", gameVars );
 
-	// Add the input state object... keeps track of current inputs.
-	GEObject* inputState = new GEInputState( GEvec2( ((InfoViewport*)viewportOptions)->getViewportWidth()/2, ((InfoViewport*)viewportOptions)->getViewportHeight()/2) );
-	AddEntity( "SYS_Input_State", inputState );
+	// Initialize input state object... keeps track of current inputs.
+	inputState.setMousePosition( GEvec2( ((InfoGameEngineSettings*)gameEngineSettings)->getViewportWidth()/2, ((InfoGameEngineSettings*)gameEngineSettings)->getViewportHeight()/2) );
+
+	// add a pointer to the input state into the gameEntities list.
+	GEObject* inputStateHolder = new InputStateHolder( &inputState );
+	AddEntity( "SYS_Input_State", inputStateHolder );
+
+	// setup inputs necessary for InputActions... TODO probably want new function for this... and needs ability to load from file.
+	InputAction newInputAction1;
+	newInputAction1.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction1.AddKey( GE_KEY_R );
+	inputState.setInputAction( GE_ENGINE_ACTION_CHANGERENDERMODE, newInputAction1 );
+
+	InputAction newInputAction2;
+	newInputAction2.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction2.AddKey( GE_KEY_B );
+	inputState.setInputAction( GE_ENGINE_ACTION_TOGGLEBOUNDINGBOX, newInputAction2 );
+
+	InputAction newInputAction3;
+	newInputAction3.AddMouseButton( GE_MOUSE_BUTTON_2 );
+	inputState.setInputAction( GE_ENGINE_ACTION_CHANGECURSORMODE, newInputAction3 );
+
+	InputAction newInputAction4;
+	newInputAction4.AddKey( GE_KEY_LEFT_ALT );
+	newInputAction4.AddKey( GE_KEY_M );
+	inputState.setInputAction( GE_ENGINE_ACTION_TOGGLEMULTISAMPLE, newInputAction4 );
+	
+	//GE_ENGINE_ACTION_SHOWBOUNDINGBOX	2
+
 
 	// create the graphics engine
 	graphics = new GraphicsEngineOpenGL( &gameEntities );	// Create the graphics engine object.  TODO allow more than one type of GE to be used.
@@ -91,9 +124,13 @@ bool GameEngine::Initialize()
 	LoadMaterial("geometry_testNormals");
 	LoadMaterial("geometry_testNormalsRay");
 	LoadMaterial("default");
+	LoadMaterial("default_wTexture");
+	LoadMaterial( "boundingBox" );
 
 	// Buffer the default meshes... TODO: Move somewhere else
 	LoadMesh( "beziersphere" );
+	LoadMesh( "sphere" );
+	LoadMesh( "testBox" );
 	
 
 	return success;
@@ -103,16 +140,17 @@ void GameEngine::Update()
 {
 	// Do input--------------------------------------------------------------------------------------------
 
-	// Get a reference to the input state
+	// Get a reference to the game settings
 
-	GEInputState* inputState = (GEInputState*)gameEntities.GetObject( "SYS_Input_State" );
+	InfoGameEngineSettings* engineSettings = (InfoGameEngineSettings*)gameEntities.GetObject( "SYS_GameEngine_Settings" );
 
 	// Get pointer to the input queue in the graphics engine.
 	std::queue< InputItem >* inputList = graphics->getInputList();
 	
 	// do the input here.
 
-	inputState->ResetMouseScrollOffset();  // mouse offset needs to be reset at the beginning.
+	inputState.UpdateMousePrev();			// mouse prev needs to be updated bofre input processing occurs
+	inputState.ResetMouseScrollOffset();	// mouse offset needs to be reset before input processing occurs.
 
 	while (inputList->size() > 0 )
 	{
@@ -123,8 +161,6 @@ void GameEngine::Update()
 
 		unsigned int inputType = curInput.getInputType();
 
-		inputState->ResetMouseScrollOffset();
-
 		switch ( inputType )
 		{
 		case GE_INPUT_KEY:
@@ -134,20 +170,20 @@ void GameEngine::Update()
 				pressed = true;
 
 			// update the key state in the game engine.
-			inputState->setKeyboardKey( curInput.getInputIndex(), pressed );
+			inputState.setKeyboardKey( curInput.getInputIndex(), pressed );
 
 			break;
 		case GE_INPUT_MOUSEBUTTON:
 			if ( curInput.getInputAction() == GE_ACTION_PRESS )
 				pressed = true;
-			inputState->setMouseButton( curInput.getInputIndex(), pressed );
+			inputState.setMouseButton( curInput.getInputIndex(), pressed );
 
 			break;
 		case GE_INPUT_MOUSEPOSITION:
-			inputState->setMousePosition( curInput.getInputPosition() );
+			inputState.setMousePosition( curInput.getInputPosition() );
 			break;
 		case GE_INPUT_MOUSESCROLL:
-			inputState->setMouseScrollOffset( curInput.getInputPosition() );
+			inputState.setMouseScrollOffset( curInput.getInputPosition() );
 
 			break;
 		//default:
@@ -156,6 +192,50 @@ void GameEngine::Update()
 		// remove the top item from the queue
 		inputList->pop();
 	}
+	
+	// check the current mousemode. 
+
+	if( inputState.getMouseMode() != engineSettings->getMouseMode() )  // did the mouse mode change.
+	{
+		inputState.setMouseMode( engineSettings->getMouseMode() );		// set the current mousemode in the input state (this is where most objects will check the mouse mode )
+		graphics->SetMouseMode( engineSettings->getMouseMode() );		// Tell the graphics engine to change mouse behavior
+		inputState.ResetMousePosition( graphics->GetMousePosition() );	
+	}
+
+	// check mouse over stuff  
+	
+	// TODO best place to put this??  Alternate solution: instead of telling the objects explicitly that the mouse is or is
+	// not over them... just have the objects look up in the inputState to see if the mouse is over them.  The problem with
+	// that is that the object currently is not aware of its own name.  So it has no way to look into inputState and find
+	// that data.
+
+	// get the list of objects the mouse is over
+	std::vector< std::string > moList = graphics->MouseOver();
+
+	/*  This section probably not needed... handled in UpdateObjects
+	// first set all the objects to not mouse over.
+	for ( std::map< std::string, GEObject* >::const_iterator it = gameEntities.First(); it != gameEntities.Last(); it++ )
+	{
+		it->second->setMouseOver( false );
+	}
+
+	
+	
+
+	// tell those objects that the mouse is over it
+	for( int i = 0; i < moList.size(); i++ )
+	{
+		GEObject* curObject = gameEntities.GetObject( moList[i] );
+
+		if( curObject != nullptr )
+		{
+			curObject->setMouseOver( true );
+		}
+	}*/
+
+	// also give it to the inputState
+	inputState.setMouseOverObjects( moList );
+	
 
 	// Update game variables------------------------------------------------------------------------------
 	
@@ -164,11 +244,9 @@ void GameEngine::Update()
 	
 	//update the game time
 	gameVars->setCurrentFrameTime( getGameTime() );
-	
-	//double timeDelta = getGameTime() - lastFrameTime;
 
 	// Update entities--------------------------------------------------------------------------------------
-	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime() );
+	gameEntities.UpdateObjects( getGameTime(), gameVars->getDeltaFrameTime(), &inputState );
 
 	// Update the last frametime
 	this->lastFrameTime = getGameTime();
@@ -177,8 +255,8 @@ void GameEngine::Update()
 void GameEngine::Render()
 {
 	if ( graphics != nullptr )
-		//graphics->Render( getGameTime() );  // tutorial/test renderer
-		graphics->Render( getGameTime(), &gameEntities ); // game renderer
+		//graphics->TutRender( getGameTime() );  // tutorial/test renderer
+		graphics->Render( getGameTime() ); // game renderer
 	// TODO what happens when its nullptr
 }
 
@@ -204,7 +282,7 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 			// if it is not, add it.
 
 			// pass the gameEntities pointer to the entity here... which it will pass to the controllers.
-			entity->setControllerGameEntitiesPointer( &gameEntities );
+			//entity->setControllerGameEntitiesPointer( &gameEntities );
 
 			success = gameEntities.AddObject( entityName, entity );
 
@@ -214,10 +292,13 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 				LoadMesh( entity->getMesh() );
 			}
 
-			// do the same with the material.
-			if ( !entity->getMaterial().empty() )
+			// load the list of materials for the entity... if it has any.
+
+			std::vector< std::string> matList = entity->getMaterialValueList();
+
+			for( unsigned int i = 0; i < matList.size(); i++ )
 			{
-				LoadMaterial( entity->getMaterial() );
+				LoadMaterial( matList[i] );
 			}
 
 		}
@@ -229,6 +310,8 @@ bool GameEngine::AddEntity( const std::string entityName, GEObject* entity)
 void GameEngine::RemoveEntity( const std::string entityName)
 {
 	gameEntities.RemoveObject( entityName );
+
+	// TODO deregister objects ProcessInput Function.
 }
 
 GEObject* GameEngine::GetEntity( const std::string entityName )

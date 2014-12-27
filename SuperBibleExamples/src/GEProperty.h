@@ -3,7 +3,7 @@
 
 /**
 	GEProperty
-	Purpose:  To hold a value that can be modified through a list of controllers.
+	Purpose:  To hold a value (scalar/vector )that can be modified through a list of controllers.
 	Author: Jeff Adams
 */
 
@@ -13,11 +13,14 @@
 #include "GEObject.h"
 #include "GEController.h"
 #include "GEObjectContainer.h"
+#include "GEInputState.h"
 
 template <class T>
 class GEController;
 
 class GEObject;
+
+class GEInputState;
 
 template <class T>
 class GEProperty
@@ -47,7 +50,7 @@ public:
 
 	// Getters
 	T getBaseValue() const;
-	T getFinalValue() const;
+	T getFinalValue( const GEObjectContainer* gameEntities ) const;
 	T getMaxValue() const;
 	T getMinValue() const;
 	bool getUseMax() const;
@@ -57,11 +60,18 @@ public:
 	GEProperty& operator=( GEProperty<T> source );
 
 	// Functions
-	void addController( GEController<T>* controller, const GEObject* parent );
+	void addController( GEController<T>* controller );
 	void removeController( const unsigned int index );
 	void setControllerGameEntitiesPointer( const GEObjectContainer* gameEntities);
 
-	void Update( const double gameTime, const double deltaTime);
+	void Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime );
+
+	/**
+		ProcessInput
+		Function for processing input from the user.  Takes the input state and
+		passes it to the Controllers
+	*/
+	void ProcessInput( const GEInputState* inputState );
 	
 };
 
@@ -99,7 +109,7 @@ GEProperty<T>::GEProperty( const GEProperty& source )
 	this->controllers.clear();
 	for ( unsigned int i = 0; i< source.controllers.size(); i++ )
 	{
-		this->addController( source.controllers[i]->clone(), source.controllers[i]->getParent() );
+		this->addController( source.controllers[i]->clone() );
 	}
 }
 
@@ -189,7 +199,7 @@ T GEProperty<T>::getBaseValue() const
 }
 
 template <class T>
-T GEProperty<T>::getFinalValue() const
+T GEProperty<T>::getFinalValue( const GEObjectContainer* gameEntities ) const
 {
 	// combine all the controllers values together
 	T finalValue = this->getBaseValue() ;  // start with the initial value.
@@ -244,9 +254,8 @@ GEProperty<T>& GEProperty<T>::operator=( GEProperty<T> source )
 // Functions
 
 template <class T>
-void GEProperty<T>::addController( GEController<T>* controller, const GEObject* parent )
+void GEProperty<T>::addController( GEController<T>* controller )
 {
-	controller->setParent( parent );
 	this->controllers.push_back( controller->clone() );  // add a copy of the controller to the controller vector
 }
 
@@ -266,13 +275,22 @@ void GEProperty<T>::setControllerGameEntitiesPointer( const GEObjectContainer* g
 }
 
 template <class T>
-void GEProperty<T>::Update( const double gameTime, const double deltaTime)
+void GEProperty<T>::Update( const GEObject* parent, const GEObjectContainer* gameEntities, const double gameTime, const double deltaTime)
 {
 	T totalValue = this->getBaseValue();
 
 	// go through list of controllers and tell them to do their calculations.
 	for ( unsigned int i = 0; i < controllers.size(); i++)
-		totalValue = controllers[i]->Control( totalValue, gameTime, deltaTime, max, useMax, min, useMin );
+		totalValue = controllers[i]->Control( parent, gameEntities, totalValue, gameTime, deltaTime, max, useMax, min, useMin );
+}
+
+template <class T>
+void GEProperty<T>::ProcessInput( const GEInputState* inputState )
+{
+	for( unsigned int i = 0; i < controllers.size(); i++ )
+	{
+		controllers[i]->ProcessInput( inputState );
+	}
 }
 
 

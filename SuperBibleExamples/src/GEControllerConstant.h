@@ -57,7 +57,7 @@ public:
 		@param useMin
 		@return
 	*/
-	virtual T Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
+	virtual T Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin );
 
 	/**
 		CalcTransform()
@@ -84,7 +84,7 @@ GEControllerConstant<T>::GEControllerConstant( const T valueDelta )
 
 template <class T>
 GEControllerConstant<T>::GEControllerConstant( const GEControllerConstant<T>& source )
-	:GEController( source.parent, source.gameEntities )
+	:GEController( )
 {
 	this->setValueDelta( source.valueDelta );
 }
@@ -119,7 +119,7 @@ GEControllerConstant<T>* GEControllerConstant<T>::clone() const
 }
 
 template <class T>
-T GEControllerConstant<T>::Control( const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
+T GEControllerConstant<T>::Control( const GEObject* parent, const GEObjectContainer* gameEntities, const T prevValue, const double gameTime, const double deltaTime, T max, bool useMax, T min, bool useMin )
 {
 	T totalValue;
 

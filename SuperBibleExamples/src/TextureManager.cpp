@@ -71,33 +71,66 @@ GLuint TextureManager::LoadTexture( std::string filename )
 			std::string fullFileName = texturePath;
 			fullFileName.append( filename );
 
-
+			IUImage<unsigned char> image;  // if we do it this way how do we specify a type that is not unsigned char?
 
 			if( ext == "bmp" )  // bitmap
 			{
-				IUImage<unsigned char> image = imageUtilities.LoadBitmap( fullFileName.c_str() );
-
-				// verify that the texture was loaded
-
-				if( image.getDataSize() > 0 )  // is this the best check?
-				{
-					unsigned char* imageTexData = nullptr;
-
-					imageTexData = (unsigned char*)malloc( image.getDataSize() );
-					image.getData( imageTexData );
-
-					glGenTextures(1, &loadedTexture);
-					glBindTexture(GL_TEXTURE_2D, loadedTexture);
-
-					glTexStorage2D( GL_TEXTURE_2D, 5, GL_RGB8, image.getWidth(), image.getHeight() );
-					glTexSubImage2D( GL_TEXTURE_2D,0,0,0, image.getWidth(), image.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, imageTexData );
-
-					glGenerateMipmap( GL_TEXTURE_2D );
-
-					free( imageTexData );	// allocated with malloc
-					imageTexData = nullptr;
-				}
+				image = imageUtilities.LoadBitmap( fullFileName.c_str() );
 			}
+			else if( ext == "tga" ) // targa
+			{
+				image = imageUtilities.LoadTarga( fullFileName.c_str() );
+			}
+			else if( ext == "png" ) // targa
+			{
+				image = imageUtilities.LoadPNG( fullFileName.c_str() );
+			}
+
+
+			// verify that the texture was loaded
+
+			if( image.getDataSize() > 0 )  // TODO: is this the best check?
+			{
+				unsigned char* imageTexData = nullptr;
+
+				GLenum internalFormat;
+				GLenum imageFormat;
+
+				// convert format to GL equivelant.  TODO: put in own function... might be useful for other things.
+				switch ( image.getFormat() )
+				{
+				case IUI_FORMAT_RGB:
+					internalFormat = GL_RGB8;
+					imageFormat = GL_RGB;
+					break;
+				case IUI_FORMAT_RGBA:
+					internalFormat = GL_RGBA8;
+					imageFormat = GL_RGBA;
+					break;
+				case IUI_FORMAT_BGR:
+					internalFormat = GL_RGB8;
+					imageFormat = GL_BGR;
+					break;
+				case IUI_FORMAT_BGRA:
+					internalFormat = GL_RGBA8;
+					imageFormat = GL_BGRA;
+				}
+
+				imageTexData = (unsigned char*)malloc( image.getDataSize() );
+				image.getData( imageTexData );
+
+				glGenTextures(1, &loadedTexture);
+				glBindTexture(GL_TEXTURE_2D, loadedTexture);
+
+				glTexStorage2D( GL_TEXTURE_2D, 5, internalFormat, image.getWidth(), image.getHeight() );
+				glTexSubImage2D( GL_TEXTURE_2D,0,0,0, image.getWidth(), image.getHeight(), imageFormat, GL_UNSIGNED_BYTE, imageTexData );
+
+				glGenerateMipmap( GL_TEXTURE_2D );
+
+				free( imageTexData );	// allocated with malloc
+				imageTexData = nullptr;
+			}
+			
 		}
 
 	}
